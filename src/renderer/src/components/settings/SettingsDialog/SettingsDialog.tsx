@@ -15,12 +15,17 @@ import { AISettingsTab } from './AISettingsTab'
 import { WorkspaceSettingsTab } from './WorkspaceSettingsTab'
 import { KeyboardShortcutsTab } from './KeyboardShortcutsTab'
 import { AdvancedSettingsTab } from './AdvancedSettingsTab'
+import { useShortcut } from '@renderer/hooks/useKeyboard'
 
 export const SettingsDialog: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general')
+  const [open, setOpen] = useState(false)
+
+  // Keyboard shortcut: Ctrl+,
+  useShortcut('settings', () => setOpen(true), { allowInInput: true })
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" title="Settings (Ctrl+,)">
           <Settings className="h-4 w-4" />

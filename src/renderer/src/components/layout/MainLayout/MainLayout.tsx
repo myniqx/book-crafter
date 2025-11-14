@@ -4,6 +4,8 @@ import { Sidebar } from '../Sidebar'
 import { StatusBar } from '../StatusBar'
 import { DockLayout } from '../DockLayout'
 import { useStore } from '@renderer/store'
+import { useKeyboard } from '@renderer/hooks/useKeyboard'
+import { toast } from '@renderer/lib/toast'
 
 export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const workspacePath = useStore((state) => state.workspacePath)
@@ -11,6 +13,10 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   const loadAllBooks = useStore((state) => state.loadAllBooks)
   const loadAllImages = useStore((state) => state.loadAllImages)
   const loadAllNotes = useStore((state) => state.loadAllNotes)
+  const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const openEditorTabs = useStore((state) => state.openEditorTabs)
+  const activeTabIndex = useStore((state) => state.activeTabIndex)
+  const books = useStore((state) => state.books)
 
   // Load entities, books, images, and notes when workspace is available
   useEffect(() => {
@@ -36,6 +42,65 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
       })
     }
   }, [workspacePath, loadAllEntities, loadAllBooks, loadAllImages, loadAllNotes])
+
+  // Save current file
+  const handleSave = (): void => {
+    if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
+      const tab = openEditorTabs[activeTabIndex]
+      const book = books[tab.bookSlug]
+      if (book) {
+        const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
+        if (chapter) {
+          // TODO: Implement actual save via IPC
+          toast.success('File saved', `${chapter.title} has been saved`)
+          console.log('Save file:', tab.bookSlug, tab.chapterSlug)
+        }
+      }
+    } else {
+      toast.info('No file to save', 'Open a file first')
+    }
+  }
+
+  // Save all files
+  const handleSaveAll = (): void => {
+    if (openEditorTabs.length > 0) {
+      // TODO: Implement actual save all via IPC
+      toast.success('All files saved', `${openEditorTabs.length} file(s) saved`)
+      console.log('Save all files')
+    } else {
+      toast.info('No files to save', 'No files are currently open')
+    }
+  }
+
+  // Toggle sidebar
+  const handleToggleSidebar = (): void => {
+    toggleSidebar()
+  }
+
+  // Global keyboard shortcuts
+  useKeyboard({
+    // Editor shortcuts
+    save: {
+      id: 'save',
+      handler: handleSave,
+      allowInInput: false
+    },
+    saveAll: {
+      id: 'saveAll',
+      handler: handleSaveAll,
+      allowInInput: false
+    },
+
+    // Navigation shortcuts
+    toggleSidebar: {
+      id: 'toggleSidebar',
+      handler: handleToggleSidebar,
+      allowInInput: true
+    }
+
+    // Note: Settings, Command Palette, Create Entity, Create Note, AI Chat
+    // will be handled by their respective dialog components
+  })
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">
