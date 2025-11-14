@@ -28,6 +28,7 @@ import {
 } from '@renderer/components/ui/dropdown-menu'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { AISettingsDialog } from '@renderer/components/ai/AISettingsDialog'
+import { CustomPromptsDialog } from '@renderer/components/ai/CustomPromptsDialog'
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -46,6 +47,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const config = useStore((state) => state.config)
   const books = useStore((state) => state.books)
   const entities = useStore((state) => state.entities)
+  const customPrompts = useStore((state) => state.customPrompts)
 
   // Store actions
   const sendMessage = useStore((state) => state.sendMessage)
@@ -126,6 +128,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
             >
               <Trash2 className="h-3 w-3" />
             </Button>
+            <CustomPromptsDialog />
             <AISettingsDialog />
           </div>
         </div>
@@ -250,6 +253,19 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
               >
                 Check Character Consistency
               </DropdownMenuItem>
+
+              {/* Custom Prompts */}
+              {customPrompts.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Custom Prompts</DropdownMenuLabel>
+                  {customPrompts.map((cp) => (
+                    <DropdownMenuItem key={cp.id} onClick={() => handlePresetPrompt(cp.prompt)}>
+                      {cp.name}
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

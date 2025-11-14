@@ -4,12 +4,26 @@ import {
   type AIMessage,
   type AIContext,
   type AIProviderInterface,
+  type CustomPrompt,
+  type AISuggestion,
   DEFAULT_AI_CONFIG
 } from '@renderer/lib/ai/types'
 import { createAIProvider } from '@renderer/lib/ai'
 import type { Entity } from './entitySlice'
 import type { Book } from './booksSlice'
 import type { Image } from './imageSlice'
+
+// UUID generator helper
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
 
 /**
  * AI slice state
@@ -24,6 +38,12 @@ export interface AISlice {
   // Streaming state
   isStreaming: boolean
   currentStreamMessage: string
+
+  // Custom prompts
+  customPrompts: CustomPrompt[]
+
+  // Suggestions history
+  suggestions: AISuggestion[]
 
   // Provider instance (not persisted)
   _provider: AIProviderInterface | null
@@ -44,6 +64,16 @@ export interface AISlice {
     includeEntities?: boolean
   }) => AIContext | undefined
   getProvider: () => AIProviderInterface
+
+  // Custom prompts actions
+  addCustomPrompt: (prompt: Omit<CustomPrompt, 'id' | 'created' | 'modified'>) => void
+  updateCustomPrompt: (id: string, prompt: Partial<CustomPrompt>) => void
+  deleteCustomPrompt: (id: string) => void
+
+  // Suggestions actions
+  addSuggestion: (suggestion: Omit<AISuggestion, 'id' | 'timestamp'>) => void
+  applySuggestion: (id: string) => void
+  clearSuggestions: () => void
 }
 
 /**
@@ -60,6 +90,8 @@ export const createAISlice: StateCreator<
   messages: [],
   isStreaming: false,
   currentStreamMessage: '',
+  customPrompts: [],
+  suggestions: [],
   _provider: null,
 
   // Update configuration
@@ -225,5 +257,69 @@ export const createAISlice: StateCreator<
       console.error('Failed to list models:', error)
       return []
     }
+  },
+
+  // Custom prompts actions
+  addCustomPrompt: (prompt) => {
+    set((state) => {
+      const now = new Date().toISOString()
+      const newPrompt: CustomPrompt = {
+        ...prompt,
+        id: generateUUID(),
+        created: now,
+        modified: now
+      }
+      state.customPrompts.push(newPrompt)
+    })
+  },
+
+  updateCustomPrompt: (id, updates) => {
+    set((state) => {
+      const index = state.customPrompts.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        state.customPrompts[index] = {
+          ...state.customPrompts[index],
+          ...updates,
+          modified: new Date().toISOString()
+        }
+      }
+    })
+  },
+
+  deleteCustomPrompt: (id) => {
+    set((state) => {
+      state.customPrompts = state.customPrompts.filter((p) => p.id !== id)
+    })
+  },
+
+  // Suggestions actions
+  addSuggestion: (suggestion) => {
+    set((state) => {
+      const newSuggestion: AISuggestion = {
+        ...suggestion,
+        id: generateUUID(),
+        timestamp: new Date().toISOString()
+      }
+      state.suggestions.unshift(newSuggestion) // Add to beginning
+      // Keep only last 50 suggestions
+      if (state.suggestions.length > 50) {
+        state.suggestions = state.suggestions.slice(0, 50)
+      }
+    })
+  },
+
+  applySuggestion: (id) => {
+    set((state) => {
+      const suggestion = state.suggestions.find((s) => s.id === id)
+      if (suggestion) {
+        suggestion.applied = true
+      }
+    })
+  },
+
+  clearSuggestions: () => {
+    set((state) => {
+      state.suggestions = []
+    })
   }
 })

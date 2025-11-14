@@ -422,9 +422,12 @@
     - [x] Copy mechanism with hover button (assistant messages only)
     - [x] AI Settings Dialog (provider switcher, model selector, API keys, temperature, keep_alive)
     - [x] Connection test and model listing (Ollama)
-    - [ ] Full diff viewer with side-by-side comparison (Future enhancement)
-    - [ ] Direct text replacement in editor from chat (Future enhancement)
-    - [ ] Custom prompts management (Future enhancement)
+    - [x] Full diff viewer with side-by-side comparison (DiffViewer component)
+    - [x] Apply/Reject mechanism for AI suggestions
+    - [x] Custom prompts library (create, edit, delete custom prompts)
+    - [x] AI suggestions history panel (last 50 suggestions with applied status)
+    - [x] Custom prompts in preset dropdown
+    - [x] Persist custom prompts and suggestions in localStorage
   - [x] 13.6 AI context awareness ✅
     - [x] Send current chapter content as context
     - [x] Send selection if any

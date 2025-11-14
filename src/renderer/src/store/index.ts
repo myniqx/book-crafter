@@ -34,6 +34,8 @@ export const useStore = create<AppStore>()(
           theme: state.theme,
           sidebarCollapsed: state.sidebarCollapsed,
           config: state.config, // AI config
+          customPrompts: state.customPrompts, // Custom AI prompts
+          suggestions: state.suggestions, // AI suggestions history
         }),
       }
     ),

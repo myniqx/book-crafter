@@ -10,6 +10,7 @@ import { ImageCard } from '@renderer/components/images/ImageCard'
 import { NotesList } from '@renderer/components/notes/NotesList'
 import { SearchPanel } from '@renderer/components/search/SearchPanel'
 import { AIChatPanel } from '@renderer/components/ai/AIChatPanel'
+import { AISuggestionsPanel } from '@renderer/components/ai/AISuggestionsPanel'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -125,6 +126,14 @@ export function registerDefaultPanels(): void {
       id: 'ai-chat',
       title: 'AI Chat',
       content: <AIChatPanel />,
+      group: 'ai',
+      minWidth: 300,
+      closable: true
+    },
+    {
+      id: 'ai-suggestions',
+      title: 'AI Suggestions',
+      content: <AISuggestionsPanel />,
       group: 'ai',
       minWidth: 300,
       closable: true

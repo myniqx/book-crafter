@@ -12,10 +12,36 @@ export type MessageRole = 'user' | 'assistant' | 'system'
  * AI Message
  */
 export interface AIMessage {
-  id: string
   role: MessageRole
   content: string
   timestamp: string
+}
+
+/**
+ * Custom Prompt
+ */
+export interface CustomPrompt {
+  id: string
+  name: string
+  prompt: string
+  category: 'writing' | 'editing' | 'analysis' | 'custom'
+  created: string
+  modified: string
+}
+
+/**
+ * AI Suggestion (for history)
+ */
+export interface AISuggestion {
+  id: string
+  type: 'grammar' | 'expansion' | 'dramatic' | 'dialogue' | 'improvement' | 'custom'
+  original: string
+  suggested: string
+  prompt: string
+  applied: boolean
+  timestamp: string
+  bookSlug?: string
+  chapterSlug?: string
 }
 
 /**

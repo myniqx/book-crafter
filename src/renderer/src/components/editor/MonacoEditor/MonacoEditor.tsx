@@ -25,6 +25,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   // Get AI actions from store
   const sendMessage = useStore((state) => state.sendMessage)
   const buildContext = useStore((state) => state.buildContext)
+  const addSuggestion = useStore((state) => state.addSuggestion)
 
   // Determine Monaco theme based on app theme
   const monacoTheme = theme || (storeTheme === 'light' ? 'light' : 'vs-dark')
