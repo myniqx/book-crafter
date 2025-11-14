@@ -222,24 +222,28 @@
 
   ***
 
-  ## Phase 8: Markdown Preview
-  - [ ] 8.1 Preview panel setup
-    - [ ] Install react-markdown + remark/rehype plugins
-    - [ ] Split view or separate panel option
-    - [ ] Responsive layout
-  - [ ] 8.2 Custom renderers
-    - [ ] @mention renderer (replace with entity value)
-    - [ ] Comment remover (// and /\* \*/)
-    - [ ] Image renderer (support @image-slug)
-    - [ ] Custom styling with Tailwind prose
-  - [ ] 8.3 Live sync
-    - [ ] Debounced update on editor change
-    - [ ] Scroll sync (optional)
-    - [ ] Performance optimization for large documents
-  - [ ] 8.4 Preview features
-    - [ ] Toggle preview on/off
-    - [ ] Copy rendered HTML
-    - [ ] Export to PDF/HTML (future)
+  ## Phase 8: Markdown Preview ✅ COMPLETE
+  - [x] 8.1 Preview panel setup ✅
+    - [x] Install react-markdown + remark/rehype plugins
+    - [x] Separate panel in DockLayout (dockable, closable)
+    - [x] Responsive layout with header and scrollable content
+  - [x] 8.2 Custom renderers ✅
+    - [x] @mention renderer (replace with entity default field value)
+    - [x] @entity.field renderer (replace with specific field value)
+    - [x] Comment remover (// and /\* \*/)
+    - [ ] Image renderer (support @image-slug) (Future - Phase 10)
+    - [x] Custom styling with Tailwind prose (dark theme optimized)
+  - [x] 8.3 Live sync ✅
+    - [x] Debounced update on editor change (300ms)
+    - [ ] Scroll sync (optional) (Future enhancement)
+    - [x] Performance optimization with useMemo and debouncing
+  - [x] 8.4 Preview features ✅
+    - [x] Toggle preview on/off (via Sidebar)
+    - [x] Word count display
+    - [x] Reading time estimate
+    - [x] Book/Chapter context display in header
+    - [ ] Copy rendered HTML (Future enhancement)
+    - [ ] Export to PDF/HTML (Future enhancement)
 
   ***
 

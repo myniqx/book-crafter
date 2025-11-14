@@ -4,6 +4,7 @@ import type { PanelConfig } from './types'
 import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
 import { EntityCard } from '@renderer/components/entities/EntityCard'
 import { BookExplorer } from '@renderer/components/books/BookExplorer'
+import { MarkdownPreview } from '@renderer/components/preview/MarkdownPreview'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -68,7 +69,7 @@ export function registerDefaultPanels(): void {
     {
       id: 'markdown-preview',
       title: 'Preview',
-      content: <PlaceholderPanel title="Markdown Preview" />,
+      content: <MarkdownPreview />,
       group: 'preview',
       minWidth: 300,
       closable: true
