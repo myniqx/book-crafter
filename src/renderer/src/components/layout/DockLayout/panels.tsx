@@ -103,7 +103,24 @@ export function getPanel(id: string): PanelConfig | undefined {
   return panelRegistry.get(id)
 }
 
-// Create default layout
+// Welcome message for editor area
+const EditorWelcome: React.FC = () => (
+  <div className="h-full w-full flex flex-col items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+    <div className="text-center space-y-4 max-w-md">
+      <h2 className="text-2xl font-semibold text-[hsl(var(--foreground))]">Welcome to Book Crafter</h2>
+      <p className="text-sm">
+        Open a book from the File Explorer or create a new one to start writing.
+      </p>
+      <div className="pt-4 text-xs space-y-1">
+        <p>💡 Use <kbd className="px-2 py-1 bg-[hsl(var(--muted))] rounded">@</kbd> to reference entities</p>
+        <p>💡 Toggle panels from the sidebar</p>
+        <p>💡 Your work is auto-saved</p>
+      </div>
+    </div>
+  </div>
+)
+
+// Create default layout (VSCode-style)
 export function createDefaultLayout(): LayoutData {
   // Ensure panels are registered
   if (panelRegistry.size === 0) {
@@ -114,9 +131,10 @@ export function createDefaultLayout(): LayoutData {
     dockbox: {
       mode: 'horizontal',
       children: [
+        // Left panel: Files (collapsible, starts open)
         {
           mode: 'vertical',
-          size: 250,
+          size: 280,
           children: [
             {
               tabs: [
@@ -130,32 +148,17 @@ export function createDefaultLayout(): LayoutData {
             }
           ]
         },
+        // Center: Editor area (main, wide)
         {
           mode: 'vertical',
           children: [
             {
               tabs: [
                 {
-                  id: 'editor-main',
-                  title: 'Editor',
-                  content: <PlaceholderPanel title="Monaco Editor" />,
+                  id: 'editor-welcome',
+                  title: 'Welcome',
+                  content: <EditorWelcome />,
                   closable: false
-                } as TabData
-              ]
-            }
-          ]
-        },
-        {
-          mode: 'vertical',
-          size: 350,
-          children: [
-            {
-              tabs: [
-                {
-                  id: 'markdown-preview',
-                  title: 'Preview',
-                  content: <PlaceholderPanel title="Markdown Preview" />,
-                  closable: true
                 } as TabData
               ]
             }
