@@ -8,15 +8,22 @@ import { useStore } from '@renderer/store'
 export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const workspacePath = useStore((state) => state.workspacePath)
   const loadAllEntities = useStore((state) => state.loadAllEntities)
+  const loadAllBooks = useStore((state) => state.loadAllBooks)
 
-  // Load entities when workspace is available
+  // Load entities and books when workspace is available
   useEffect(() => {
     if (workspacePath) {
+      // Load entities
       loadAllEntities(workspacePath).catch((error) => {
         console.error('Failed to load entities:', error)
       })
+
+      // Load books
+      loadAllBooks(workspacePath).catch((error) => {
+        console.error('Failed to load books:', error)
+      })
     }
-  }, [workspacePath, loadAllEntities])
+  }, [workspacePath, loadAllEntities, loadAllBooks])
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">

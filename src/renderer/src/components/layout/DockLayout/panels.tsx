@@ -3,6 +3,7 @@ import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig } from './types'
 import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
 import { EntityCard } from '@renderer/components/entities/EntityCard'
+import { BookExplorer } from '@renderer/components/books/BookExplorer'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -43,9 +44,9 @@ export function registerDefaultPanels(): void {
     {
       id: 'file-explorer',
       title: 'Files',
-      content: <PlaceholderPanel title="File Explorer" />,
+      content: <BookExplorer />,
       group: 'explorer',
-      minWidth: 200,
+      minWidth: 250,
       closable: false
     },
     {
@@ -170,7 +171,7 @@ export function createDefaultLayout(): LayoutData {
                 {
                   id: 'file-explorer',
                   title: 'Files',
-                  content: <PlaceholderPanel title="File Explorer" />,
+                  content: <BookExplorer />,
                   closable: false
                 } as TabData
               ]

@@ -33,19 +33,33 @@ export interface BooksSlice {
   activeChapterSlug: string | null
   openEditorTabs: Array<{ bookSlug: string; chapterSlug: string }>
   activeTabIndex: number
+  isLoadingBooks: boolean
+
+  // CRUD operations
   addBook: (book: Book) => void
   updateBook: (slug: string, updates: Partial<Book>) => void
   deleteBook: (slug: string) => void
   getBook: (slug: string) => Book | undefined
   setActiveBook: (slug: string | null) => void
+
+  // Chapter operations
   addChapter: (bookSlug: string, chapter: Chapter) => void
   updateChapter: (bookSlug: string, chapterSlug: string, updates: Partial<Chapter>) => void
   deleteChapter: (bookSlug: string, chapterSlug: string) => void
   reorderChapters: (bookSlug: string, newOrder: string[]) => void
   setActiveChapter: (chapterSlug: string | null) => void
+
+  // Tab operations
   openTab: (bookSlug: string, chapterSlug: string) => void
   closeTab: (index: number) => void
   setActiveTab: (index: number) => void
+
+  // File operations
+  loadAllBooks: (workspacePath: string) => Promise<void>
+  saveBookToDisk: (workspacePath: string, bookSlug: string) => Promise<void>
+  saveChapterToDisk: (workspacePath: string, bookSlug: string, chapterSlug: string) => Promise<void>
+  deleteBookFromDisk: (workspacePath: string, bookSlug: string) => Promise<void>
+  deleteChapterFromDisk: (workspacePath: string, bookSlug: string, chapterSlug: string) => Promise<void>
 }
 
 export const createBooksSlice: StateCreator<
@@ -59,6 +73,7 @@ export const createBooksSlice: StateCreator<
   activeChapterSlug: null,
   openEditorTabs: [],
   activeTabIndex: -1,
+  isLoadingBooks: false,
 
   addBook: (book) =>
     set((state) => {
@@ -200,4 +215,95 @@ export const createBooksSlice: StateCreator<
         state.activeChapterSlug = activeTab.chapterSlug
       }
     }),
+
+  // File operations
+  loadAllBooks: async (workspacePath) => {
+    set((state) => {
+      state.isLoadingBooks = true
+    })
+
+    try {
+      const { loadAllBooks } = await import('@renderer/lib/books')
+      const books = await loadAllBooks(workspacePath)
+
+      set((state) => {
+        state.books = books
+        state.isLoadingBooks = false
+      })
+    } catch (error) {
+      console.error('Failed to load books:', error)
+      set((state) => {
+        state.isLoadingBooks = false
+      })
+      throw error
+    }
+  },
+
+  saveBookToDisk: async (workspacePath, bookSlug) => {
+    const book = get().books[bookSlug]
+    if (!book) {
+      throw new Error(`Book ${bookSlug} not found`)
+    }
+
+    const { saveBook } = await import('@renderer/lib/books')
+    await saveBook(workspacePath, book)
+  },
+
+  saveChapterToDisk: async (workspacePath, bookSlug, chapterSlug) => {
+    const book = get().books[bookSlug]
+    if (!book) {
+      throw new Error(`Book ${bookSlug} not found`)
+    }
+
+    const chapter = book.chapters.find((c) => c.slug === chapterSlug)
+    if (!chapter) {
+      throw new Error(`Chapter ${chapterSlug} not found in book ${bookSlug}`)
+    }
+
+    const { saveChapter } = await import('@renderer/lib/books')
+    await saveChapter(workspacePath, bookSlug, chapter)
+  },
+
+  deleteBookFromDisk: async (workspacePath, bookSlug) => {
+    const { deleteBook: deleteBookFile } = await import('@renderer/lib/books')
+    await deleteBookFile(workspacePath, bookSlug)
+
+    // Remove from store
+    set((state) => {
+      delete state.books[bookSlug]
+      if (state.activeBookSlug === bookSlug) {
+        state.activeBookSlug = null
+        state.activeChapterSlug = null
+      }
+      // Remove all tabs for this book
+      state.openEditorTabs = state.openEditorTabs.filter((tab) => tab.bookSlug !== bookSlug)
+    })
+  },
+
+  deleteChapterFromDisk: async (workspacePath, bookSlug, chapterSlug) => {
+    const { deleteChapter: deleteChapterFile } = await import('@renderer/lib/books')
+    await deleteChapterFile(workspacePath, bookSlug, chapterSlug)
+
+    // Remove from store
+    set((state) => {
+      if (state.books[bookSlug]) {
+        state.books[bookSlug].chapters = state.books[bookSlug].chapters.filter(
+          (c) => c.slug !== chapterSlug
+        )
+        state.books[bookSlug].metadata.totalChapters = state.books[bookSlug].chapters.length
+        state.books[bookSlug].modified = new Date().toISOString()
+
+        // Remove tab if open
+        const tabIndex = state.openEditorTabs.findIndex(
+          (tab) => tab.bookSlug === bookSlug && tab.chapterSlug === chapterSlug
+        )
+        if (tabIndex !== -1) {
+          state.openEditorTabs.splice(tabIndex, 1)
+          if (state.activeTabIndex >= state.openEditorTabs.length) {
+            state.activeTabIndex = state.openEditorTabs.length - 1
+          }
+        }
+      }
+    })
+  },
 })
