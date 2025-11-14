@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react'
-import DockLayout as RcDock from 'rc-dock'
+import { DockLayout as RcDockLayout } from 'rc-dock'
 import 'rc-dock/dist/rc-dock.css'
 import type { LayoutData, TabData } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
@@ -7,7 +7,7 @@ import type { DockLayoutProps } from './types'
 import { createDefaultLayout, getRegisteredPanels } from './panels'
 
 export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
-  const dockRef = useRef<RcDock>(null)
+  const dockRef = useRef<RcDockLayout>(null)
 
   // Initialize with default layout
   const defaultLayout = createDefaultLayout()
@@ -53,7 +53,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
 
   return (
     <div className={cn('h-full w-full', 'dock-layout-container')}>
-      <RcDock
+      <RcDockLayout
         ref={dockRef}
         defaultLayout={loadLayout() || defaultLayout}
         onLayoutChange={handleLayoutChange}
