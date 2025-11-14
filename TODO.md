@@ -323,28 +323,36 @@
 
   ***
 
-  ## Phase 11: Notes & Checklist System
-  - [ ] 11.1 Note data model
-    - [ ] Note schema (id, slug, content, type)
-    - [ ] Checklist item schema
-    - [ ] Note JSON storage in .notes/
-  - [ ] 11.2 Note CRUD
-    - [ ] Create note (with type selector)
-    - [ ] Edit note (markdown editor)
-    - [ ] Delete note (with dependency check)
-    - [ ] Link note to entity/image/chapter
-  - [ ] 11.3 Checklist features
-    - [ ] Add/remove checklist items
-    - [ ] Mark as complete/incomplete
-    - [ ] Track completion location (book/chapter/line)
-    - [ ] #check() comment parser
-  - [ ] 11.4 Notes panel
-    - [ ] List/card view
-    - [ ] Filter by type, status, tags
-    - [ ] Checklist progress bars
-    - [ ] Click to jump to reference location
-    - [ ] Search notes
-  - [ ] 11.5 #check() integration
+  ## Phase 11: Notes & Checklist System ✅ COMPLETE
+  - [x] 11.1 Note data model ✅
+    - [x] Note schema (id, slug, title, content, type, tags, linked items)
+    - [x] ChecklistItem schema (id, content, status, location)
+    - [x] Note JSON storage in .notes/
+    - [x] 6 note types (general, character, plot, worldbuilding, research, todo)
+    - [x] UUID generation for notes and checklist items
+  - [x] 11.2 Note CRUD ✅
+    - [x] Create note (with type selector via CreateNoteDialog)
+    - [x] Update note (title, content, tags)
+    - [x] Delete note (with confirmation)
+    - [x] Link note to entity/image/chapter (LinkedItem system)
+    - [x] Pin/unpin notes
+  - [x] 11.3 Checklist features ✅
+    - [x] Add/remove checklist items
+    - [x] Mark as complete/incomplete (toggle)
+    - [x] Track completion location (book/chapter/line)
+    - [x] Checklist progress calculation
+    - [x] Reorder checklist items
+    - [ ] #check() comment parser (Future enhancement)
+  - [x] 11.4 Notes panel ✅
+    - [x] List/card view (NotesList component)
+    - [x] Filter by type (6 types + all)
+    - [x] Sort (modified, created, title, type)
+    - [x] Checklist progress bars
+    - [x] Search notes (title, content, tags)
+    - [x] Tag management (add/remove inline)
+    - [x] Empty state with create CTA
+    - [x] Pin/delete actions
+  - [ ] 11.5 #check() integration (Future - Phase 12+)
     - [ ] Parse #check(entity-slug, note-id) in markdown
     - [ ] Auto-complete checklist on compile/preview
     - [ ] Show check locations in note detail

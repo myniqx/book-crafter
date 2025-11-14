@@ -7,6 +7,7 @@ import { BookExplorer } from '@renderer/components/books/BookExplorer'
 import { MarkdownPreview } from '@renderer/components/preview/MarkdownPreview'
 import { ImageGallery } from '@renderer/components/images/ImageGallery'
 import { ImageCard } from '@renderer/components/images/ImageCard'
+import { NotesList } from '@renderer/components/notes/NotesList'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -113,9 +114,9 @@ export function registerDefaultPanels(): void {
     {
       id: 'notes',
       title: 'Notes',
-      content: <PlaceholderPanel title="Notes & Checklist" />,
+      content: <NotesList />,
       group: 'media',
-      minWidth: 200,
+      minWidth: 250,
       closable: true
     },
     {
