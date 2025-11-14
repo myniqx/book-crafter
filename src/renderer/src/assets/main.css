@@ -81,4 +81,39 @@
     width: 100%;
     height: 100vh;
   }
+
+  /* rc-dock custom styling */
+  .dock-layout-container .dock-panel {
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .dock-layout-container .dock-tab {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .dock-layout-container .dock-tab:hover {
+    background: hsl(var(--accent));
+  }
+
+  .dock-layout-container .dock-tab-active {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  .dock-layout-container .dock-bar {
+    background: hsl(var(--background));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .dock-layout-container .dock-divider {
+    background: hsl(var(--border));
+  }
+
+  .dock-layout-container .dock-divider:hover {
+    background: hsl(var(--primary));
+  }
 }

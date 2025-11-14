@@ -236,29 +236,47 @@
 
   ***
 
-  ## Phase 9: rc-dock Layout System
-  - [ ] 9.1 rc-dock installation and setup
-    - [ ] Install rc-dock
-    - [ ] Create DockLayout wrapper component
-    - [ ] Configure default layout
-    - [ ] Layout state persistence
-  - [ ] 9.2 Define panels
-    - [ ] File Explorer panel
-    - [ ] Monaco Editor panel (main)
-    - [ ] Markdown Preview panel
-    - [ ] Entity Browser panel
-    - [ ] Image Gallery panel
-    - [ ] Notes & Checklist panel
-    - [ ] AI Chat panel
-    - [ ] Timeline panel (optional)
-  - [ ] 9.3 Panel management
-    - [ ] Register all panels
-    - [ ] Panel visibility toggles
+  ## Phase 5: rc-dock Layout System ✅ COMPLETE (Moved from Phase 9)
+
+  - [x] 5.1 rc-dock installation and setup ✅
+    - [x] Install rc-dock package
+    - [x] Create DockLayout wrapper component (components/layout/DockLayout/)
+    - [x] Configure default layout (3-column: files, editor, preview)
+    - [x] Layout state persistence (localStorage)
+    - [x] Custom CSS styling with theme variables
+
+  - [x] 5.2 Basic layout components ✅
+    - [x] Titlebar component (app icon, project name, window controls)
+    - [x] Sidebar component (panel visibility toggles, collapsible)
+    - [x] StatusBar component (save status, word count, document info)
+    - [x] MainLayout component (combines all layout parts)
+
+  - [x] 5.3 Panel registration system ✅
+    - [x] Panel registry (Map-based storage)
+    - [x] registerPanel() function
+    - [x] getRegisteredPanels() function
+    - [x] Default panels registered (7 panels with placeholders)
+    - [x] Panel configuration (id, title, content, group, dimensions)
+
+  - [x] 5.4 Define panels (placeholders) ✅
+    - [x] File Explorer panel
+    - [x] Monaco Editor panel (main)
+    - [x] Markdown Preview panel
+    - [x] Entity Browser panel
+    - [x] Image Gallery panel
+    - [x] Notes & Checklist panel
+    - [x] AI Chat panel
+    - [x] Timeline panel
+
+  - [x] 5.5 Panel management ✅
+    - [x] Panel visibility toggles (via Sidebar)
+    - [x] Integrated with UI store
+    - [x] Active panel indicators
+
+  - [ ] 5.6 Advanced features (Future)
     - [ ] Panel shortcuts (Ctrl+B for explorer, etc.)
     - [ ] Reset layout option
     - [ ] Save custom layouts
-  - [ ] 9.4 Tab system
-    - [ ] Multiple editor tabs
     - [ ] Tab close/reorder
     - [ ] Unsaved changes indicator
     - [ ] Tab context menu
