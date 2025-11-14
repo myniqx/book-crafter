@@ -131,60 +131,64 @@
 
   ***
 
-  ## Phase 5: Entity System
-  - [ ] 5.1 Entity data model
-    - [ ] Entity TypeScript schema (extensible)
-    - [ ] Slug generation and validation
-    - [ ] Default templates (person, place, custom)
-    - [ ] Field management (add, edit, remove, reorder)
-    - [ ] Default field selection logic
-  - [ ] 5.2 Entity CRUD operations
-    - [ ] Create entity (with template)
-    - [ ] Read/load entities from .entities/
-    - [ ] Update entity (with validation)
-    - [ ] Delete entity (with dependency check)
-    - [ ] Rename entity slug (update all references)
-    - [ ] Bulk operations
-  - [ ] 5.3 Entity relations
-    - [ ] Relation schema (type, target, description)
-    - [ ] Add/remove relations
-    - [ ] Bidirectional relation management
-    - [ ] Relation visualization (graph view - optional)
-  - [ ] 5.4 Entity notes
-    - [ ] Note schema (id, content, type, checklist)
-    - [ ] Add/edit/delete notes
-    - [ ] Checklist items management
-    - [ ] Note-to-chapter linking
-  - [ ] 5.5 Entity usage tracking
-    - [ ] Scan all markdown files (debounced)
-    - [ ] Count usages per book/chapter
-    - [ ] Track line numbers and context
-    - [ ] Update usage stats in entity metadata
-    - [ ] "Where used" panel
+  ## Phase 5: Entity System ✅ COMPLETE
+  - [x] 5.1 Entity data model ✅
+    - [x] Entity TypeScript schema (extensible)
+    - [x] Slug generation and validation
+    - [x] Default templates (person, place, custom)
+    - [x] Field management (add, edit, remove, reorder)
+    - [x] Default field selection logic
+  - [x] 5.2 Entity CRUD operations ✅
+    - [x] Create entity (with template)
+    - [x] Read/load entities from .entities/
+    - [x] Update entity (with validation)
+    - [x] Delete entity (with dependency check)
+    - [x] Rename entity slug (update all references)
+    - [x] Export/import operations (backup)
+  - [x] 5.3 Entity relations ✅
+    - [x] Relation schema (type, target, description)
+    - [x] Add/remove relations (via EntitySlice)
+    - [x] Display relations in EntityCard
+    - [ ] Bidirectional relation management (Future)
+    - [ ] Relation visualization (graph view - Future)
+  - [x] 5.4 Entity notes ✅
+    - [x] Note schema (id, content, type, checklist)
+    - [x] Add/edit/delete notes (via EntitySlice)
+    - [x] Checklist items management
+    - [x] Display in EntityCard
+    - [ ] Note-to-chapter linking (Future)
+  - [ ] 5.5 Entity usage tracking (Partial)
+    - [x] Usage metadata in Entity schema
+    - [x] Monaco editor integration (completion, hover, diagnostics)
+    - [ ] Scan all markdown files (debounced) (Future)
+    - [ ] Count usages per book/chapter (Future)
+    - [ ] Track line numbers and context (Future)
+    - [ ] Update usage stats in entity metadata (Future)
+    - [ ] "Where used" panel (Future)
 
   ***
 
-  ## Phase 6: Entity Browser Panel
-  - [ ] 6.1 Entity list view
-    - [ ] Tree/list view component
-    - [ ] Group by type (persons, places, custom)
-    - [ ] Search and filter
-    - [ ] Sort options (name, usage count, date)
-    - [ ] Entity count badges
-  - [ ] 6.2 Entity detail view
-    - [ ] Split panel or modal view
-    - [ ] Show all fields (editable)
-    - [ ] Show notes and checklists
-    - [ ] Show relations
-    - [ ] Show usage statistics and locations
-    - [ ] Quick navigation to usage locations
-  - [ ] 6.3 Entity creation/edit UI
-    - [ ] Entity form with dynamic fields
-    - [ ] Template selection
-    - [ ] Field type selector (text, number, date, etc.)
-    - [ ] Default field radio selection
-    - [ ] Slug editor with validation
-    - [ ] Delete confirmation
+  ## Phase 6: Entity Browser Panel ✅ COMPLETE
+  - [x] 6.1 Entity list view ✅
+    - [x] Tree/list view component (EntityBrowser)
+    - [x] Group by type (persons, places, custom)
+    - [x] Search and filter
+    - [x] Sort options (name, usage count, date, created, modified)
+    - [x] Entity count badges
+  - [x] 6.2 Entity detail view ✅
+    - [x] Split panel (EntityCard in DockLayout)
+    - [x] Show all fields (editable)
+    - [x] Show notes and checklists
+    - [x] Show relations
+    - [x] Show usage statistics
+    - [ ] Quick navigation to usage locations (Future)
+  - [x] 6.3 Entity creation/edit UI ✅
+    - [x] Entity form with dynamic fields (CreateEntityDialog)
+    - [x] Template selection
+    - [x] Field type selector (text, number, date, textarea)
+    - [x] Add/remove fields in EntityCard
+    - [x] Slug editor (auto-generated or custom)
+    - [x] Delete confirmation
 
   ***
 

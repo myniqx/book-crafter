@@ -1,5 +1,5 @@
 import type { editor, IRange, languages } from 'monaco-editor'
-import type { Entity } from '@renderer/types'
+import type { Entity } from '@renderer/store/slices/entitySlice'
 
 // Diagnostics provider for entity validation
 export class EntityDiagnosticsProvider {
@@ -54,7 +54,12 @@ export class EntityDiagnosticsProvider {
 
         // If field is specified, check if it exists
         if (fieldSlug) {
-          const field = entity.fields.find((f) => f.slug === fieldSlug)
+          // Find field by name (converted to slug format)
+          const field = entity.fields.find((f) => {
+            const fSlug = f.name.toLowerCase().replace(/\s+/g, '-')
+            return fSlug === fieldSlug || f.name.toLowerCase() === fieldSlug.toLowerCase()
+          })
+
           if (!field) {
             diagnostics.push({
               severity: this.monaco.MarkerSeverity.Error,
