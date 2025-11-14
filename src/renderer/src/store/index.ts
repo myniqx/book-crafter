@@ -9,9 +9,10 @@ import { createBooksSlice, BooksSlice } from './slices/booksSlice'
 import { createUISlice, UISlice } from './slices/uiSlice'
 import { createImageSlice, ImageSlice } from './slices/imageSlice'
 import { createNoteSlice, NoteSlice } from './slices/noteSlice'
+import { createAISlice, AISlice } from './slices/aiSlice'
 
 // Combined store type
-export type AppStore = WorkspaceSlice & EntitySlice & BooksSlice & UISlice & ImageSlice & NoteSlice
+export type AppStore = WorkspaceSlice & EntitySlice & BooksSlice & UISlice & ImageSlice & NoteSlice & AISlice
 
 export const useStore = create<AppStore>()(
   devtools(
@@ -23,14 +24,16 @@ export const useStore = create<AppStore>()(
         ...createUISlice(...a),
         ...createImageSlice(...a),
         ...createNoteSlice(...a),
+        ...createAISlice(...a),
       })),
       {
         name: 'book-crafter-storage',
         partialize: (state) => ({
-          // Only persist workspace config and UI preferences
+          // Only persist workspace config, UI preferences, and AI config
           workspaceConfig: state.workspaceConfig,
           theme: state.theme,
           sidebarCollapsed: state.sidebarCollapsed,
+          config: state.config, // AI config
         }),
       }
     ),
