@@ -5,6 +5,8 @@ import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
 import { EntityCard } from '@renderer/components/entities/EntityCard'
 import { BookExplorer } from '@renderer/components/books/BookExplorer'
 import { MarkdownPreview } from '@renderer/components/preview/MarkdownPreview'
+import { ImageGallery } from '@renderer/components/images/ImageGallery'
+import { ImageCard } from '@renderer/components/images/ImageCard'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -34,6 +36,24 @@ const EntityDetailPanel: React.FC = () => {
   }
 
   return <EntityCard entitySlug={selectedEntitySlug} />
+}
+
+// Image Detail Panel (shows selected image)
+const ImageDetailPanel: React.FC = () => {
+  const selectedImageSlug = useStore((state) => state.selectedImageSlug)
+
+  if (!selectedImageSlug) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">No Image Selected</h3>
+          <p className="text-sm">Select an image from the Image Gallery to view details</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <ImageCard imageSlug={selectedImageSlug} variant="detail" />
 }
 
 // Panel registry
@@ -77,9 +97,17 @@ export function registerDefaultPanels(): void {
     {
       id: 'image-gallery',
       title: 'Images',
-      content: <PlaceholderPanel title="Image Gallery" />,
+      content: <ImageGallery />,
       group: 'media',
-      minWidth: 200,
+      minWidth: 250,
+      closable: true
+    },
+    {
+      id: 'image-detail',
+      title: 'Image Detail',
+      content: <ImageDetailPanel />,
+      group: 'media',
+      minWidth: 300,
       closable: true
     },
     {

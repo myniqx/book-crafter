@@ -294,28 +294,32 @@
 
   ***
 
-  ## Phase 10: Image Management
-  - [ ] 10.1 Image data model
-    - [ ] Image schema (id, slug, path, metadata)
-    - [ ] Image JSON storage in .assets/
-    - [ ] Thumbnail generation
-    - [ ] Tag system
-  - [ ] 10.2 Image upload
-    - [ ] Drag & drop upload
-    - [ ] File picker dialog
-    - [ ] Image optimization (resize, compress)
-    - [ ] Duplicate detection
-  - [ ] 10.3 Image Gallery panel
-    - [ ] Grid view with thumbnails
-    - [ ] Lightbox viewer
-    - [ ] Filter by tags
-    - [ ] Search by slug/filename
-    - [ ] Linked entities display
-  - [ ] 10.4 Image linking
-    - [ ] Link image to entity
-    - [ ] Link image to note
-    - [ ] Set book cover image
-    - [ ] Insert image in markdown (@image-slug)
+  ## Phase 10: Image Management ✅ COMPLETE
+  - [x] 10.1 Image data model ✅
+    - [x] Image schema (slug, path, metadata, dimensions, tags, linked items)
+    - [x] Image JSON storage in .assets/images/
+    - [ ] Thumbnail generation (Future enhancement)
+    - [x] Tag system (add, remove, filter by tags)
+  - [x] 10.2 Image upload ✅
+    - [x] Drag & drop upload
+    - [x] File picker dialog
+    - [x] File validation (size, format)
+    - [ ] Image optimization (resize, compress) (Future enhancement)
+    - [ ] Duplicate detection (Future enhancement)
+  - [x] 10.3 Image Gallery panel ✅
+    - [x] Grid view with thumbnails
+    - [x] Search by slug/filename/description
+    - [x] Filter by tags
+    - [x] Sort (by name, size, date, usage)
+    - [x] Empty state with upload button
+    - [x] Image detail panel with full metadata
+  - [x] 10.4 Image linking ✅
+    - [x] Link image to entity
+    - [x] Link image to book (for covers)
+    - [x] Link image to note
+    - [x] Insert image in markdown (@image-slug)
+    - [x] @image-slug replacement in preview
+    - [x] Auto-load images on workspace load
 
   ***
 

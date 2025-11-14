@@ -1,5 +1,7 @@
 import type { Entity } from '@renderer/store/slices/entitySlice'
+import type { Image } from './image'
 import { getDefaultFieldValue } from './entity'
+import { getImageUrl } from './images'
 
 /**
  * Remove single-line comments (//) from markdown content
@@ -85,24 +87,57 @@ export function replaceEntityFieldMentions(
 }
 
 /**
+ * Replace @image-slug mentions with actual image tags
+ * Example: @image-photo-1 -> <img src="file://..." alt="photo-1" />
+ */
+export function replaceImageMentions(
+  content: string,
+  images: Record<string, Image>,
+  workspacePath: string
+): string {
+  // Match @image-slug
+  const imageRegex = /@image-([a-zA-Z0-9_-]+)/g
+
+  return content.replace(imageRegex, (match, slug) => {
+    const image = images[slug]
+    if (!image) {
+      // Keep the mention as-is if image not found
+      return match
+    }
+
+    const imageUrl = getImageUrl(workspacePath, image)
+    const alt = image.description || image.slug
+
+    // Return markdown image syntax
+    return `![${alt}](${imageUrl})`
+  })
+}
+
+/**
  * Process markdown content for preview:
  * - Remove comments
+ * - Replace @image mentions with image tags
  * - Replace @entity mentions with values
  * - Replace @entity.field mentions with field values
  */
 export function processMarkdownForPreview(
   content: string,
-  entities: Record<string, Entity>
+  entities: Record<string, Entity>,
+  images: Record<string, Image>,
+  workspacePath: string
 ): string {
   let result = content
 
   // Step 1: Remove comments
   result = removeComments(result)
 
-  // Step 2: Replace @entity.field mentions (must be before @entity to avoid conflicts)
+  // Step 2: Replace @image mentions
+  result = replaceImageMentions(result, images, workspacePath)
+
+  // Step 3: Replace @entity.field mentions (must be before @entity to avoid conflicts)
   result = replaceEntityFieldMentions(result, entities)
 
-  // Step 3: Replace @entity mentions
+  // Step 4: Replace @entity mentions
   result = replaceEntityMentions(result, entities)
 
   return result

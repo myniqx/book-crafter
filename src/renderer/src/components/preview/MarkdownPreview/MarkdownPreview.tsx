@@ -12,6 +12,8 @@ import { BookOpen, FileText, Clock } from 'lucide-react'
 
 export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ className }) => {
   const entities = useStore((state) => state.entities)
+  const images = useStore((state) => state.images)
+  const workspacePath = useStore((state) => state.workspacePath)
   const books = useStore((state) => state.books)
   const openEditorTabs = useStore((state) => state.openEditorTabs)
   const activeTabIndex = useStore((state) => state.activeTabIndex)
@@ -39,8 +41,9 @@ export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ className }) =
 
   // Process markdown content
   const processedContent = useMemo(() => {
-    return processMarkdownForPreview(debouncedContent, entities)
-  }, [debouncedContent, entities])
+    if (!workspacePath) return debouncedContent
+    return processMarkdownForPreview(debouncedContent, entities, images, workspacePath)
+  }, [debouncedContent, entities, images, workspacePath])
 
   // Calculate statistics
   const wordCount = useMemo(() => {

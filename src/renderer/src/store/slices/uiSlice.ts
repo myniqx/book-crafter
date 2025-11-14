@@ -2,7 +2,7 @@ import { StateCreator } from 'zustand'
 import { AppStore } from '..'
 
 export type Theme = 'light' | 'dark' | 'system'
-export type PanelId = 'file-explorer' | 'entity-browser' | 'entity-detail' | 'image-gallery' | 'notes' | 'ai-chat' | 'timeline' | 'markdown-preview'
+export type PanelId = 'file-explorer' | 'entity-browser' | 'entity-detail' | 'image-gallery' | 'image-detail' | 'notes' | 'ai-chat' | 'timeline' | 'markdown-preview'
 
 export interface UISlice {
   theme: Theme

@@ -9,8 +9,9 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   const workspacePath = useStore((state) => state.workspacePath)
   const loadAllEntities = useStore((state) => state.loadAllEntities)
   const loadAllBooks = useStore((state) => state.loadAllBooks)
+  const loadAllImages = useStore((state) => state.loadAllImages)
 
-  // Load entities and books when workspace is available
+  // Load entities, books, and images when workspace is available
   useEffect(() => {
     if (workspacePath) {
       // Load entities
@@ -22,8 +23,13 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
       loadAllBooks(workspacePath).catch((error) => {
         console.error('Failed to load books:', error)
       })
+
+      // Load images
+      loadAllImages(workspacePath).catch((error) => {
+        console.error('Failed to load images:', error)
+      })
     }
-  }, [workspacePath, loadAllEntities, loadAllBooks])
+  }, [workspacePath, loadAllEntities, loadAllBooks, loadAllImages])
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">
