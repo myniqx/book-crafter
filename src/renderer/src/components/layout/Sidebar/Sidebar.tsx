@@ -5,6 +5,7 @@ import {
   Image as ImageIcon,
   StickyNote,
   MessageSquare,
+  Search,
   Clock,
   Eye,
   ChevronLeft,
@@ -25,6 +26,7 @@ const sidebarItems: SidebarItem[] = [
   { id: 'entity-browser', icon: Users, label: 'Entities' },
   { id: 'image-gallery', icon: ImageIcon, label: 'Images' },
   { id: 'notes', icon: StickyNote, label: 'Notes' },
+  { id: 'search', icon: Search, label: 'Search' },
   { id: 'ai-chat', icon: MessageSquare, label: 'AI Chat' },
   { id: 'timeline', icon: Clock, label: 'Timeline' },
   { id: 'markdown-preview', icon: Eye, label: 'Preview' }

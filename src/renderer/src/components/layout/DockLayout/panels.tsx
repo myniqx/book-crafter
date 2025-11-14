@@ -8,6 +8,7 @@ import { MarkdownPreview } from '@renderer/components/preview/MarkdownPreview'
 import { ImageGallery } from '@renderer/components/images/ImageGallery'
 import { ImageCard } from '@renderer/components/images/ImageCard'
 import { NotesList } from '@renderer/components/notes/NotesList'
+import { SearchPanel } from '@renderer/components/search/SearchPanel'
 import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
@@ -124,6 +125,14 @@ export function registerDefaultPanels(): void {
       title: 'AI Chat',
       content: <PlaceholderPanel title="AI Assistant" />,
       group: 'ai',
+      minWidth: 300,
+      closable: true
+    },
+    {
+      id: 'search',
+      title: 'Search',
+      content: <SearchPanel />,
+      group: 'tools',
       minWidth: 300,
       closable: true
     },
