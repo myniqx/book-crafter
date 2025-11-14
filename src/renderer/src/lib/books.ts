@@ -137,17 +137,11 @@ export async function saveBook(workspacePath: string, book: Book): Promise<void>
   const bookPath = getBookPath(workspacePath, book.slug)
 
   // Ensure book directory exists
-  if (window.api?.fs?.mkdir) {
-    await window.api.fs.mkdir(bookPath, { recursive: true })
-  }
+  await ipcClient.fs.mkdir(bookPath, true)
 
   // Save book.json
   const bookData = JSON.stringify(book, null, 2)
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(bookJsonPath, bookData, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(bookJsonPath, bookData)
 }
 
 /**
@@ -155,13 +149,8 @@ export async function saveBook(workspacePath: string, book: Book): Promise<void>
  */
 export async function loadBook(workspacePath: string, bookSlug: string): Promise<Book> {
   const bookJsonPath = getBookJsonPath(workspacePath, bookSlug)
-
-  if (window.api?.fs?.readFile) {
-    const data = await window.api.fs.readFile(bookJsonPath, 'utf-8')
-    return JSON.parse(data) as Book
-  } else {
-    throw new Error('File system API not available')
-  }
+  const data = await ipcClient.fs.readFile(bookJsonPath)
+  return JSON.parse(data) as Book
 }
 
 /**
@@ -169,12 +158,7 @@ export async function loadBook(workspacePath: string, bookSlug: string): Promise
  */
 export async function deleteBook(workspacePath: string, bookSlug: string): Promise<void> {
   const bookPath = getBookPath(workspacePath, bookSlug)
-
-  if (window.api?.fs?.deleteDir) {
-    await window.api.fs.deleteDir(bookPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.delete(bookPath)
 }
 
 /**
@@ -190,21 +174,15 @@ export async function saveChapter(
   const contentPath = getChapterContentPath(workspacePath, bookSlug, chapter.slug)
 
   // Ensure chapter directory exists
-  if (window.api?.fs?.mkdir) {
-    await window.api.fs.mkdir(chapterPath, { recursive: true })
-  }
+  await ipcClient.fs.mkdir(chapterPath, true)
 
   // Save chapter.json (without content field to avoid duplication)
   const { content, ...chapterMeta } = chapter
   const chapterData = JSON.stringify(chapterMeta, null, 2)
 
   // Save content.md
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(chapterJsonPath, chapterData, 'utf-8')
-    await window.api.fs.writeFile(contentPath, content, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(chapterJsonPath, chapterData)
+  await ipcClient.fs.writeFile(contentPath, content)
 }
 
 /**
@@ -218,18 +196,14 @@ export async function loadChapter(
   const chapterJsonPath = getChapterJsonPath(workspacePath, bookSlug, chapterSlug)
   const contentPath = getChapterContentPath(workspacePath, bookSlug, chapterSlug)
 
-  if (window.api?.fs?.readFile) {
-    const metaData = await window.api.fs.readFile(chapterJsonPath, 'utf-8')
-    const content = await window.api.fs.readFile(contentPath, 'utf-8')
+  const metaData = await ipcClient.fs.readFile(chapterJsonPath)
+  const content = await ipcClient.fs.readFile(contentPath)
 
-    const chapterMeta = JSON.parse(metaData)
-    return {
-      ...chapterMeta,
-      content
-    } as Chapter
-  } else {
-    throw new Error('File system API not available')
-  }
+  const chapterMeta = JSON.parse(metaData)
+  return {
+    ...chapterMeta,
+    content
+  } as Chapter
 }
 
 /**
@@ -241,12 +215,7 @@ export async function deleteChapter(
   chapterSlug: string
 ): Promise<void> {
   const chapterPath = getChapterPath(workspacePath, bookSlug, chapterSlug)
-
-  if (window.api?.fs?.deleteDir) {
-    await window.api.fs.deleteDir(chapterPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.delete(chapterPath)
 }
 
 /**
@@ -255,27 +224,17 @@ export async function deleteChapter(
 export async function loadAllBooks(workspacePath: string): Promise<Record<string, Book>> {
   const booksDir = `${workspacePath}/${BOOKS_DIR}`
 
-  if (!window.api?.fs?.readDir) {
-    throw new Error('File system API not available')
-  }
-
   // Check if books directory exists
-  const dirExists = window.api.fs.dirExists
-    ? await window.api.fs.dirExists(booksDir)
-    : true
+  const dirExists = await ipcClient.fs.exists(booksDir)
 
   if (!dirExists) {
     // If directory doesn't exist, create it and return empty object
-    if (window.api.fs.mkdir) {
-      await window.api.fs.mkdir(booksDir, { recursive: true })
-    }
+    await ipcClient.fs.mkdir(booksDir, true)
     return {}
   }
 
   // Read all directories in books folder
-  const bookDirs = await window.api.fs.readDir(booksDir, {
-    recursive: false
-  })
+  const bookDirs = await ipcClient.fs.readDir(booksDir, false)
 
   const books: Record<string, Book> = {}
 
