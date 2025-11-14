@@ -6,12 +6,11 @@ import {
   type AIProviderInterface,
   type CustomPrompt,
   type AISuggestion,
-  DEFAULT_AI_CONFIG
+  DEFAULT_AI_CONFIGS
 } from '@renderer/lib/ai/types'
 import { createAIProvider } from '@renderer/lib/ai'
 import type { Entity } from './entitySlice'
 import type { Book } from './booksSlice'
-import type { Image } from './imageSlice'
 
 // UUID generator helper
 function generateUUID(): string {
@@ -29,7 +28,12 @@ function generateUUID(): string {
  * AI slice state
  */
 export interface AISlice {
-  // Configuration
+  // Configuration per provider
+  ollamaConfig: AIConfig
+  openaiConfig: AIConfig
+  anthropicConfig: AIConfig
+
+  // Current active configuration
   config: AIConfig
 
   // Message history
@@ -86,7 +90,10 @@ export const createAISlice: StateCreator<
   AISlice
 > = (set, get) => ({
   // Initial state
-  config: DEFAULT_AI_CONFIG,
+  ollamaConfig: DEFAULT_AI_CONFIGS.ollama,
+  openaiConfig: DEFAULT_AI_CONFIGS.openai,
+  anthropicConfig: DEFAULT_AI_CONFIGS.anthropic,
+  config: DEFAULT_AI_CONFIGS.ollama, // Default to Ollama
   messages: [],
   isStreaming: false,
   currentStreamMessage: '',
@@ -98,6 +105,15 @@ export const createAISlice: StateCreator<
   updateConfig: (newConfig) => {
     set((state) => {
       state.config = { ...state.config, ...newConfig }
+      // Also update the provider-specific config if provider changed
+      const provider = newConfig.provider || state.config.provider
+      if (provider === 'ollama') {
+        state.ollamaConfig = { ...state.ollamaConfig, ...state.config }
+      } else if (provider === 'openai') {
+        state.openaiConfig = { ...state.openaiConfig, ...state.config }
+      } else if (provider === 'anthropic') {
+        state.anthropicConfig = { ...state.anthropicConfig, ...state.config }
+      }
       state._provider = null // Reset provider to force recreation
     })
   },

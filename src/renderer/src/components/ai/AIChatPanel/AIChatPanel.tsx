@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useStore } from '@renderer/store'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
-import type { AIChatPanelProps } from './types'
+import type { AIChatPanelProps, MessageBubbleProps } from './types'
 import { cn } from '@renderer/lib/utils'
 import {
   Bot,
@@ -292,12 +292,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 /**
  * Message bubble component
  */
-const MessageBubble: React.FC<{
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: string
-  isStreaming?: boolean
-}> = ({ role, content, timestamp, isStreaming = false }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp, isStreaming = false }) => {
   const isUser = role === 'user'
   const [copied, setCopied] = useState(false)
 

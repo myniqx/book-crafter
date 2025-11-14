@@ -1,3 +1,5 @@
+import type { MessageRole } from '@renderer/lib/ai/types'
+
 export interface AIChatPanelProps {
   // Optional props for pre-set context
   initialPrompt?: string
@@ -11,7 +13,7 @@ export interface AIChatPanelProps {
 }
 
 export interface MessageBubbleProps {
-  role: 'user' | 'assistant'
+  role: MessageRole
   content: string
   timestamp: string
   isStreaming?: boolean

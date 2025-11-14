@@ -45,6 +45,7 @@ export interface BooksSlice {
   // Chapter operations
   addChapter: (bookSlug: string, chapter: Chapter) => void
   updateChapter: (bookSlug: string, chapterSlug: string, updates: Partial<Chapter>) => void
+  updateChapterContent: (bookSlug: string, chapterSlug: string, content: string) => void
   deleteChapter: (bookSlug: string, chapterSlug: string) => void
   reorderChapters: (bookSlug: string, newOrder: string[]) => void
   setActiveChapter: (chapterSlug: string | null) => void
@@ -121,6 +122,20 @@ export const createBooksSlice: StateCreator<
         const chapterIndex = state.books[bookSlug].chapters.findIndex((c) => c.slug === chapterSlug)
         if (chapterIndex !== -1) {
           Object.assign(state.books[bookSlug].chapters[chapterIndex], updates)
+          state.books[bookSlug].chapters[chapterIndex].modified = new Date().toISOString()
+          state.books[bookSlug].modified = new Date().toISOString()
+        }
+      }
+    }),
+
+  updateChapterContent: (bookSlug, chapterSlug, content) =>
+    set((state) => {
+      if (state.books[bookSlug]) {
+        const chapterIndex = state.books[bookSlug].chapters.findIndex((c) => c.slug === chapterSlug)
+        if (chapterIndex !== -1) {
+          state.books[bookSlug].chapters[chapterIndex].content = content
+          state.books[bookSlug].chapters[chapterIndex].wordCount = content.split(/\s+/).filter(w => w.length > 0).length
+          state.books[bookSlug].chapters[chapterIndex].characterCount = content.length
           state.books[bookSlug].chapters[chapterIndex].modified = new Date().toISOString()
           state.books[bookSlug].modified = new Date().toISOString()
         }

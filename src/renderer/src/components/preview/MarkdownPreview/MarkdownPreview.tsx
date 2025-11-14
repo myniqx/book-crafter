@@ -55,7 +55,7 @@ export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ className }) =
   }, [wordCount])
 
   // Empty state
-  if (!activeTabData) {
+  if (!activeTabData || !activeTabData.chapter) {
     return (
       <div className={cn('flex h-full items-center justify-center bg-slate-950', className)}>
         <div className="flex flex-col items-center gap-4 text-slate-400">

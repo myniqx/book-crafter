@@ -35,7 +35,10 @@ export const useStore = create<AppStore>()(
           workspaceConfig: state.workspaceConfig,
           theme: state.theme,
           sidebarCollapsed: state.sidebarCollapsed,
-          config: state.config, // AI config
+          config: state.config, // AI config (current active)
+          ollamaConfig: state.ollamaConfig, // Ollama specific config
+          openaiConfig: state.openaiConfig, // OpenAI specific config
+          anthropicConfig: state.anthropicConfig, // Anthropic specific config
           customPrompts: state.customPrompts, // Custom AI prompts
           suggestions: state.suggestions, // AI suggestions history
           generalSettings: state.generalSettings, // General settings

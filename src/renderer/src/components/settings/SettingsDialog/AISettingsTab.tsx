@@ -19,6 +19,9 @@ import type { AIProvider } from '@renderer/lib/ai/types'
 export const AISettingsTab: React.FC = () => {
   const config = useStore((state) => state.config)
   const updateConfig = useStore((state) => state.updateConfig)
+  const ollamaConfig = useStore((state) => state.ollamaConfig)
+  const openaiConfig = useStore((state) => state.openaiConfig)
+  const anthropicConfig = useStore((state) => state.anthropicConfig)
   const aiPreferences = useStore((state) => state.aiPreferences)
   const updateAIPreferences = useStore((state) => state.updateAIPreferences)
 
@@ -32,7 +35,7 @@ export const AISettingsTab: React.FC = () => {
     try {
       // Simple test based on provider
       if (config.provider === 'ollama') {
-        const response = await fetch(`${config.ollamaConfig.baseUrl}/api/tags`)
+        const response = await fetch(`${ollamaConfig.endpoint || 'http://localhost:11434'}/api/tags`)
         if (response.ok) {
           setTestResult('success')
         } else {
@@ -86,14 +89,14 @@ export const AISettingsTab: React.FC = () => {
             <h3 className="text-sm font-medium mb-4">Ollama Configuration</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="ollama-url">Base URL</Label>
+                <Label htmlFor="ollama-url">Endpoint URL</Label>
                 <Input
                   id="ollama-url"
                   type="text"
-                  value={config.ollamaConfig.baseUrl}
+                  value={ollamaConfig.endpoint || ''}
                   onChange={(e) =>
                     updateConfig({
-                      ollamaConfig: { ...config.ollamaConfig, baseUrl: e.target.value }
+                      endpoint: e.target.value
                     })
                   }
                   placeholder="http://localhost:11434"
@@ -105,10 +108,10 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="ollama-model"
                   type="text"
-                  value={config.ollamaConfig.model}
+                  value={ollamaConfig.model}
                   onChange={(e) =>
                     updateConfig({
-                      ollamaConfig: { ...config.ollamaConfig, model: e.target.value }
+                      model: e.target.value
                     })
                   }
                   placeholder="llama3.2:latest"
@@ -118,15 +121,15 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="keep-alive">
                   Keep Alive:{' '}
-                  <span className="text-muted-foreground">{config.ollamaConfig.keepAlive}</span>
+                  <span className="text-muted-foreground">{ollamaConfig.keepAlive}</span>
                 </Label>
                 <Input
                   id="keep-alive"
                   type="text"
-                  value={config.ollamaConfig.keepAlive}
+                  value={ollamaConfig.keepAlive}
                   onChange={(e) =>
                     updateConfig({
-                      ollamaConfig: { ...config.ollamaConfig, keepAlive: e.target.value }
+                      keepAlive: e.target.value
                     })
                   }
                   placeholder="5m"
@@ -152,10 +155,10 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="openai-key"
                   type="password"
-                  value={config.openaiConfig.apiKey}
+                  value={openaiConfig.apiKey}
                   onChange={(e) =>
                     updateConfig({
-                      openaiConfig: { ...config.openaiConfig, apiKey: e.target.value }
+                      apiKey: e.target.value
                     })
                   }
                   placeholder="sk-..."
@@ -165,10 +168,10 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="openai-model">Model</Label>
                 <Select
-                  value={config.openaiConfig.model}
+                  value={openaiConfig.model}
                   onValueChange={(value) =>
                     updateConfig({
-                      openaiConfig: { ...config.openaiConfig, model: value }
+                      model: value
                     })
                   }
                 >
@@ -199,10 +202,10 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="anthropic-key"
                   type="password"
-                  value={config.anthropicConfig.apiKey}
+                  value={anthropicConfig.apiKey}
                   onChange={(e) =>
                     updateConfig({
-                      anthropicConfig: { ...config.anthropicConfig, apiKey: e.target.value }
+                      apiKey: e.target.value
                     })
                   }
                   placeholder="sk-ant-..."
@@ -212,10 +215,10 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="anthropic-model">Model</Label>
                 <Select
-                  value={config.anthropicConfig.model}
+                  value={anthropicConfig.model}
                   onValueChange={(value) =>
                     updateConfig({
-                      anthropicConfig: { ...config.anthropicConfig, model: value }
+                      model: value
                     })
                   }
                 >

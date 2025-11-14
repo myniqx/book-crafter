@@ -1,5 +1,6 @@
 import type { Book, Chapter } from '@renderer/store/slices/booksSlice'
 import { slugify } from './slugify'
+import ipcClient from './ipc'
 
 /**
  * Book & Chapter File Operations

@@ -37,7 +37,7 @@ export interface NoteSlice {
   // Checklist operations
   addChecklistItem: (slug: string, content: string) => void
   updateChecklistItem: (slug: string, itemId: string, content: string) => void
-  toggleChecklistItem: (
+  toggleNoteChecklistItem: (
     slug: string,
     itemId: string,
     location?: { bookSlug: string; chapterSlug: string; line?: number }
@@ -213,7 +213,7 @@ export const createNoteSlice: StateCreator<
       }
     }),
 
-  toggleChecklistItem: (slug, itemId, location) =>
+  toggleNoteChecklistItem: (slug, itemId, location) =>
     set((state) => {
       const note = state.notes[slug]
       if (note) {

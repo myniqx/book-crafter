@@ -1,4 +1,4 @@
-import { ipcClient } from '@renderer/lib/ipc'
+import ipcClient from '@renderer/lib/ipc'
 import type { DirectoryStructure } from '@renderer/types'
 
 // ============================================================================

@@ -37,7 +37,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     openTab(bookSlug, chapterSlug)
   }
 
-  const handleDeleteBook = async (bookSlug: string, bookTitle: string): void => {
+  const handleDeleteBook = async (bookSlug: string, bookTitle: string): Promise<void> => {
     if (!workspacePath) return
 
     const confirmed = confirm(
@@ -57,7 +57,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     bookSlug: string,
     chapterSlug: string,
     chapterTitle: string
-  ): void => {
+  ): Promise<void> => {
     if (!workspacePath) return
 
     const confirmed = confirm(`Are you sure you want to delete "${chapterTitle}"?\n\nThis cannot be undone.`)
