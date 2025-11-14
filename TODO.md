@@ -16,234 +16,106 @@
 - Search & Replace
 - **AI Integration (Full)**
 
----
-
-## 🚀 CURRENT PHASE: Settings & UX
-
-## Phase 15: Settings & Preferences
-
-### 15.1 Unified Settings Dialog ✅
-- [ ] Create SettingsDialog component with tabs
-- [ ] Integrate with existing AI Settings Dialog
-- [ ] Settings persistence in store
-- [ ] Import/Export settings functionality
-
-### 15.1.1 General Settings Tab
-- [ ] Author information (name, email)
-- [ ] Language selection (en/tr)
-- [ ] Date/time format preferences
-- [ ] Confirmation dialogs (delete, close)
-- [ ] Privacy settings
-
-**Data Model:**
-```typescript
-interface GeneralSettings {
-  authorName: string
-  authorEmail?: string
-  defaultLanguage: 'en' | 'tr'
-  dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD'
-  timeFormat: '12h' | '24h'
-  confirmOnDelete: boolean
-  confirmOnClose: boolean
-}
-```
-
-### 15.1.2 Editor Settings Tab
-- [ ] Font family selector (Monaco, Consolas, SF Mono, etc.)
-- [ ] Font size slider (10-24)
-- [ ] Line height slider (1.0-2.0)
-- [ ] Cursor style/blinking preferences
-- [ ] Whitespace rendering options
-- [ ] Bracket pair colorization
-- [ ] Auto-closing brackets
-- [ ] Format on save/paste
-- [ ] Live preview pane
-
-**Extended EditorSettings:**
-```typescript
-interface EditorSettings {
-  // Existing
-  fontSize: number
-  lineHeight: number
-  wordWrap: boolean
-  minimap: boolean
-  lineNumbers: boolean
-  tabSize: number
-
-  // New
-  fontFamily: string
-  cursorStyle: 'line' | 'block' | 'underline'
-  cursorBlinking: 'blink' | 'smooth' | 'phase' | 'expand' | 'solid'
-  renderWhitespace: 'none' | 'boundary' | 'selection' | 'all'
-  bracketPairColorization: boolean
-  autoClosingBrackets: 'always' | 'languageDefined' | 'beforeWhitespace' | 'never'
-  formatOnSave: boolean
-  formatOnPaste: boolean
-  trimAutoWhitespace: boolean
-}
-```
-
-### 15.1.3 AI Settings Tab
-- [x] Provider selection (Ollama, OpenAI, Anthropic) - Already done
-- [x] Model configuration - Already done
-- [x] API keys management - Already done
-- [x] Temperature, max tokens - Already done
-- [x] Keep alive (Ollama) - Already done
-- [x] Connection test - Already done
-- [ ] Move existing AI Settings into unified dialog
-- [ ] Add AI preferences (auto-suggest, delays, history limits)
-
-**AI Preferences:**
-```typescript
-interface AIPreferences {
-  defaultProvider: AIProvider
-  autoSuggest: boolean
-  suggestionsDelay: number
-  maxSuggestionsHistory: number
-  showContextInPrompt: boolean
-  enabledActions: string[]
-}
-```
-
-### 15.1.4 Workspace Settings Tab
-- [ ] Auto-save toggle and delay slider
-- [ ] Backup settings (enabled, interval, max count, path)
-- [ ] File watcher preferences (external changes)
-- [ ] Performance tuning (indexing, max file size)
-
-**Workspace Preferences:**
-```typescript
-interface WorkspacePreferences {
-  autoSave: boolean
-  autoSaveDelay: number
-  autoBackup: boolean
-  backupInterval: number
-  maxBackups: number
-  backupPath?: string
-  watchExternalChanges: boolean
-  reloadOnExternalChange: 'auto' | 'ask' | 'never'
-  indexingEnabled: boolean
-  maxFileSize: number
-}
-```
-
-### 15.1.5 Keyboard Shortcuts Tab
-- [ ] Searchable shortcut list
-- [ ] Category filter (editor, navigation, ai, general)
-- [ ] Click to edit shortcuts (record mode)
-- [ ] Conflict detection
-- [ ] Reset to defaults button
-- [ ] Export/Import keybindings
-
-**Default Shortcuts:**
-```typescript
-const shortcuts = [
-  // Editor
-  { id: 'save', action: 'Save', binding: 'Ctrl+S', category: 'editor' },
-  { id: 'saveAll', action: 'Save All', binding: 'Ctrl+Shift+S', category: 'editor' },
-
-  // Search
-  { id: 'find', action: 'Find in File', binding: 'Ctrl+F', category: 'editor' },
-  { id: 'globalFind', action: 'Global Search', binding: 'Ctrl+Shift+F', category: 'navigation' },
-
-  // Navigation
-  { id: 'toggleSidebar', action: 'Toggle Sidebar', binding: 'Ctrl+B', category: 'navigation' },
-  { id: 'commandPalette', action: 'Command Palette', binding: 'Ctrl+Shift+P', category: 'general' },
-
-  // Entity
-  { id: 'createEntity', action: 'Create Entity', binding: 'Ctrl+Shift+E', category: 'general' },
-
-  // AI
-  { id: 'aiChat', action: 'Open AI Chat', binding: 'Ctrl+Shift+A', category: 'ai' },
-]
-```
-
-### 15.1.6 Advanced Settings Tab
-- [ ] Developer tools toggle
-- [ ] Verbose logging
-- [ ] Show hidden files
-- [ ] GPU acceleration
-- [ ] Memory/cache limits
-- [ ] Experimental features toggle
+**Phase 15.1:** Unified Settings System ✅
+- SettingsDialog with 6 tabs (General, Editor, AI, Workspace, Keyboard, Advanced)
+- Settings persistence in Zustand + localStorage
+- Import/Export settings functionality
+- Keyboard shortcuts customization
+- Settings button in Titlebar (Ctrl+,)
 
 ---
 
-## Phase 16: Polish & UX
+## 🚀 CURRENT PHASE: Polish & UX (Phase 16)
 
-### 16.1 Error Handling & Notifications
-- [ ] Install shadcn toast/sonner component
-- [ ] Create ToastSlice in store
-- [ ] Integrate toast notifications system-wide
-- [ ] User-friendly error messages mapping
-- [ ] Success/error/info/warning toast variants
-- [ ] Toast with actions (Retry, Undo, etc.)
+### 16.1 Toast Notifications 🔄
+- [ ] Install shadcn sonner component
+- [ ] Create toast notification system
+- [ ] Integrate toasts for file operations
+- [ ] Integrate toasts for AI operations
+- [ ] Integrate toasts for CRUD operations
+- [ ] Success/error/info/warning variants
+- [ ] Toast with action buttons (Undo, Retry)
 
 **Integration Points:**
 - File operations (save, delete, create)
-- AI operations (request success/failure)
-- Entity/Book/Note CRUD operations
-- Image upload (progress + success/error)
+- AI operations (success/failure, streaming)
+- Entity/Book/Note/Image CRUD
 - Settings changes
+- Error handling
 
 ### 16.2 Loading States
-- [ ] Skeleton loaders for lists (entities, books, notes, images)
-- [ ] Progress bars (image upload, AI streaming)
+- [ ] Skeleton loaders for entity lists
+- [ ] Skeleton loaders for book/chapter lists
+- [ ] Skeleton loaders for note lists
+- [ ] Skeleton loaders for image gallery
 - [ ] Loading spinners for async operations
-- [ ] Optimistic UI updates (create entity, note, etc.)
-- [ ] Suspense boundaries for lazy-loaded components
+- [ ] Progress indicators for long operations
+- [ ] Optimistic UI updates
 
 ### 16.3 Keyboard Shortcuts Implementation
-- [ ] Global keyboard event handler hook
-- [ ] Ctrl+S - Save current file
-- [ ] Ctrl+Shift+S - Save all
-- [ ] Ctrl+F - Find in file
-- [ ] Ctrl+Shift+F - Global search
-- [ ] Ctrl+B - Toggle sidebar
-- [ ] Ctrl+Shift+P - Command palette
-- [ ] Ctrl+Shift+E - Create entity
-- [ ] Ctrl+Shift+N - Create note
-- [ ] Ctrl+Shift+A - Open AI chat
-- [ ] Alt+E - AI Expand selection
-- [ ] Alt+G - AI Grammar check
+- [ ] Create useKeyboard hook for global shortcuts
+- [ ] Implement Ctrl+S - Save current file
+- [ ] Implement Ctrl+Shift+S - Save all
+- [ ] Implement Ctrl+F - Find in file
+- [ ] Implement Ctrl+Shift+F - Global search
+- [ ] Implement Ctrl+B - Toggle sidebar
+- [ ] Implement Ctrl+, - Open settings
+- [ ] Implement Ctrl+Shift+P - Command palette
+- [ ] Implement Ctrl+Shift+E - Create entity
+- [ ] Implement Ctrl+Shift+N - Create note
+- [ ] Implement Ctrl+Shift+A - Open AI chat
+- [ ] Implement Alt+E - AI Expand selection
+- [ ] Implement Alt+G - AI Grammar check
+- [ ] Connect keyboard shortcuts to settings
 
 ### 16.4 Command Palette
 - [ ] Create CommandPalette component
-- [ ] Fuzzy search for commands
-- [ ] Keyboard navigation (↑↓ arrows, Enter)
-- [ ] Recent commands
-- [ ] Command categories
-- [ ] Keyboard shortcut display in palette
+- [ ] Implement fuzzy search for commands
+- [ ] Keyboard navigation (↑↓ arrows, Enter, Esc)
+- [ ] Recent commands history
+- [ ] Command categories (Create, AI, Search, General)
+- [ ] Display keyboard shortcuts in palette
+- [ ] Quick file switcher
+- [ ] Quick entity switcher
 
-**Commands:**
+**Command Structure:**
 ```typescript
-const commands = [
-  { id: 'new-book', label: 'New Book', category: 'Create' },
-  { id: 'new-chapter', label: 'New Chapter', category: 'Create' },
-  { id: 'new-entity', label: 'New Entity', category: 'Create' },
-  { id: 'new-note', label: 'New Note', category: 'Create' },
-  { id: 'ai-chat', label: 'Open AI Chat', category: 'AI' },
-  { id: 'global-search', label: 'Global Search', category: 'Search' },
-  { id: 'settings', label: 'Open Settings', category: 'General' },
-  // ... more
-]
+interface Command {
+  id: string
+  label: string
+  category: 'Create' | 'AI' | 'Search' | 'Navigation' | 'General'
+  shortcut?: string
+  action: () => void
+  keywords?: string[]
+}
 ```
 
-### 16.5 Accessibility
-- [ ] Add ARIA labels to all interactive elements
-- [ ] Keyboard navigation (Tab, Shift+Tab)
-- [ ] Focus management in modals
-- [ ] Focus trap in dialogs
-- [ ] Escape key to close modals
+**Default Commands:**
+- New Book, New Chapter, New Entity, New Note
+- Open AI Chat, AI Expand, AI Grammar Check
+- Global Search, Find in File
+- Open Settings, Toggle Sidebar
+- Save, Save All
+
+### 16.5 Accessibility Improvements
+- [ ] Add ARIA labels to buttons and interactive elements
+- [ ] Implement keyboard navigation (Tab, Shift+Tab)
+- [ ] Focus management in dialogs
+- [ ] Focus trap in modals
+- [ ] Escape key to close modals/dialogs
 - [ ] Enter to submit forms
-- [ ] Focus ring visibility
-- [ ] Skip links for main content
+- [ ] Visible focus indicators
+- [ ] Screen reader announcements for important actions
 
 ### 16.6 Performance Optimization
-- [ ] Virtual scrolling for large lists (entities, notes, suggestions)
-- [ ] Code splitting (lazy load Monaco, ImageGallery)
-- [ ] Memoization for expensive computations
-- [ ] Debounce search/filter operations
-- [ ] Bundle size analysis and optimization
+- [ ] Implement virtual scrolling for entity list
+- [ ] Implement virtual scrolling for note list
+- [ ] Code splitting - lazy load Monaco editor
+- [ ] Code splitting - lazy load image gallery
+- [ ] Memoize expensive computations
+- [ ] Debounce search inputs
+- [ ] Debounce filter operations
+- [ ] Bundle size analysis
 
 ---
 
@@ -270,17 +142,21 @@ const commands = [
 
 ## 🎯 Current Priority
 
-**Phase 15: Settings & Preferences** (Full implementation)
-1. Unified Settings Dialog with tabs
-2. General, Editor, AI, Workspace, Keyboard, Advanced settings
-3. Persistence and import/export
+**Phase 16: Polish & UX** (Current Focus)
+1. **16.1** - Toast notifications (shadcn sonner)
+2. **16.3** - Keyboard shortcuts implementation
+3. **16.4** - Command palette
+4. **16.2** - Loading states & skeleton loaders
+5. **16.5** - Accessibility improvements
+6. **16.6** - Performance optimization
 
-**Phase 16: Polish & UX** (After Phase 15)
-1. Toast notifications (shadcn sonner)
-2. Keyboard shortcuts implementation
-3. Command palette
-4. Loading states
-5. Accessibility improvements
+**Priority Order:**
+1. Toast notifications (essential for UX feedback)
+2. Keyboard shortcuts (productivity boost)
+3. Command palette (quick access to features)
+4. Loading states (visual feedback)
+5. Accessibility (inclusive design)
+6. Performance (optional optimization)
 
 ---
 
@@ -288,5 +164,7 @@ const commands = [
 
 - Testing (Phase 17) is optional for MVP
 - Timeline & History (Phase 14) is optional
-- Focus on Settings and UX polish for production-ready app
-- shadcn toast/sonner will be used for notifications
+- Focus on Phase 16 for production-ready UX
+- Using shadcn/ui Sonner for toast notifications
+- All keyboard shortcuts customizable via Settings
+

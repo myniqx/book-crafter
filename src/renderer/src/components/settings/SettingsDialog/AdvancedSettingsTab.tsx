@@ -7,6 +7,7 @@ import { Separator } from '@renderer/components/ui/separator'
 import { Button } from '@renderer/components/ui/button'
 import { AlertCircle, Trash2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@renderer/components/ui/alert'
+import { settingsToast } from '@renderer/lib/toast'
 
 export const AdvancedSettingsTab: React.FC = () => {
   const advancedSettings = useStore((state) => state.advancedSettings)
@@ -29,6 +30,7 @@ export const AdvancedSettingsTab: React.FC = () => {
       )
     ) {
       resetAllSettings()
+      settingsToast.reset()
     }
   }
 
