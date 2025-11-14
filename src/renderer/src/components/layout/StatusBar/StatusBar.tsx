@@ -1,11 +1,18 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useStore } from '@renderer/store'
 
 export const StatusBar: React.FC = () => {
   const workspaceConfig = useStore((state) => state.workspaceConfig)
-  const activeTab = useStore((state) => state.tabs.find((t) => t.id === state.activeTabId))
+  const tabs = useStore((state) => state.tabs)
+  const activeTabId = useStore((state) => state.activeTabId)
+
+  // Find active tab (memoized to prevent unnecessary recalculations)
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId),
+    [tabs, activeTabId]
+  )
 
   // Mock data - will be dynamic later
   const wordCount = activeTab?.content?.split(/\s+/).filter((w) => w.length > 0).length || 0
