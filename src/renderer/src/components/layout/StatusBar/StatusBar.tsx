@@ -5,17 +5,31 @@ import { useStore } from '@renderer/store'
 
 export const StatusBar: React.FC = () => {
   const workspaceConfig = useStore((state) => state.workspaceConfig)
-  const tabs = useStore((state) => state.tabs)
-  const activeTabId = useStore((state) => state.activeTabId)
+  const openEditorTabs = useStore((state) => state.openEditorTabs)
+  const activeTabIndex = useStore((state) => state.activeTabIndex)
+  const books = useStore((state) => state.books)
 
-  // Find active tab (memoized to prevent unnecessary recalculations)
-  const activeTab = useMemo(
-    () => tabs.find((t) => t.id === activeTabId),
-    [tabs, activeTabId]
-  )
+  // Find active tab and chapter (memoized to prevent unnecessary recalculations)
+  const activeTabData = useMemo(() => {
+    if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
+      const tab = openEditorTabs[activeTabIndex]
+      const book = books[tab.bookSlug]
+      if (book) {
+        const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
+        return { book, chapter, tab }
+      }
+    }
+    return null
+  }, [openEditorTabs, activeTabIndex, books])
 
-  // Mock data - will be dynamic later
-  const wordCount = activeTab?.content?.split(/\s+/).filter((w) => w.length > 0).length || 0
+  // Calculate word count from chapter content
+  const wordCount = useMemo(() => {
+    if (activeTabData?.chapter?.content) {
+      return activeTabData.chapter.content.split(/\s+/).filter((w) => w.length > 0).length
+    }
+    return 0
+  }, [activeTabData?.chapter?.content])
+
   const isSaving = false
   const lastSaved = workspaceConfig?.modified ? new Date(workspaceConfig.modified) : null
 
@@ -62,11 +76,11 @@ export const StatusBar: React.FC = () => {
 
       {/* Right: Document stats */}
       <div className="flex items-center gap-4">
-        {activeTab && (
+        {activeTabData && (
           <>
             <span>{wordCount} words</span>
             <span className="text-[hsl(var(--border))]">|</span>
-            <span>{activeTab.title}</span>
+            <span>{activeTabData.chapter?.title || 'Untitled'}</span>
           </>
         )}
         {workspaceConfig && (
