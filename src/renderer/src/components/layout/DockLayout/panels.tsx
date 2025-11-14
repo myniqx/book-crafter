@@ -1,6 +1,9 @@
 import React from 'react'
 import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig } from './types'
+import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
+import { EntityCard } from '@renderer/components/entities/EntityCard'
+import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
 // These will be replaced with actual components later
@@ -12,6 +15,24 @@ const PlaceholderPanel: React.FC<{ title: string }> = ({ title }) => (
     </div>
   </div>
 )
+
+// Entity Detail Panel (shows selected entity)
+const EntityDetailPanel: React.FC = () => {
+  const selectedEntitySlug = useStore((state) => state.selectedEntitySlug)
+
+  if (!selectedEntitySlug) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">No Entity Selected</h3>
+          <p className="text-sm">Select an entity from the Entity Browser to view details</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <EntityCard entitySlug={selectedEntitySlug} />
+}
 
 // Panel registry
 const panelRegistry: Map<string, PanelConfig> = new Map()
@@ -30,9 +51,17 @@ export function registerDefaultPanels(): void {
     {
       id: 'entity-browser',
       title: 'Entities',
-      content: <PlaceholderPanel title="Entity Browser" />,
+      content: <EntityBrowser />,
       group: 'explorer',
-      minWidth: 200,
+      minWidth: 250,
+      closable: true
+    },
+    {
+      id: 'entity-detail',
+      title: 'Entity Detail',
+      content: <EntityDetailPanel />,
+      group: 'detail',
+      minWidth: 300,
       closable: true
     },
     {
