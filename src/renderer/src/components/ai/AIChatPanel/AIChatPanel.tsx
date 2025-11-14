@@ -7,11 +7,12 @@ import {
   Bot,
   Send,
   Trash2,
-  Settings,
   Sparkles,
   FileText,
   Users,
-  ChevronDown
+  ChevronDown,
+  Copy,
+  Check
 } from 'lucide-react'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
@@ -26,6 +27,7 @@ import {
   DropdownMenuLabel
 } from '@renderer/components/ui/dropdown-menu'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
+import { AISettingsDialog } from '@renderer/components/ai/AISettingsDialog'
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -124,9 +126,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
             >
               <Trash2 className="h-3 w-3" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-7">
-              <Settings className="h-3 w-3" />
-            </Button>
+            <AISettingsDialog />
           </div>
         </div>
 
@@ -283,6 +283,17 @@ const MessageBubble: React.FC<{
   isStreaming?: boolean
 }> = ({ role, content, timestamp, isStreaming = false }) => {
   const isUser = role === 'user'
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
+  }
 
   return (
     <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
@@ -302,26 +313,47 @@ const MessageBubble: React.FC<{
 
       {/* Message */}
       <div className={cn('flex-1 space-y-1', isUser && 'flex flex-col items-end')}>
-        <Card
-          className={cn(
-            'inline-block max-w-[85%] p-3',
-            isUser
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-slate-800 text-slate-200 border-slate-700'
-          )}
-        >
-          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
-          {isStreaming && (
-            <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
-          )}
-        </Card>
+        <div className="relative group">
+          <Card
+            className={cn(
+              'inline-block max-w-[85%] p-3',
+              isUser
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-slate-800 text-slate-200 border-slate-700'
+            )}
+          >
+            <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+            {isStreaming && (
+              <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
+            )}
+          </Card>
 
-        <span className="text-xs text-slate-600">
-          {new Date(timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </span>
+          {/* Copy button - only for assistant messages */}
+          {!isUser && !isStreaming && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCopy}
+              className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-700 hover:bg-slate-600"
+            >
+              {copied ? (
+                <Check className="h-3 w-3 text-green-400" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-600">
+            {new Date(timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </span>
+          {copied && <span className="text-xs text-green-400">Copied!</span>}
+        </div>
       </div>
     </div>
   )

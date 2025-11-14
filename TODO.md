@@ -417,12 +417,14 @@
     - [x] Preset prompts dropdown (8 quick actions)
     - [x] Context toggle and clear conversation
     - [x] Integrated into DockLayout
-  - [ ] 13.5 AI features (Future enhancements)
-    - [ ] Monaco context menu integration (right-click actions)
-    - [ ] Diff viewer with apply mechanism (Accept/Reject buttons)
-    - [ ] Replace text in editor from chat
-    - [ ] AI Settings Dialog (provider switcher, model selector)
-    - [ ] Custom prompts management
+  - [x] 13.5 AI features (Advanced) ✅
+    - [x] Monaco context menu integration (5 AI actions: Expand Scene, Check Grammar, Make Dramatic, Summarize, Suggest Improvements)
+    - [x] Copy mechanism with hover button (assistant messages only)
+    - [x] AI Settings Dialog (provider switcher, model selector, API keys, temperature, keep_alive)
+    - [x] Connection test and model listing (Ollama)
+    - [ ] Full diff viewer with side-by-side comparison (Future enhancement)
+    - [ ] Direct text replacement in editor from chat (Future enhancement)
+    - [ ] Custom prompts management (Future enhancement)
   - [x] 13.6 AI context awareness ✅
     - [x] Send current chapter content as context
     - [x] Send selection if any
