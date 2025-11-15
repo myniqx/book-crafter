@@ -32,12 +32,7 @@ export async function saveImageMetadata(
 ): Promise<void> {
   const metadataPath = getImageMetadataPath(workspacePath, image.slug)
   const metadata = JSON.stringify(image, null, 2)
-
-  if (window.api?.fs?.writeFile) {
-    await ipcClient.fs.writeFile(metadataPath, metadata)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(metadataPath, metadata)
 }
 
 /**
@@ -50,16 +45,13 @@ export async function loadImageMetadata(
   const metadataPath = getImageMetadataPath(workspacePath, slug)
 
   try {
-    if (window.api?.fs?.readFile) {
-      const content = await ipcClient.fs.readFile(metadataPath)
-      const image = JSON.parse(content) as Image
-      return image
-    }
+    const content = await ipcClient.fs.readFile(metadataPath)
+    const image = JSON.parse(content) as Image
+    return image
   } catch (error) {
     console.error(`Failed to load image metadata for ${slug}:`, error)
+    return null
   }
-
-  return null
 }
 
 /**
@@ -70,10 +62,6 @@ export async function loadAllImages(workspacePath: string): Promise<Record<strin
   const images: Record<string, Image> = {}
 
   try {
-    if (!window.api?.fs?.readDir) {
-      throw new Error('File system API not available')
-    }
-
     // Read all files in .assets/images/
     const files = await ipcClient.fs.readDir(imagesDir, false)
 
