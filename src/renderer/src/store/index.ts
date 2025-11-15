@@ -18,15 +18,15 @@ export type AppStore = WorkspaceSlice & EntitySlice & BooksSlice & UISlice & Ima
 export const useStore = create<AppStore>()(
   devtools(
     persist(
-      immer((...a) => ({
-        ...createWorkspaceSlice(...a),
-        ...createEntitySlice(...a),
-        ...createBooksSlice(...a),
-        ...createUISlice(...a),
-        ...createImageSlice(...a),
-        ...createNoteSlice(...a),
-        ...createAISlice(...a),
-        ...createSettingsSlice(...a),
+      immer((set, get, api) => ({
+        ...createWorkspaceSlice(set, get, api),
+        ...createEntitySlice(set, get, api),
+        ...createBooksSlice(set, get, api),
+        ...createUISlice(set, get, api),
+        ...createImageSlice(set, get, api),
+        ...createNoteSlice(set, get, api),
+        ...createAISlice(set as any, get, api as any),
+        ...createSettingsSlice(set as any, get, api as any),
       })),
       {
         name: 'book-crafter-storage',

@@ -1,4 +1,4 @@
-import type { languages, editor, IRange } from 'monaco-editor'
+import type { languages, editor, IRange, IPosition } from 'monaco-editor'
 import type { Entity } from '@renderer/store/slices/entitySlice'
 import { getDefaultFieldValue } from '@renderer/lib/entity'
 
@@ -22,7 +22,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
 
   provideCompletionItems(
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.ProviderResult<languages.CompletionList> {
     const textUntilPosition = model.getValueInRange({
       startLineNumber: position.lineNumber,
@@ -52,7 +52,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
   private provideEntitySuggestions(
     partial: string,
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.CompletionList {
     const word = model.getWordUntilPosition(position)
     const range: IRange = {
@@ -91,7 +91,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
     entitySlug: string,
     partialField: string,
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.CompletionList {
     const entity = this.entities.get(entitySlug)
     if (!entity) {

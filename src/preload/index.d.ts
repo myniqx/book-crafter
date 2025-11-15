@@ -30,6 +30,7 @@ interface FSAPI {
 
 interface AppAPI {
   http: HTTPAPI
+  fetch: HTTPAPI  // Alias for http for compatibility
   fs: FSAPI
 }
 

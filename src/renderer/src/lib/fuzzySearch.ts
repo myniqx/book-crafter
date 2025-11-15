@@ -71,12 +71,16 @@ export const fuzzySearch = <T>(
 
   const scoredItems = items
     .map((item) => {
-      const searchTexts = Array.isArray(getSearchableText(item))
-        ? getSearchableText(item)
-        : [getSearchableText(item)]
+      const rawTexts = getSearchableText(item)
+      const searchTexts = Array.isArray(rawTexts) ? rawTexts : [rawTexts]
+
+      // Flatten and convert to strings
+      const textStrings = searchTexts.flat().map(text =>
+        typeof text === 'string' ? text : String(text)
+      )
 
       // Get best score from all searchable texts
-      const score = Math.max(...searchTexts.map((text) => fuzzyScore(text as string, query)))
+      const score = Math.max(...textStrings.map((text) => fuzzyScore(text, query)))
 
       return { item, score }
     })

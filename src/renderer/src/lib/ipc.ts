@@ -23,7 +23,7 @@ function getAPI(): IPCBridge {
   if (!window.api) {
     throw new IPCClientError('IPC bridge not available', 'IPC_NOT_AVAILABLE')
   }
-  return window.api
+  return window.api as unknown as IPCBridge
 }
 
 // Convert IPC errors to user-friendly messages

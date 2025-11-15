@@ -247,6 +247,7 @@ export function replaceInText(
   options: Pick<SearchOptions, 'caseSensitive' | 'useRegex'>
 ): string {
   const regex = createSearchRegex(searchQuery, {
+    query: searchQuery,
     ...options,
     searchInChapters: true,
     searchInEntities: true,

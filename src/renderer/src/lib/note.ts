@@ -72,11 +72,8 @@ export interface Note {
  * Generate note slug from title
  */
 export function generateNoteSlug(title: string, existingSlugs: string[]): string {
-  let slug = slugify(title, {
-    lower: true,
-    strict: true,
-    remove: /[*+~.()'"!:@]/g
-  })
+  // slugify already handles lowercasing and special chars
+  let slug = slugify(title)
 
   // Ensure uniqueness
   if (!existingSlugs.includes(slug)) {

@@ -88,6 +88,7 @@ export interface AIRequestOptions {
   context?: AIContext
   stream?: boolean
   systemPrompt?: string
+  conversationHistory?: AIMessage[]
 }
 
 /**

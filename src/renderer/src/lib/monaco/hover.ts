@@ -1,4 +1,4 @@
-import type { languages, editor, IRange } from 'monaco-editor'
+import type { languages, editor, IRange, IPosition } from 'monaco-editor'
 import type { Entity } from '@renderer/store/slices/entitySlice'
 import { getDefaultFieldValue, getFieldValue } from '@renderer/lib/entity'
 
@@ -20,7 +20,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
 
   provideHover(
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.ProviderResult<languages.Hover> {
     const word = model.getWordAtPosition(position)
     if (!word) return null
@@ -59,7 +59,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
   // Create hover for entity
   private createEntityHover(
     entitySlug: string,
-    position: languages.Position
+    position: IPosition
   ): languages.Hover | null {
     const entity = this.entities.get(entitySlug)
     if (!entity) {
@@ -108,7 +108,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
   private createFieldHover(
     entitySlug: string,
     fieldSlug: string,
-    position: languages.Position
+    position: IPosition
   ): languages.Hover | null {
     const entity = this.entities.get(entitySlug)
     if (!entity) {
@@ -151,7 +151,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
   }
 
   // Create range for hover
-  private createRange(position: languages.Position): IRange {
+  private createRange(position: IPosition): IRange {
     return {
       startLineNumber: position.lineNumber,
       startColumn: position.column,

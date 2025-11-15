@@ -47,12 +47,8 @@ export function generateImageSlug(filename: string, existingSlugs: string[]): st
   // Remove extension
   const nameWithoutExt = filename.replace(/\.[^.]+$/, '')
 
-  // Generate base slug
-  let slug = slugify(nameWithoutExt, {
-    lower: true,
-    strict: true,
-    remove: /[*+~.()'"!:@]/g
-  })
+  // Generate base slug (slugify already handles lowercasing and special chars)
+  let slug = slugify(nameWithoutExt)
 
   // Ensure uniqueness
   if (!existingSlugs.includes(slug)) {
