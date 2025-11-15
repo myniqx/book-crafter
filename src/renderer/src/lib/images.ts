@@ -94,11 +94,7 @@ export async function copyImageToWorkspace(
   const imagesDir = getImagesDir(workspacePath)
   const targetPath = `${imagesDir}/${targetFilename}`
 
-  if (window.api?.fs?.copyFile) {
-    await ipcClient.fs.copyFile(sourcePath, targetPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.copyFile(sourcePath, targetPath)
 
   // Return relative path from workspace root
   return `.assets/images/${targetFilename}`
@@ -110,15 +106,11 @@ export async function copyImageToWorkspace(
 export async function deleteImage(workspacePath: string, image: Image): Promise<void> {
   // Delete metadata file
   const metadataPath = getImageMetadataPath(workspacePath, image.slug)
-  if (window.api?.fs?.deleteFile) {
-    await ipcClient.fs.delete(metadataPath)
-  }
+  await ipcClient.fs.delete(metadataPath)
 
   // Delete image file
   const imagePath = getImageFilePath(workspacePath, image)
-  if (window.api?.fs?.deleteFile) {
-    await ipcClient.fs.delete(imagePath)
-  }
+  await ipcClient.fs.delete(imagePath)
 }
 
 /**
@@ -164,12 +156,7 @@ export async function exportImage(
   targetPath: string
 ): Promise<void> {
   const sourcePath = getImageFilePath(workspacePath, image)
-
-  if (window.api?.fs?.copyFile) {
-    await ipcClient.fs.copyFile(sourcePath, targetPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.copyFile(sourcePath, targetPath)
 }
 
 /**
@@ -198,9 +185,7 @@ export async function renameImageSlug(
 
   // Delete old metadata
   const oldMetadataPath = getImageMetadataPath(workspacePath, oldSlug)
-  if (window.api?.fs?.deleteFile) {
-    await ipcClient.fs.delete(oldMetadataPath)
-  }
+  await ipcClient.fs.delete(oldMetadataPath)
 
   // Note: Image file itself doesn't need to be renamed (uses slug-based name already)
   // Note: References in markdown need to be updated separately (Phase 12: Search & Replace)
