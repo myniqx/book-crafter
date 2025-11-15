@@ -1,5 +1,6 @@
 import type { Image } from './image'
 import { getFileExtension } from './image'
+import ipcClient from './ipc'
 
 /**
  * Get images directory path
@@ -33,7 +34,7 @@ export async function saveImageMetadata(
   const metadata = JSON.stringify(image, null, 2)
 
   if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(metadataPath, metadata, 'utf-8')
+    await ipcClient.fs.writeFile(metadataPath, metadata)
   } else {
     throw new Error('File system API not available')
   }
@@ -50,7 +51,7 @@ export async function loadImageMetadata(
 
   try {
     if (window.api?.fs?.readFile) {
-      const content = await window.api.fs.readFile(metadataPath, 'utf-8')
+      const content = await ipcClient.fs.readFile(metadataPath)
       const image = JSON.parse(content) as Image
       return image
     }
@@ -74,7 +75,7 @@ export async function loadAllImages(workspacePath: string): Promise<Record<strin
     }
 
     // Read all files in .assets/images/
-    const files = await window.api.fs.readDir(imagesDir)
+    const files = await ipcClient.fs.readDir(imagesDir, false)
 
     // Filter JSON files (metadata)
     const metadataFiles = files.filter((file) => file.endsWith('.json'))
@@ -106,7 +107,7 @@ export async function copyImageToWorkspace(
   const targetPath = `${imagesDir}/${targetFilename}`
 
   if (window.api?.fs?.copyFile) {
-    await window.api.fs.copyFile(sourcePath, targetPath)
+    await ipcClient.fs.copyFile(sourcePath, targetPath)
   } else {
     throw new Error('File system API not available')
   }
@@ -122,13 +123,13 @@ export async function deleteImage(workspacePath: string, image: Image): Promise<
   // Delete metadata file
   const metadataPath = getImageMetadataPath(workspacePath, image.slug)
   if (window.api?.fs?.deleteFile) {
-    await window.api.fs.deleteFile(metadataPath)
+    await ipcClient.fs.delete(metadataPath)
   }
 
   // Delete image file
   const imagePath = getImageFilePath(workspacePath, image)
   if (window.api?.fs?.deleteFile) {
-    await window.api.fs.deleteFile(imagePath)
+    await ipcClient.fs.delete(imagePath)
   }
 }
 
@@ -177,7 +178,7 @@ export async function exportImage(
   const sourcePath = getImageFilePath(workspacePath, image)
 
   if (window.api?.fs?.copyFile) {
-    await window.api.fs.copyFile(sourcePath, targetPath)
+    await ipcClient.fs.copyFile(sourcePath, targetPath)
   } else {
     throw new Error('File system API not available')
   }
@@ -210,7 +211,7 @@ export async function renameImageSlug(
   // Delete old metadata
   const oldMetadataPath = getImageMetadataPath(workspacePath, oldSlug)
   if (window.api?.fs?.deleteFile) {
-    await window.api.fs.deleteFile(oldMetadataPath)
+    await ipcClient.fs.delete(oldMetadataPath)
   }
 
   // Note: Image file itself doesn't need to be renamed (uses slug-based name already)

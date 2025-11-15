@@ -200,6 +200,18 @@ export const fs = {
   },
 
   /**
+   * Copy file
+   */
+  async copyFile(sourcePath: string, destPath: string): Promise<void> {
+    try {
+      const api = getAPI()
+      await queueOperation(`copy:${sourcePath}`, () => api.fs.copyFile(sourcePath, destPath))
+    } catch (error) {
+      handleIPCError(error)
+    }
+  },
+
+  /**
    * Check if file exists
    */
   async exists(path: string): Promise<boolean> {

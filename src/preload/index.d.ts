@@ -19,6 +19,10 @@ interface FSAPI {
   deleteFile(path: string): Promise<void>
   deleteDir(path: string): Promise<void>
   move(oldPath: string, newPath: string): Promise<void>
+  moveFile(oldPath: string, newPath: string): Promise<void>
+  copy(sourcePath: string, destPath: string): Promise<void>
+  copyFile(sourcePath: string, destPath: string): Promise<void>
+  fileExists(path: string): Promise<boolean>
   stat(path: string): Promise<{ isDirectory: () => boolean }>
   stats(path: string): Promise<{ isDirectory: () => boolean; size: number; mtime: Date }>
   watch(path: string, callback: (event: string, filename: string) => void): Promise<() => void>

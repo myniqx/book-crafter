@@ -1,4 +1,4 @@
-import slugify from 'slugify'
+import { slugify } from '@renderer/lib/slugify'
 
 /**
  * Generate UUID v4

@@ -1,4 +1,5 @@
 import type { Note } from './note'
+import ipcClient from './ipc'
 
 /**
  * Get notes directory path
@@ -20,12 +21,7 @@ export function getNotePath(workspacePath: string, slug: string): string {
 export async function saveNote(workspacePath: string, note: Note): Promise<void> {
   const notePath = getNotePath(workspacePath, note.slug)
   const noteData = JSON.stringify(note, null, 2)
-
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(notePath, noteData, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(notePath, noteData)
 }
 
 /**
@@ -35,16 +31,13 @@ export async function loadNote(workspacePath: string, slug: string): Promise<Not
   const notePath = getNotePath(workspacePath, slug)
 
   try {
-    if (window.api?.fs?.readFile) {
-      const content = await window.api.fs.readFile(notePath, 'utf-8')
-      const note = JSON.parse(content) as Note
-      return note
-    }
+    const content = await ipcClient.fs.readFile(notePath)
+    const note = JSON.parse(content) as Note
+    return note
   } catch (error) {
     console.error(`Failed to load note ${slug}:`, error)
+    return null
   }
-
-  return null
 }
 
 /**
@@ -60,7 +53,7 @@ export async function loadAllNotes(workspacePath: string): Promise<Record<string
     }
 
     // Read all files in .notes/
-    const files = await window.api.fs.readDir(notesDir)
+    const files = await ipcClient.fs.readDir(notesDir, false)
 
     // Filter JSON files
     const noteFiles = files.filter((file) => file.endsWith('.json'))
@@ -85,12 +78,7 @@ export async function loadAllNotes(workspacePath: string): Promise<Record<string
  */
 export async function deleteNote(workspacePath: string, slug: string): Promise<void> {
   const notePath = getNotePath(workspacePath, slug)
-
-  if (window.api?.fs?.deleteFile) {
-    await window.api.fs.deleteFile(notePath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.delete(notePath)
 }
 
 /**
@@ -195,11 +183,7 @@ export async function exportNote(
     content += `## Content\n\n${note.content}\n`
   }
 
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(targetPath, content, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(targetPath, content)
 }
 
 /**
@@ -213,7 +197,7 @@ export async function importNote(
     throw new Error('File system API not available')
   }
 
-  const content = await window.api.fs.readFile(sourcePath, 'utf-8')
+  const content = await ipcClient.fs.readFile(sourcePath)
   const note = JSON.parse(content) as Note
 
   // Update modified timestamp

@@ -1,5 +1,6 @@
 import type { Entity } from '@renderer/store/slices/entitySlice'
 import { validateEntity } from './entity'
+import ipcClient from './ipc'
 
 /**
  * Entity File Operations
@@ -36,11 +37,7 @@ export async function saveEntity(workspacePath: string, entity: Entity): Promise
   const entityData = JSON.stringify(entity, null, 2)
 
   // Use IPC to write file
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(entityPath, entityData, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(entityPath, entityData)
 }
 
 /**
@@ -50,20 +47,16 @@ export async function loadEntity(workspacePath: string, slug: string): Promise<E
   const entityPath = getEntityPath(workspacePath, slug)
 
   // Use IPC to read file
-  if (window.api?.fs?.readFile) {
-    const data = await window.api.fs.readFile(entityPath, 'utf-8')
-    const entity = JSON.parse(data) as Entity
+  const data = await ipcClient.fs.readFile(entityPath)
+  const entity = JSON.parse(data) as Entity
 
-    // Validate loaded entity
-    const errors = validateEntity(entity)
-    if (errors.length > 0) {
-      throw new Error(`Invalid entity file: ${errors.map((e) => e.message).join(', ')}`)
-    }
-
-    return entity
-  } else {
-    throw new Error('File system API not available')
+  // Validate loaded entity
+  const errors = validateEntity(entity)
+  if (errors.length > 0) {
+    throw new Error(`Invalid entity file: ${errors.map((e) => e.message).join(', ')}`)
   }
+
+  return entity
 }
 
 /**
@@ -71,12 +64,7 @@ export async function loadEntity(workspacePath: string, slug: string): Promise<E
  */
 export async function deleteEntity(workspacePath: string, slug: string): Promise<void> {
   const entityPath = getEntityPath(workspacePath, slug)
-
-  if (window.api?.fs?.deleteFile) {
-    await window.api.fs.deleteFile(entityPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.delete(entityPath)
 }
 
 /**
@@ -85,28 +73,20 @@ export async function deleteEntity(workspacePath: string, slug: string): Promise
 export async function loadAllEntities(workspacePath: string): Promise<Record<string, Entity>> {
   const entitiesDir = getEntitiesDir(workspacePath)
 
-  if (!window.api?.fs?.readDir) {
-    throw new Error('File system API not available')
-  }
-
   // Check if entities directory exists
-  const dirExists = window.api.fs.dirExists
-    ? await window.api.fs.dirExists(entitiesDir)
-    : true
+  const dirExists = await ipcClient.fs.exists(entitiesDir)
 
   if (!dirExists) {
     // If directory doesn't exist, create it and return empty object
-    if (window.api.fs.mkdir) {
-      await window.api.fs.mkdir(entitiesDir, { recursive: true })
-    }
+    await ipcClient.fs.mkdir(entitiesDir, true)
     return {}
   }
 
-  // Read all .json files from entities directory
-  const files = await window.api.fs.readDir(entitiesDir, {
-    recursive: false,
-    filter: '*.json'
-  })
+  // Read all files from entities directory
+  const allFiles = await ipcClient.fs.readDir(entitiesDir, false)
+
+  // Filter .json files
+  const files = allFiles.filter(file => file.endsWith('.json'))
 
   const entities: Record<string, Entity> = {}
 
@@ -137,11 +117,7 @@ export async function renameEntity(
   const oldPath = getEntityPath(workspacePath, oldSlug)
   const newPath = getEntityPath(workspacePath, newSlug)
 
-  if (window.api?.fs?.moveFile) {
-    await window.api.fs.moveFile(oldPath, newPath)
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.move(oldPath, newPath)
 }
 
 /**
@@ -149,12 +125,7 @@ export async function renameEntity(
  */
 export async function entityExists(workspacePath: string, slug: string): Promise<boolean> {
   const entityPath = getEntityPath(workspacePath, slug)
-
-  if (window.api?.fs?.fileExists) {
-    return await window.api.fs.fileExists(entityPath)
-  }
-
-  return false
+  return await ipcClient.fs.exists(entityPath)
 }
 
 /**
@@ -166,12 +137,7 @@ export async function exportEntities(
 ): Promise<void> {
   const exportPath = `${workspacePath}/entities-backup-${Date.now()}.json`
   const data = JSON.stringify(entities, null, 2)
-
-  if (window.api?.fs?.writeFile) {
-    await window.api.fs.writeFile(exportPath, data, 'utf-8')
-  } else {
-    throw new Error('File system API not available')
-  }
+  await ipcClient.fs.writeFile(exportPath, data)
 }
 
 /**
@@ -181,20 +147,16 @@ export async function importEntities(
   workspacePath: string,
   filePath: string
 ): Promise<Record<string, Entity>> {
-  if (window.api?.fs?.readFile) {
-    const data = await window.api.fs.readFile(filePath, 'utf-8')
-    const entities = JSON.parse(data) as Record<string, Entity>
+  const data = await ipcClient.fs.readFile(filePath)
+  const entities = JSON.parse(data) as Record<string, Entity>
 
-    // Validate all entities
-    for (const [slug, entity] of Object.entries(entities)) {
-      const errors = validateEntity(entity)
-      if (errors.length > 0) {
-        throw new Error(`Invalid entity ${slug}: ${errors.map((e) => e.message).join(', ')}`)
-      }
+  // Validate all entities
+  for (const [slug, entity] of Object.entries(entities)) {
+    const errors = validateEntity(entity)
+    if (errors.length > 0) {
+      throw new Error(`Invalid entity ${slug}: ${errors.map((e) => e.message).join(', ')}`)
     }
-
-    return entities
-  } else {
-    throw new Error('File system API not available')
   }
+
+  return entities
 }
