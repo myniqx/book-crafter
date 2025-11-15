@@ -1,5 +1,6 @@
-import type { languages, editor, IRange } from 'monaco-editor'
-import type { Entity } from '@renderer/types'
+import type { languages, editor, IRange, IPosition } from 'monaco-editor'
+import type { Entity } from '@renderer/store/slices/entitySlice'
+import { getDefaultFieldValue, getFieldValue } from '@renderer/lib/entity'
 
 // Hover provider for @mentions
 export class EntityHoverProvider implements languages.HoverProvider {
@@ -19,7 +20,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
 
   provideHover(
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.ProviderResult<languages.Hover> {
     const word = model.getWordAtPosition(position)
     if (!word) return null
@@ -58,7 +59,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
   // Create hover for entity
   private createEntityHover(
     entitySlug: string,
-    position: languages.Position
+    position: IPosition
   ): languages.Hover | null {
     const entity = this.entities.get(entitySlug)
     if (!entity) {
@@ -71,30 +72,30 @@ export class EntityHoverProvider implements languages.HoverProvider {
       }
     }
 
-    const defaultField = entity.fields.find((f) => f.isDefault)
-    const defaultValue = defaultField ? String(defaultField.value) : 'N/A'
+    const defaultValue = getDefaultFieldValue(entity)
 
     const fieldsTable = entity.fields
       .map((f) => {
-        const mark = f.isDefault ? '⭐' : ''
-        return `| ${mark} ${f.label} | \`${String(f.value)}\` | ${f.type} |`
+        const mark = f.name === entity.defaultField ? '⭐' : ''
+        return `| ${mark} ${f.name} | \`${f.value || '(empty)'}\` | ${f.type} |`
       })
       .join('\n')
 
     const relationsInfo =
       entity.relations.length > 0
-        ? `\n\n**Relations:** ${entity.relations.map((r) => `${r.type} → @${r.targetSlug}`).join(', ')}`
+        ? `\n\n**Relations:** ${entity.relations.map((r) => `${r.type} → @${r.targetEntitySlug}`).join(', ')}`
         : ''
 
     const notesInfo =
       entity.notes.length > 0 ? `\n\n**Notes:** ${entity.notes.length} note(s)` : ''
 
-    const usageInfo = `\n\n**Usage:** ${entity.usage.count} occurrence(s)`
+    const usageInfo = `\n\n**Usage:** ${entity.metadata.usageCount} occurrence(s)`
 
     return {
       range: this.createRange(position),
       contents: [
-        { value: `**${entity.type}**: @${entity.slug}` },
+        { value: `**${entity.type}**: ${entity.name}` },
+        { value: `**Slug:** @${entity.slug}` },
         { value: `**Default:** ${defaultValue}` },
         { value: '---' },
         { value: '**Fields:**\n\n| Field | Value | Type |\n|-------|-------|------|\n' + fieldsTable },
@@ -107,7 +108,7 @@ export class EntityHoverProvider implements languages.HoverProvider {
   private createFieldHover(
     entitySlug: string,
     fieldSlug: string,
-    position: languages.Position
+    position: IPosition
   ): languages.Hover | null {
     const entity = this.entities.get(entitySlug)
     if (!entity) {
@@ -120,7 +121,12 @@ export class EntityHoverProvider implements languages.HoverProvider {
       }
     }
 
-    const field = entity.fields.find((f) => f.slug === fieldSlug)
+    // Find field by name (converted to slug format)
+    const field = entity.fields.find((f) => {
+      const fSlug = f.name.toLowerCase().replace(/\s+/g, '-')
+      return fSlug === fieldSlug || f.name.toLowerCase() === fieldSlug.toLowerCase()
+    })
+
     if (!field) {
       return {
         range: this.createRange(position),
@@ -131,21 +137,21 @@ export class EntityHoverProvider implements languages.HoverProvider {
       }
     }
 
-    const isDefault = field.isDefault ? ' ⭐ (default)' : ''
+    const isDefault = field.name === entity.defaultField ? ' ⭐ (default)' : ''
 
     return {
       range: this.createRange(position),
       contents: [
-        { value: `**${field.label}**${isDefault}` },
-        { value: `**Value:** \`${String(field.value)}\`` },
+        { value: `**${field.name}**${isDefault}` },
+        { value: `**Value:** \`${field.value || '(empty)'}\`` },
         { value: `**Type:** ${field.type}` },
-        { value: `**Entity:** @${entitySlug} (${entity.type})` }
+        { value: `**Entity:** @${entitySlug} - ${entity.name} (${entity.type})` }
       ]
     }
   }
 
   // Create range for hover
-  private createRange(position: languages.Position): IRange {
+  private createRange(position: IPosition): IRange {
     return {
       startLineNumber: position.lineNumber,
       startColumn: position.column,

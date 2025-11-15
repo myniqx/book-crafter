@@ -6,6 +6,7 @@ export interface WorkspaceConfig {
   version: string
   author: string
   created: string
+  modified?: string
   aiConfig: {
     provider: 'ollama' | 'openai' | 'anthropic'
     ollamaEndpoint?: string
@@ -23,9 +24,11 @@ export interface WorkspaceConfig {
   }
   editorSettings: {
     fontSize: number
+    lineHeight?: number
     tabSize: number
     wordWrap: boolean
     minimap: boolean
+    lineNumbers?: boolean
     autoSave: boolean
     autoSaveDelay: number
   }

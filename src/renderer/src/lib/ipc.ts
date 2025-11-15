@@ -23,7 +23,7 @@ function getAPI(): IPCBridge {
   if (!window.api) {
     throw new IPCClientError('IPC bridge not available', 'IPC_NOT_AVAILABLE')
   }
-  return window.api
+  return window.api as unknown as IPCBridge
 }
 
 // Convert IPC errors to user-friendly messages
@@ -194,6 +194,18 @@ export const fs = {
     try {
       const api = getAPI()
       await queueOperation(`move:${oldPath}`, () => api.fs.move(oldPath, newPath))
+    } catch (error) {
+      handleIPCError(error)
+    }
+  },
+
+  /**
+   * Copy file
+   */
+  async copyFile(sourcePath: string, destPath: string): Promise<void> {
+    try {
+      const api = getAPI()
+      await queueOperation(`copy:${sourcePath}`, () => api.fs.copyFile(sourcePath, destPath))
     } catch (error) {
       handleIPCError(error)
     }

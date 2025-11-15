@@ -1,4 +1,4 @@
-import { ipcClient } from '@renderer/lib/ipc'
+import ipcClient from '@renderer/lib/ipc'
 import { slugify } from '@renderer/lib/slugify'
 import type { Book, Chapter, ValidationResult, ValidationError } from '@renderer/types'
 import { getBookPath, getChapterPath, getChapterContentPath } from './directory'
@@ -216,7 +216,7 @@ export async function saveBook(rootPath: string, book: Book): Promise<void> {
   // Create book directory
   const exists = await ipcClient.fs.exists(bookPath)
   if (!exists) {
-    await ipcClient.fs.mkdir(bookPath, { recursive: true })
+    await ipcClient.fs.mkdir(bookPath, true)
   }
 
   // Save book.json
@@ -254,7 +254,7 @@ export async function saveChapter(
   // Create chapter directory
   const exists = await ipcClient.fs.exists(chapterPath)
   if (!exists) {
-    await ipcClient.fs.mkdir(chapterPath, { recursive: true })
+    await ipcClient.fs.mkdir(chapterPath, true)
   }
 
   // Save chapter metadata

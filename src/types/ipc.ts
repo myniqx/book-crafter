@@ -30,6 +30,7 @@ export interface FileSystemAPI {
   mkdir: (path: string, recursive?: boolean) => Promise<void>
   delete: (path: string) => Promise<void>
   move: (oldPath: string, newPath: string) => Promise<void>
+  copyFile: (sourcePath: string, destPath: string) => Promise<void>
   exists: (path: string) => Promise<boolean>
   stats: (path: string) => Promise<FileStats>
   watch: (path: string, callback: (event: string, filename: string) => void) => Promise<() => void>
@@ -69,6 +70,7 @@ export interface FetchAPI {
 export interface IPCBridge {
   fs: FileSystemAPI
   fetch: FetchAPI
+  http: FetchAPI // Alias for compatibility with AppAPI
 }
 
 // Error types

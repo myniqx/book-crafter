@@ -4,26 +4,74 @@ import 'rc-dock/dist/rc-dock.css'
 import type { LayoutData, TabData } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
 import type { DockLayoutProps } from './types'
-import { createDefaultLayout, getRegisteredPanels } from './panels'
+import { createDefaultLayout, getPanel } from './panels'
+import { useStore } from '@renderer/store'
 
 export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
   const dockRef = useRef<RcDockLayout>(null)
+  const activePanels = useStore((state) => state.activePanels)
 
   // Initialize with default layout
   const defaultLayout = createDefaultLayout()
 
+  // Sync activePanels with DockLayout
   useEffect(() => {
-    // Setup panel groups
-    if (dockRef.current) {
-      const dock = dockRef.current
+    if (!dockRef.current) return
 
-      // Register all panels
-      const panels = getRegisteredPanels()
-      panels.forEach((panelConfig) => {
-        dock.updateTab(panelConfig.id, panelConfig as TabData, false)
-      })
+    const dock = dockRef.current
+
+    // Get current layout to see which panels are open
+    const currentLayout = dock.getLayout()
+    const currentPanelIds = new Set<string>()
+
+    // Collect all currently open panel IDs from layout
+    const collectPanelIds = (data: LayoutData | any): void => {
+      if (!data) return
+
+      if (data.tabs && Array.isArray(data.tabs)) {
+        data.tabs.forEach((tab: any) => {
+          if (tab.id && tab.id !== 'editor-welcome') {
+            currentPanelIds.add(tab.id)
+          }
+        })
+      }
+
+      if (data.children && Array.isArray(data.children)) {
+        data.children.forEach((child: any) => collectPanelIds(child))
+      }
+
+      if (data.dockbox) {
+        collectPanelIds(data.dockbox)
+      }
     }
-  }, [])
+
+    collectPanelIds(currentLayout)
+
+    // Add panels that should be active but aren't
+    activePanels.forEach((panelId) => {
+      if (!currentPanelIds.has(panelId)) {
+        const panelConfig = getPanel(panelId)
+        if (panelConfig) {
+          console.log('DockLayout: Adding panel', panelId)
+          // Add to right side as new tab
+          dock.dockMove({
+            id: panelId,
+            title: panelConfig.title,
+            content: panelConfig.content,
+            closable: panelConfig.closable
+          } as TabData, null, 'right')
+        }
+      }
+    })
+
+    // Remove panels that shouldn't be active
+    currentPanelIds.forEach((panelId) => {
+      if (!activePanels.includes(panelId as any) && panelId !== 'file-explorer') {
+        console.log('DockLayout: Removing panel', panelId)
+        dock.dockMove({ id: panelId } as TabData, null, 'remove')
+      }
+    })
+  }, [activePanels])
 
   // Load layout from localStorage
   const loadLayout = (): LayoutData | undefined => {
@@ -49,6 +97,41 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
 
   const handleLayoutChange = (newLayout: LayoutData): void => {
     saveLayout(newLayout)
+
+    // Sync closed panels back to store
+    const hidePanel = useStore.getState().hidePanel
+    const currentPanelIds = new Set<string>()
+
+    // Collect all currently open panel IDs from new layout
+    const collectPanelIds = (data: LayoutData | any): void => {
+      if (!data) return
+
+      if (data.tabs && Array.isArray(data.tabs)) {
+        data.tabs.forEach((tab: any) => {
+          if (tab.id && tab.id !== 'editor-welcome') {
+            currentPanelIds.add(tab.id)
+          }
+        })
+      }
+
+      if (data.children && Array.isArray(data.children)) {
+        data.children.forEach((child: any) => collectPanelIds(child))
+      }
+
+      if (data.dockbox) {
+        collectPanelIds(data.dockbox)
+      }
+    }
+
+    collectPanelIds(newLayout)
+
+    // Remove from activePanels if closed in DockLayout
+    activePanels.forEach((panelId) => {
+      if (!currentPanelIds.has(panelId) && panelId !== 'file-explorer') {
+        console.log('DockLayout: Panel closed, removing from store:', panelId)
+        hidePanel(panelId)
+      }
+    })
   }
 
   return (

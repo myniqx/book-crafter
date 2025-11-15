@@ -1,5 +1,6 @@
-import type { languages, editor, IRange } from 'monaco-editor'
-import type { Entity } from '@renderer/types'
+import type { languages, editor, IRange, IPosition } from 'monaco-editor'
+import type { Entity } from '@renderer/store/slices/entitySlice'
+import { getDefaultFieldValue } from '@renderer/lib/entity'
 
 // Completion provider for @mentions
 export class EntityCompletionProvider implements languages.CompletionItemProvider {
@@ -21,7 +22,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
 
   provideCompletionItems(
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.ProviderResult<languages.CompletionList> {
     const textUntilPosition = model.getValueInRange({
       startLineNumber: position.lineNumber,
@@ -51,7 +52,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
   private provideEntitySuggestions(
     partial: string,
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.CompletionList {
     const word = model.getWordUntilPosition(position)
     const range: IRange = {
@@ -65,16 +66,16 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
 
     this.entities.forEach((entity) => {
       // Fuzzy filter
-      if (entity.slug.toLowerCase().includes(partial.toLowerCase())) {
-        const defaultField = entity.fields.find((f) => f.isDefault)
-        const preview = defaultField ? String(defaultField.value) : entity.slug
+      if (entity.slug.toLowerCase().includes(partial.toLowerCase()) ||
+          entity.name.toLowerCase().includes(partial.toLowerCase())) {
+        const preview = getDefaultFieldValue(entity)
 
         suggestions.push({
           label: entity.slug,
           kind: 9, // Variable
-          detail: entity.type,
+          detail: `${entity.type} - ${entity.name}`,
           documentation: {
-            value: `**${entity.type}**\n\n${preview}\n\n---\n\nFields: ${entity.fields.map((f) => f.label).join(', ')}`
+            value: `**${entity.name}** (${entity.type})\n\n${preview}\n\n---\n\nFields: ${entity.fields.map((f) => f.name).join(', ')}`
           },
           insertText: entity.slug,
           range
@@ -90,7 +91,7 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
     entitySlug: string,
     partialField: string,
     model: editor.ITextModel,
-    position: languages.Position
+    position: IPosition
   ): languages.CompletionList {
     const entity = this.entities.get(entitySlug)
     if (!entity) {
@@ -108,15 +109,19 @@ export class EntityCompletionProvider implements languages.CompletionItemProvide
     const suggestions: languages.CompletionItem[] = []
 
     entity.fields.forEach((field) => {
-      if (field.slug.toLowerCase().includes(partialField.toLowerCase())) {
+      // Create slug from field name for matching
+      const fieldSlug = field.name.toLowerCase().replace(/\s+/g, '-')
+
+      if (fieldSlug.includes(partialField.toLowerCase()) ||
+          field.name.toLowerCase().includes(partialField.toLowerCase())) {
         suggestions.push({
-          label: field.slug,
+          label: fieldSlug,
           kind: 5, // Field
-          detail: `${field.label} (${field.type})`,
+          detail: `${field.name} (${field.type})`,
           documentation: {
-            value: `**Value:** ${String(field.value)}\n\n**Type:** ${field.type}`
+            value: `**Value:** ${field.value || '(empty)'}\n\n**Type:** ${field.type}`
           },
-          insertText: field.slug,
+          insertText: fieldSlug,
           range
         })
       }

@@ -1,6 +1,17 @@
 import React from 'react'
 import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig } from './types'
+import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
+import { EntityCard } from '@renderer/components/entities/EntityCard'
+import { BookExplorer } from '@renderer/components/books/BookExplorer'
+import { MarkdownPreview } from '@renderer/components/preview/MarkdownPreview'
+import { ImageGallery } from '@renderer/components/images/ImageGallery'
+import { ImageCard } from '@renderer/components/images/ImageCard'
+import { NotesList } from '@renderer/components/notes/NotesList'
+import { SearchPanel } from '@renderer/components/search/SearchPanel'
+import { AIChatPanel } from '@renderer/components/ai/AIChatPanel'
+import { AISuggestionsPanel } from '@renderer/components/ai/AISuggestionsPanel'
+import { useStore } from '@renderer/store'
 
 // Placeholder panel content components
 // These will be replaced with actual components later
@@ -13,6 +24,42 @@ const PlaceholderPanel: React.FC<{ title: string }> = ({ title }) => (
   </div>
 )
 
+// Entity Detail Panel (shows selected entity)
+const EntityDetailPanel: React.FC = () => {
+  const selectedEntitySlug = useStore((state) => state.selectedEntitySlug)
+
+  if (!selectedEntitySlug) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">No Entity Selected</h3>
+          <p className="text-sm">Select an entity from the Entity Browser to view details</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <EntityCard entitySlug={selectedEntitySlug} />
+}
+
+// Image Detail Panel (shows selected image)
+const ImageDetailPanel: React.FC = () => {
+  const selectedImageSlug = useStore((state) => state.selectedImageSlug)
+
+  if (!selectedImageSlug) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">No Image Selected</h3>
+          <p className="text-sm">Select an image from the Image Gallery to view details</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <ImageCard imageSlug={selectedImageSlug} variant="detail" />
+}
+
 // Panel registry
 const panelRegistry: Map<string, PanelConfig> = new Map()
 
@@ -22,23 +69,31 @@ export function registerDefaultPanels(): void {
     {
       id: 'file-explorer',
       title: 'Files',
-      content: <PlaceholderPanel title="File Explorer" />,
+      content: <BookExplorer />,
       group: 'explorer',
-      minWidth: 200,
+      minWidth: 250,
       closable: false
     },
     {
       id: 'entity-browser',
       title: 'Entities',
-      content: <PlaceholderPanel title="Entity Browser" />,
+      content: <EntityBrowser />,
       group: 'explorer',
-      minWidth: 200,
+      minWidth: 250,
+      closable: true
+    },
+    {
+      id: 'entity-detail',
+      title: 'Entity Detail',
+      content: <EntityDetailPanel />,
+      group: 'detail',
+      minWidth: 300,
       closable: true
     },
     {
       id: 'markdown-preview',
       title: 'Preview',
-      content: <PlaceholderPanel title="Markdown Preview" />,
+      content: <MarkdownPreview />,
       group: 'preview',
       minWidth: 300,
       closable: true
@@ -46,24 +101,48 @@ export function registerDefaultPanels(): void {
     {
       id: 'image-gallery',
       title: 'Images',
-      content: <PlaceholderPanel title="Image Gallery" />,
+      content: <ImageGallery />,
       group: 'media',
-      minWidth: 200,
+      minWidth: 250,
+      closable: true
+    },
+    {
+      id: 'image-detail',
+      title: 'Image Detail',
+      content: <ImageDetailPanel />,
+      group: 'media',
+      minWidth: 300,
       closable: true
     },
     {
       id: 'notes',
       title: 'Notes',
-      content: <PlaceholderPanel title="Notes & Checklist" />,
+      content: <NotesList />,
       group: 'media',
-      minWidth: 200,
+      minWidth: 250,
       closable: true
     },
     {
       id: 'ai-chat',
       title: 'AI Chat',
-      content: <PlaceholderPanel title="AI Assistant" />,
+      content: <AIChatPanel />,
       group: 'ai',
+      minWidth: 300,
+      closable: true
+    },
+    {
+      id: 'ai-suggestions',
+      title: 'AI Suggestions',
+      content: <AISuggestionsPanel />,
+      group: 'ai',
+      minWidth: 300,
+      closable: true
+    },
+    {
+      id: 'search',
+      title: 'Search',
+      content: <SearchPanel />,
+      group: 'tools',
       minWidth: 300,
       closable: true
     },
@@ -141,7 +220,7 @@ export function createDefaultLayout(): LayoutData {
                 {
                   id: 'file-explorer',
                   title: 'Files',
-                  content: <PlaceholderPanel title="File Explorer" />,
+                  content: <BookExplorer />,
                   closable: false
                 } as TabData
               ]

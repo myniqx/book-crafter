@@ -1,4 +1,4 @@
-import { ipcClient } from '@renderer/lib/ipc'
+import ipcClient from '@renderer/lib/ipc'
 import type { DirectoryStructure } from '@renderer/types'
 
 // ============================================================================
@@ -31,7 +31,7 @@ export async function createWorkspaceStructure(rootPath: string): Promise<Direct
 
     const exists = await ipcClient.fs.exists(path)
     if (!exists) {
-      await ipcClient.fs.mkdir(path, { recursive: true })
+      await ipcClient.fs.mkdir(path, true)
     }
   }
 
@@ -91,7 +91,7 @@ export async function repairWorkspaceStructure(rootPath: string): Promise<void> 
   if (!integrity.valid && integrity.missing.length > 0) {
     for (const folder of integrity.missing) {
       const path = `${rootPath}/${folder}`
-      await ipcClient.fs.mkdir(path, { recursive: true })
+      await ipcClient.fs.mkdir(path, true)
     }
   }
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import { Minimize2, Maximize2, X, BookOpen } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useStore } from '@renderer/store'
+import { SettingsDialog } from '@renderer/components/settings/SettingsDialog'
 
 export const Titlebar: React.FC = () => {
   const workspaceConfig = useStore((state) => state.workspaceConfig)
@@ -37,8 +38,9 @@ export const Titlebar: React.FC = () => {
         <span className="text-sm font-medium text-[hsl(var(--foreground))]">{projectName}</span>
       </div>
 
-      {/* Right: Window controls */}
+      {/* Right: Settings and window controls */}
       <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <SettingsDialog />
         <button
           onClick={handleMinimize}
           className={cn(
