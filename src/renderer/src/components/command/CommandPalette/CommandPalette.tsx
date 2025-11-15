@@ -36,10 +36,15 @@ export const CommandPalette: React.FC = () => {
   const selectedRef = useRef<HTMLDivElement>(null)
 
   const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const togglePanel = useStore((state) => state.togglePanel)
   const sidebarCollapsed = useStore((state) => state.sidebarCollapsed)
   const openEditorTabs = useStore((state) => state.openEditorTabs)
   const books = useStore((state) => state.books)
   const activeTabIndex = useStore((state) => state.activeTabIndex)
+  const setCreateBookDialogOpen = useStore((state) => state.setCreateBookDialogOpen)
+  const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
+  const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
+  const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
 
   // Keyboard shortcut: Ctrl+Shift+P
   useShortcut('commandPalette', () => setOpen(true), { allowInInput: true })
@@ -57,8 +62,7 @@ export const CommandPalette: React.FC = () => {
         icon: <BookOpen className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // TODO: Open create book dialog
-          console.log('Create new book')
+          setCreateBookDialogOpen(true)
         }
       },
       {
@@ -84,8 +88,7 @@ export const CommandPalette: React.FC = () => {
         icon: <Users className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // TODO: Open create entity dialog
-          console.log('Create new entity')
+          setCreateEntityDialogOpen(true)
         }
       },
       {
@@ -98,8 +101,7 @@ export const CommandPalette: React.FC = () => {
         icon: <StickyNote className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // TODO: Open create note dialog
-          console.log('Create new note')
+          setCreateNoteDialogOpen(true)
         }
       },
 
@@ -153,8 +155,7 @@ export const CommandPalette: React.FC = () => {
         icon: <Search className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // TODO: Open global search
-          console.log('Open global search')
+          togglePanel('search')
         }
       },
 
@@ -169,8 +170,7 @@ export const CommandPalette: React.FC = () => {
         icon: <Sparkles className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // TODO: Open AI chat
-          console.log('Open AI chat')
+          togglePanel('ai-chat')
         }
       },
 
@@ -185,12 +185,22 @@ export const CommandPalette: React.FC = () => {
         icon: <Settings className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          // Settings dialog already has Ctrl+, shortcut
-          console.log('Open settings')
+          setSettingsDialogOpen(true)
         }
       }
     ],
-    [toggleSidebar, sidebarCollapsed, openEditorTabs, books, activeTabIndex]
+    [
+      toggleSidebar,
+      togglePanel,
+      sidebarCollapsed,
+      openEditorTabs,
+      books,
+      activeTabIndex,
+      setCreateBookDialogOpen,
+      setCreateEntityDialogOpen,
+      setCreateNoteDialogOpen,
+      setSettingsDialogOpen
+    ]
   )
 
   // Filter commands based on search

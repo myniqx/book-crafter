@@ -27,6 +27,8 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
   const saveBookToDisk = useStore((state) => state.saveBookToDisk)
   const workspacePath = useStore((state) => state.workspacePath)
   const workspaceConfig = useStore((state) => state.workspaceConfig)
+  const open = useStore((state) => state.createBookDialogOpen)
+  const setOpen = useStore((state) => state.setCreateBookDialogOpen)
 
   const handleCreate = async (): Promise<void> => {
     if (!title.trim() || !workspacePath) return
@@ -52,6 +54,9 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
       // Reset form
       setTitle('')
       setAuthor('')
+
+      // Close dialog after success
+      setOpen(false)
     } catch (error) {
       console.error('Failed to create book:', error)
       alert('Failed to create book. Please try again.')
@@ -61,7 +66,7 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm" {...triggerProps}>
           <BookOpen className="h-4 w-4 mr-2" />
@@ -109,16 +114,19 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
         </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isCreating}>
-              Cancel
-            </Button>
-          </DialogClose>
-          <DialogClose asChild disabled={!title.trim() || isCreating}>
-            <Button onClick={handleCreate} disabled={!title.trim() || isCreating}>
-              {isCreating ? 'Creating...' : 'Create Book'}
-            </Button>
-          </DialogClose>
+          <Button
+            variant="outline"
+            disabled={isCreating}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!title.trim() || isCreating}
+          >
+            {isCreating ? 'Creating...' : 'Create Book'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

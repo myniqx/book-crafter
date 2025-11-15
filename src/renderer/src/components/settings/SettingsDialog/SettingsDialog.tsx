@@ -16,10 +16,12 @@ import { WorkspaceSettingsTab } from './WorkspaceSettingsTab'
 import { KeyboardShortcutsTab } from './KeyboardShortcutsTab'
 import { AdvancedSettingsTab } from './AdvancedSettingsTab'
 import { useShortcut } from '@renderer/hooks/useKeyboard'
+import { useStore } from '@renderer/store'
 
 export const SettingsDialog: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general')
-  const [open, setOpen] = useState(false)
+  const open = useStore((state) => state.settingsDialogOpen)
+  const setOpen = useStore((state) => state.setSettingsDialogOpen)
 
   // Keyboard shortcut: Ctrl+,
   useShortcut('settings', () => setOpen(true), { allowInInput: true })

@@ -20,6 +20,7 @@ import type { CreateChapterDialogProps } from './types'
 export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSlug, triggerProps }) => {
   const [title, setTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const book = useStore((state) => state.books[bookSlug])
   const addChapter = useStore((state) => state.addChapter)
@@ -51,6 +52,9 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSl
 
       // Reset form
       setTitle('')
+
+      // Close dialog after success
+      setOpen(false)
     } catch (error) {
       console.error('Failed to create chapter:', error)
       alert('Failed to create chapter. Please try again.')
@@ -60,7 +64,7 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSl
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" {...triggerProps}>
           <FileText className="h-4 w-4 mr-2" />
@@ -97,16 +101,19 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSl
         </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isCreating}>
-              Cancel
-            </Button>
-          </DialogClose>
-          <DialogClose asChild disabled={!title.trim() || isCreating}>
-            <Button onClick={handleCreate} disabled={!title.trim() || isCreating}>
-              {isCreating ? 'Creating...' : 'Create Chapter'}
-            </Button>
-          </DialogClose>
+          <Button
+            variant="outline"
+            disabled={isCreating}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!title.trim() || isCreating}
+          >
+            {isCreating ? 'Creating...' : 'Create Chapter'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

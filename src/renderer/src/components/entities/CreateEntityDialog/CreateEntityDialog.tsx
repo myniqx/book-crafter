@@ -34,6 +34,8 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
   const addEntity = useStore((state) => state.addEntity)
   const saveEntityToDisk = useStore((state) => state.saveEntityToDisk)
   const workspacePath = useStore((state) => state.workspacePath)
+  const open = useStore((state) => state.createEntityDialogOpen)
+  const setOpen = useStore((state) => state.setCreateEntityDialogOpen)
 
   // Get existing slugs for validation
   const existingSlugs = useMemo(() => Object.keys(entities), [entities])
@@ -65,6 +67,9 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
       setName('')
       setCustomSlug('')
       setTemplateType('person')
+
+      // Close dialog after success
+      setOpen(false)
     } catch (error) {
       console.error('Failed to create entity:', error)
       alert('Failed to create entity. Please try again.')
@@ -80,7 +85,7 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm" {...triggerProps}>
           <Plus className="h-4 w-4 mr-2" />
@@ -158,16 +163,19 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
         </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isCreating}>
-              Cancel
-            </Button>
-          </DialogClose>
-          <DialogClose asChild disabled={!name.trim() || isCreating}>
-            <Button onClick={handleCreate} disabled={!name.trim() || isCreating}>
-              {isCreating ? 'Creating...' : 'Create Entity'}
-            </Button>
-          </DialogClose>
+          <Button
+            variant="outline"
+            disabled={isCreating}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!name.trim() || isCreating}
+          >
+            {isCreating ? 'Creating...' : 'Create Entity'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -9,6 +9,11 @@ export interface UISlice {
   sidebarCollapsed: boolean
   activePanels: PanelId[]
   panelSizes: Record<string, number>
+  // Dialog states
+  createBookDialogOpen: boolean
+  createEntityDialogOpen: boolean
+  createNoteDialogOpen: boolean
+  settingsDialogOpen: boolean
   setTheme: (theme: Theme) => void
   toggleSidebar: () => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -16,6 +21,11 @@ export interface UISlice {
   setPanelSize: (panelId: string, size: number) => void
   showPanel: (panelId: PanelId) => void
   hidePanel: (panelId: PanelId) => void
+  // Dialog controls
+  setCreateBookDialogOpen: (open: boolean) => void
+  setCreateEntityDialogOpen: (open: boolean) => void
+  setCreateNoteDialogOpen: (open: boolean) => void
+  setSettingsDialogOpen: (open: boolean) => void
 }
 
 export const createUISlice: StateCreator<
@@ -32,6 +42,11 @@ export const createUISlice: StateCreator<
     'entity-browser': 300,
     'markdown-preview': 50, // percentage
   },
+  // Dialog states
+  createBookDialogOpen: false,
+  createEntityDialogOpen: false,
+  createNoteDialogOpen: false,
+  settingsDialogOpen: false,
 
   setTheme: (theme) =>
     set((state) => {
@@ -76,5 +91,26 @@ export const createUISlice: StateCreator<
       if (index !== -1) {
         state.activePanels.splice(index, 1)
       }
+    }),
+
+  // Dialog controls
+  setCreateBookDialogOpen: (open) =>
+    set((state) => {
+      state.createBookDialogOpen = open
+    }),
+
+  setCreateEntityDialogOpen: (open) =>
+    set((state) => {
+      state.createEntityDialogOpen = open
+    }),
+
+  setCreateNoteDialogOpen: (open) =>
+    set((state) => {
+      state.createNoteDialogOpen = open
+    }),
+
+  setSettingsDialogOpen: (open) =>
+    set((state) => {
+      state.settingsDialogOpen = open
     }),
 })

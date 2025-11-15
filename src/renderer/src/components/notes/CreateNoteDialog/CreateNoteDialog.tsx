@@ -35,6 +35,8 @@ export const CreateNoteDialog: React.FC<CreateNoteDialogProps> = ({ triggerProps
   const notes = useStore((state) => state.notes)
   const addNote = useStore((state) => state.addNote)
   const saveNoteToDisk = useStore((state) => state.saveNoteToDisk)
+  const open = useStore((state) => state.createNoteDialogOpen)
+  const setOpen = useStore((state) => state.setCreateNoteDialogOpen)
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault()
@@ -75,10 +77,13 @@ export const CreateNoteDialog: React.FC<CreateNoteDialogProps> = ({ triggerProps
     setTitle('')
     setNoteType('general')
     setErrors([])
+
+    // Close dialog after success
+    setOpen(false)
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button {...triggerProps}>
           <Plus className="h-4 w-4 mr-2" />
@@ -133,14 +138,14 @@ export const CreateNoteDialog: React.FC<CreateNoteDialogProps> = ({ triggerProps
           )}
 
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </DialogClose>
-            <DialogClose asChild>
-              <Button type="submit">Create Note</Button>
-            </DialogClose>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Create Note</Button>
           </DialogFooter>
         </form>
       </DialogContent>

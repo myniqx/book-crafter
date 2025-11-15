@@ -49,18 +49,19 @@ export const Sidebar: React.FC = () => {
   return (
     <div
       className={cn(
-        'h-full bg-[hsl(var(--background))] border-r border-[hsl(var(--border))]',
+        'h-full bg-slate-900 border-r border-slate-700',
         'flex flex-col transition-all duration-200',
-        sidebarCollapsed ? 'w-0 overflow-hidden' : 'w-12'
+        sidebarCollapsed ? 'w-12' : 'w-12'
       )}
     >
       {/* Toggle button */}
       <button
         onClick={handleToggle}
         className={cn(
-          'h-8 w-full flex items-center justify-center',
-          'hover:bg-[hsl(var(--accent))] transition-colors',
-          'border-b border-[hsl(var(--border))]'
+          'h-10 w-full flex items-center justify-center',
+          'hover:bg-slate-800 transition-colors',
+          'border-b border-slate-700',
+          'text-slate-400 hover:text-slate-200'
         )}
         title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
@@ -68,30 +69,33 @@ export const Sidebar: React.FC = () => {
       </button>
 
       {/* Panel buttons */}
-      <div className="flex-1 flex flex-col gap-1 py-2">
-        {sidebarItems.map((item) => {
-          const Icon = item.icon
-          const isActive = activePanels.includes(item.id)
+      {!sidebarCollapsed && (
+        <div className="flex-1 flex flex-col gap-1 py-2">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon
+            const isActive = activePanels.includes(item.id)
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => handlePanelClick(item.id)}
-              className={cn(
-                'h-10 w-full flex items-center justify-center',
-                'hover:bg-[hsl(var(--accent))] transition-colors relative',
-                isActive && 'bg-[hsl(var(--accent))] text-[hsl(var(--primary))]'
-              )}
-              title={item.label}
-            >
-              <Icon className="h-5 w-5" />
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[hsl(var(--primary))] rounded-r" />
-              )}
-            </button>
-          )
-        })}
-      </div>
+            return (
+              <button
+                key={item.id}
+                onClick={() => handlePanelClick(item.id)}
+                className={cn(
+                  'h-10 w-full flex items-center justify-center',
+                  'hover:bg-slate-800 transition-colors relative',
+                  'text-slate-400 hover:text-slate-200',
+                  isActive && 'bg-slate-800 text-blue-500'
+                )}
+                title={item.label}
+              >
+                <Icon className="h-5 w-5" />
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
