@@ -98,13 +98,13 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-950">
+    <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-slate-900 px-4 py-3">
+      <div className="border-b border-border bg-card px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-purple-500" />
-            <span className="text-sm font-medium text-slate-300">AI Assistant</span>
+            <span className="text-sm font-medium text-foreground">AI Assistant</span>
             <Badge variant="secondary" className="text-xs">
               {config.provider} / {config.model}
             </Badge>
@@ -137,7 +137,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
         {showContext && context && (
           <div className="mt-3 space-y-2">
             {context.currentChapter && (
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <FileText className="h-3 w-3" />
                 <span>
                   {currentChapter?.book?.title} - {currentChapter?.chapter?.title}
@@ -147,15 +147,15 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 
             {context.selection && (
               <div className="flex items-start gap-2 text-xs">
-                <Sparkles className="h-3 w-3 text-slate-400 mt-0.5" />
-                <div className="flex-1 rounded bg-slate-800 px-2 py-1 text-slate-300">
+                <Sparkles className="h-3 w-3 text-muted-foreground mt-0.5" />
+                <div className="flex-1 rounded bg-muted px-2 py-1 text-muted-foreground">
                   <span className="line-clamp-2">{context.selection.text}</span>
                 </div>
               </div>
             )}
 
             {context.entities && context.entities.length > 0 && (
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Users className="h-3 w-3" />
                 <span>
                   {context.entities.length} entities:{' '}
@@ -176,9 +176,9 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Bot className="h-12 w-12 text-slate-700 mb-4" />
-              <h3 className="text-sm font-medium text-slate-400 mb-2">AI Writing Assistant</h3>
-              <p className="text-xs text-slate-500 max-w-sm">
+              <Bot className="h-12 w-12 text-muted mb-4" />
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">AI Writing Assistant</h3>
+              <p className="text-xs text-muted-foreground max-w-sm">
                 Ask me anything about your story, characters, or writing. I can help expand scenes,
                 check grammar, suggest improvements, and more.
               </p>
@@ -209,7 +209,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t border-slate-800 bg-slate-900 p-4 space-y-2">
+      <div className="border-t border-border bg-card p-4 space-y-2">
         {/* Preset Prompts */}
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -330,7 +330,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp,
               'inline-block max-w-[85%] p-3',
               isUser
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-slate-800 text-slate-200 border-slate-700'
+                : 'bg-muted text-foreground border-border'
             )}
           >
             <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
@@ -345,7 +345,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp,
               size="sm"
               variant="ghost"
               onClick={handleCopy}
-              className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-700 hover:bg-slate-600"
+              className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-muted hover:bg-accent"
             >
               {copied ? (
                 <Check className="h-3 w-3 text-green-400" />
@@ -357,7 +357,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp,
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-muted-foreground">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'

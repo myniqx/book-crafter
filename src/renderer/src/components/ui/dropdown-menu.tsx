@@ -101,7 +101,7 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
       <div
         ref={contentRef}
         className={cn(
-          'absolute z-50 mt-2 min-w-[8rem] overflow-hidden rounded-md border border-slate-700 bg-slate-800 p-1 shadow-md',
+          'absolute z-50 mt-2 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground p-1 shadow-md',
           alignClass,
           className
         )}
@@ -132,7 +132,7 @@ const DropdownMenuItem = React.forwardRef<HTMLDivElement, DropdownMenuItemProps>
           'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors',
           disabled
             ? 'pointer-events-none opacity-50'
-            : 'hover:bg-slate-700 hover:text-slate-50 focus:bg-slate-700 focus:text-slate-50',
+            : 'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
           className
         )}
         onClick={handleClick}
@@ -150,7 +150,7 @@ const DropdownMenuLabel = React.forwardRef<HTMLDivElement, DropdownMenuLabelProp
     return (
       <div
         ref={ref}
-        className={cn('px-2 py-1.5 text-xs font-semibold text-slate-400', className)}
+        className={cn('px-2 py-1.5 text-xs font-semibold text-muted-foreground', className)}
         {...props}
       >
         {children}
@@ -165,7 +165,7 @@ const DropdownMenuSeparator = React.forwardRef<HTMLDivElement, DropdownMenuSepar
     return (
       <div
         ref={ref}
-        className={cn('-mx-1 my-1 h-px bg-slate-700', className)}
+        className={cn('-mx-1 my-1 h-px bg-border', className)}
         {...props}
       />
     )

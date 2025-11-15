@@ -313,11 +313,11 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Commands list */}
-        <ScrollArea className="max-h-[400px] border-t border-slate-700">
+        <ScrollArea className="max-h-[400px] border-t border-border">
           <div className="p-2">
             {Object.entries(groupedCommands).map(([category, cmds]) => (
               <div key={category} className="mb-3 last:mb-0">
-                <div className="px-2 py-1 text-xs font-medium text-slate-400">{category}</div>
+                <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{category}</div>
                 {cmds.map((cmd, index) => {
                   const globalIndex = filteredCommands.indexOf(cmd)
                   const isSelected = globalIndex === selectedIndex
@@ -332,11 +332,11 @@ export const CommandPalette: React.FC = () => {
                         'flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors',
                         isSelected
                           ? 'bg-blue-600 text-white'
-                          : 'hover:bg-slate-800 text-slate-200'
+                          : 'hover:bg-accent text-foreground'
                       )}
                     >
                       {/* Icon */}
-                      <div className={cn('shrink-0', isSelected ? 'text-white' : 'text-slate-400')}>
+                      <div className={cn('shrink-0', isSelected ? 'text-white' : 'text-muted-foreground')}>
                         {cmd.icon}
                       </div>
 
@@ -356,7 +356,7 @@ export const CommandPalette: React.FC = () => {
                           <div
                             className={cn(
                               'text-xs truncate',
-                              isSelected ? 'text-blue-100' : 'text-slate-500'
+                              isSelected ? 'text-blue-100' : 'text-muted-foreground'
                             )}
                           >
                             {cmd.description}
@@ -372,7 +372,7 @@ export const CommandPalette: React.FC = () => {
                             'text-xs shrink-0',
                             isSelected
                               ? 'border-blue-300 text-blue-100'
-                              : 'border-slate-600 text-slate-400'
+                              : 'border-border text-muted-foreground'
                           )}
                         >
                           {cmd.shortcut}
@@ -385,7 +385,7 @@ export const CommandPalette: React.FC = () => {
             ))}
 
             {filteredCommands.length === 0 && (
-              <div className="text-center py-8 text-slate-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No commands found</p>
                 <p className="text-xs mt-1">Try a different search term</p>
@@ -395,9 +395,9 @@ export const CommandPalette: React.FC = () => {
         </ScrollArea>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t border-slate-700 text-xs text-slate-500 flex items-center justify-between">
+        <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
           <span>Navigate with ↑↓ • Execute with Enter • Close with Esc</span>
-          <span className="text-slate-600">Ctrl+Shift+P</span>
+          <span className="opacity-60">Ctrl+Shift+P</span>
         </div>
       </DialogContent>
     </Dialog>

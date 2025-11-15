@@ -2,7 +2,18 @@ import { StateCreator } from 'zustand'
 import { AppStore } from '..'
 
 export type Theme = 'light' | 'dark' | 'system'
-export type PanelId = 'file-explorer' | 'entity-browser' | 'entity-detail' | 'image-gallery' | 'image-detail' | 'notes' | 'ai-chat' | 'ai-suggestions' | 'search' | 'timeline' | 'markdown-preview'
+export type PanelId =
+  | 'file-explorer'
+  | 'entity-browser'
+  | 'entity-detail'
+  | 'image-gallery'
+  | 'image-detail'
+  | 'notes'
+  | 'ai-chat'
+  | 'ai-suggestions'
+  | 'search'
+  | 'timeline'
+  | 'markdown-preview'
 
 export interface UISlice {
   theme: Theme
@@ -40,7 +51,7 @@ export const createUISlice: StateCreator<
   panelSizes: {
     'file-explorer': 250,
     'entity-browser': 300,
-    'markdown-preview': 50, // percentage
+    'markdown-preview': 50 // percentage
   },
   // Dialog states
   createBookDialogOpen: false,
@@ -112,5 +123,5 @@ export const createUISlice: StateCreator<
   setSettingsDialogOpen: (open) =>
     set((state) => {
       state.settingsDialogOpen = open
-    }),
+    })
 })
