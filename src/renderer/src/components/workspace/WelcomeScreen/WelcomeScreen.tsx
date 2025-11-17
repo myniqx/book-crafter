@@ -1,70 +1,39 @@
-import React, { useState } from 'react'
-import { Button } from '@renderer/components/ui/button'
-import { Input } from '@renderer/components/ui/input'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@renderer/components/ui/card'
-import { Label } from '@renderer/components/ui/label'
-import { useStore } from '@renderer/store'
+import React from 'react'
+import { StartPanel } from './StartPanel'
+import { RecentProjectsList } from './RecentProjectsList'
 
+/**
+ * WelcomeScreen - VSCode style start page
+ *
+ * Layout:
+ * [Start Panel (40%)] | [Recent Projects (60%)]
+ *
+ * Features:
+ * - Recent projects list with validation
+ * - Create new project with folder selection
+ * - Open existing workspace
+ * - Help links
+ */
 export const WelcomeScreen: React.FC = () => {
-  const [projectName, setProjectName] = useState('')
-  const [author, setAuthor] = useState('')
-
-  const createNewWorkspace = useStore((state) => state.createNewWorkspace)
-
-  const handleCreateWorkspace = (): void => {
-    if (projectName && author) {
-      createNewWorkspace(projectName, author)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent): void => {
-    if (e.key === 'Enter' && projectName && author) {
-      handleCreateWorkspace()
-    }
-  }
-
   return (
-    <div className="flex items-center justify-center h-screen bg-[hsl(var(--background))] p-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-3xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-            Welcome to Book Crafter
-          </CardTitle>
-          <CardDescription>
-            Create a new workspace to start writing your book
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="projectName">Project Name</Label>
-            <Input
-              id="projectName"
-              placeholder="My Awesome Book"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              autoFocus
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="author">Author Name</Label>
-            <Input
-              id="author"
-              placeholder="John Doe"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-          </div>
-          <Button
-            className="w-full"
-            onClick={handleCreateWorkspace}
-            disabled={!projectName || !author}
-          >
-            Create Workspace
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="h-screen w-screen flex bg-[hsl(var(--background))]">
+      {/* Left: Start Panel */}
+      <div className="w-[40%] border-r border-[hsl(var(--border))] overflow-y-auto">
+        <StartPanel />
+      </div>
+
+      {/* Right: Recent Projects */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="border-b border-[hsl(var(--border))] p-4">
+          <h2 className="text-lg font-semibold text-slate-200">Recent Projects</h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Click on a project to open it, or create a new one
+          </p>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <RecentProjectsList />
+        </div>
+      </div>
     </div>
   )
 }

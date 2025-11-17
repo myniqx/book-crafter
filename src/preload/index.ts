@@ -6,7 +6,10 @@ import type {
   FileWriteOptions,
   ReadDirOptions,
   FetchOptions,
-  StreamOptions
+  StreamOptions,
+  DialogOpenFileOptions,
+  DialogOpenDirectoryOptions,
+  DialogSaveFileOptions
 } from '../types/ipc'
 
 // File System API
@@ -54,6 +57,18 @@ const fsAPI = {
       await ipcRenderer.invoke('fs:unwatch', watcherId)
     }
   }
+}
+
+// Dialog API
+const dialogAPI = {
+  openFile: (options?: DialogOpenFileOptions) =>
+    ipcRenderer.invoke('dialog:openFile', options),
+
+  openDirectory: (options?: DialogOpenDirectoryOptions) =>
+    ipcRenderer.invoke('dialog:openDirectory', options),
+
+  saveFile: (options?: DialogSaveFileOptions) =>
+    ipcRenderer.invoke('dialog:saveFile', options)
 }
 
 // Fetch API
@@ -128,7 +143,9 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', {
       fs: fsAPI,
-      fetch: fetchAPI
+      fetch: fetchAPI,
+      http: fetchAPI,
+      dialog: dialogAPI
     } as IPCBridge)
   } catch (error) {
     console.error(error)
@@ -139,6 +156,8 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.api = {
     fs: fsAPI,
-    fetch: fetchAPI
+    fetch: fetchAPI,
+    http: fetchAPI,
+    dialog: dialogAPI
   } as IPCBridge
 }

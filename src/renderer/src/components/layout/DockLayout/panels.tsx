@@ -64,24 +64,10 @@ const ImageDetailPanel: React.FC = () => {
 const panelRegistry: Map<string, PanelConfig> = new Map()
 
 // Register default panels
+// NOTE: Panels like file-explorer, entity-browser, notes, search, ai-chat, timeline,
+// and markdown-preview are now in Sidebar. Only editor-related panels remain in DockLayout.
 export function registerDefaultPanels(): void {
   const defaultPanels: PanelConfig[] = [
-    {
-      id: 'file-explorer',
-      title: 'Files',
-      content: <BookExplorer />,
-      group: 'explorer',
-      minWidth: 250,
-      closable: false
-    },
-    {
-      id: 'entity-browser',
-      title: 'Entities',
-      content: <EntityBrowser />,
-      group: 'explorer',
-      minWidth: 250,
-      closable: true
-    },
     {
       id: 'entity-detail',
       title: 'Entity Detail',
@@ -91,42 +77,10 @@ export function registerDefaultPanels(): void {
       closable: true
     },
     {
-      id: 'markdown-preview',
-      title: 'Preview',
-      content: <MarkdownPreview />,
-      group: 'preview',
-      minWidth: 300,
-      closable: true
-    },
-    {
-      id: 'image-gallery',
-      title: 'Images',
-      content: <ImageGallery />,
-      group: 'media',
-      minWidth: 250,
-      closable: true
-    },
-    {
       id: 'image-detail',
       title: 'Image Detail',
       content: <ImageDetailPanel />,
-      group: 'media',
-      minWidth: 300,
-      closable: true
-    },
-    {
-      id: 'notes',
-      title: 'Notes',
-      content: <NotesList />,
-      group: 'media',
-      minWidth: 250,
-      closable: true
-    },
-    {
-      id: 'ai-chat',
-      title: 'AI Chat',
-      content: <AIChatPanel />,
-      group: 'ai',
+      group: 'detail',
       minWidth: 300,
       closable: true
     },
@@ -136,22 +90,6 @@ export function registerDefaultPanels(): void {
       content: <AISuggestionsPanel />,
       group: 'ai',
       minWidth: 300,
-      closable: true
-    },
-    {
-      id: 'search',
-      title: 'Search',
-      content: <SearchPanel />,
-      group: 'tools',
-      minWidth: 300,
-      closable: true
-    },
-    {
-      id: 'timeline',
-      title: 'Timeline',
-      content: <PlaceholderPanel title="Activity Timeline" />,
-      group: 'tools',
-      minWidth: 200,
       closable: true
     }
   ]
@@ -199,7 +137,9 @@ const EditorWelcome: React.FC = () => (
   </div>
 )
 
-// Create default layout (VSCode-style)
+// Create default layout
+// NOTE: Sidebar panels (file-explorer, entity-browser, etc.) are managed separately.
+// DockLayout is now focused on the main editor area.
 export function createDefaultLayout(): LayoutData {
   // Ensure panels are registered
   if (panelRegistry.size === 0) {
@@ -208,46 +148,23 @@ export function createDefaultLayout(): LayoutData {
 
   return {
     dockbox: {
-      mode: 'horizontal',
+      mode: 'vertical',
       children: [
-        // Left panel: Files (collapsible, starts open)
         {
-          mode: 'vertical',
-          size: 280,
-          children: [
+          tabs: [
             {
-              tabs: [
-                {
-                  id: 'file-explorer',
-                  title: 'Files',
-                  content: <BookExplorer />,
-                  closable: false
-                } as TabData
-              ]
-            }
-          ]
-        },
-        // Center: Editor area (main, wide)
-        {
-          mode: 'vertical',
-          children: [
-            {
-              tabs: [
-                {
-                  id: 'editor-welcome',
-                  title: 'Welcome',
-                  content: <EditorWelcome />,
-                  closable: false
-                } as TabData
-              ]
-            }
+              id: 'editor-welcome',
+              title: 'Welcome',
+              content: <EditorWelcome />,
+              closable: false
+            } as TabData
           ]
         }
       ]
     },
     floatbox: {
       mode: 'float',
-      children: []
+      children: [] // Floating panels disabled (causes z-index issues)
     }
   }
 }

@@ -29,8 +29,8 @@ function CreateBookButton({ onCreate }: { onCreate: (book) => void }) {
 
 ```tsx
 // in /components/{section}/CreateBookButton/CreateBookButton.tsx
-import React from "react"
-import type { CreateBookButtonProps } from "./types"
+import React from 'react'
+import type { CreateBookButtonProps } from './types'
 
 // Component manages its own store connection
 export const CreateBookButton: React.FC<CreateBookButtonProps> = ({
@@ -44,7 +44,11 @@ export const CreateBookButton: React.FC<CreateBookButtonProps> = ({
     addBook(book) // Action executed here
   }
 
-  return <Button onClick={handleCreate} {...rest}>Create Book</Button>
+  return (
+    <Button onClick={handleCreate} {...rest}>
+      Create Book
+    </Button>
+  )
 }
 
 // in /components/{section}/CreateBookButton/index.ts
@@ -220,6 +224,7 @@ const CreateChapterForm: React.FC<CreateChapterFormProps> = ({ bookSlug }) => {
 **Folder-based Component Organization:**
 
 Each component gets its own folder with:
+
 - `ComponentName.tsx` - Main component file
 - `types.ts` - TypeScript interfaces (optional, if props needed)
 - `index.ts` - Re-exports (ONLY main component, not child components)
@@ -399,34 +404,21 @@ export const EntityCard: React.FC<EntityCardProps> = ({
 
 Book Crafter should feel like a professional writing tool (Notion, Obsidian, Ulysses).
 
-**Color Palette:**
-- **Dark Theme (Primary):**
-  - Background: `slate-900` / `slate-950`
-  - Surface: `slate-800` / `slate-700`
-  - Text Primary: `slate-50` / `white`
-  - Text Secondary: `slate-400` / `slate-500`
-  - Accent: `blue-500` / `purple-600` (gradients for branding)
-  - Borders: `slate-700` / `slate-600`
-
-- **Light Theme (Secondary):**
-  - Background: `slate-50` / `white`
-  - Surface: `white` / `slate-100`
-  - Text Primary: `slate-900`
-  - Text Secondary: `slate-600`
-  - Borders: `slate-200`
-
 **Typography:**
+
 - **Headings:** Clean, bold, modern (Inter, System UI)
 - **Body:** Readable, comfortable (System fonts)
 - **Code/Monospace:** Monaco, Consolas, SF Mono
 - **Line Height:** Generous for readability (1.6 - 1.8)
 
 **Spacing:**
+
 - Use consistent spacing scale: `2, 4, 6, 8, 12, 16, 24, 32, 48`
 - Generous padding in panels and cards
 - Clear visual hierarchy
 
 **Components Style:**
+
 - **Rounded corners:** Medium (`rounded-lg`, `rounded-xl`)
 - **Shadows:** Subtle, layered (`shadow-sm`, `shadow-md`)
 - **Borders:** Minimal, subtle (`border-slate-700`)
@@ -434,6 +426,7 @@ Book Crafter should feel like a professional writing tool (Notion, Obsidian, Uly
 - **Focus states:** Ring with accent color
 
 **Layout Principles:**
+
 - **Clean workspace:** Minimal chrome, focus on content
 - **Collapsible sidebars:** More space for writing
 - **Dockable panels:** Flexible, customizable layout
@@ -441,18 +434,21 @@ Book Crafter should feel like a professional writing tool (Notion, Obsidian, Uly
 - **Tab system:** Clear, closable, reorderable
 
 **Icons:**
+
 - Use Lucide React (already installed)
 - Consistent stroke width (1.5 - 2)
 - 16px or 20px for most UI elements
 - 24px for prominent actions
 
 **Animations:**
+
 - Subtle, purposeful
 - Fast transitions (150-200ms)
 - Use Tailwind's `transition-*` utilities
 - Prefer `ease-in-out` easing
 
 **Reference Apps for Inspiration:**
+
 - Notion (clean, minimal UI)
 - Obsidian (writing-focused, customizable)
 - VSCode (professional, efficient)

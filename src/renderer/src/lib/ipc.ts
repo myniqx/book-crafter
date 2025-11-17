@@ -329,9 +329,68 @@ export const http = {
 }
 
 /**
+ * Dialog Operations
+ */
+export const dialog = {
+  /**
+   * Open file dialog
+   */
+  async openFile(options?: {
+    title?: string
+    defaultPath?: string
+    filters?: Array<{ name: string; extensions: string[] }>
+    multiSelect?: boolean
+  }): Promise<{ canceled: boolean; filePath?: string; filePaths?: string[] }> {
+    try {
+      const api = getAPI()
+      return await api.dialog.openFile({
+        ...options,
+        properties: options?.multiSelect ? ['openFile', 'multiSelections'] : ['openFile']
+      })
+    } catch (error) {
+      handleIPCError(error)
+    }
+  },
+
+  /**
+   * Open directory dialog
+   */
+  async openDirectory(options?: {
+    title?: string
+    defaultPath?: string
+    buttonLabel?: string
+  }): Promise<{ canceled: boolean; filePath?: string }> {
+    try {
+      const api = getAPI()
+      return await api.dialog.openDirectory(options)
+    } catch (error) {
+      handleIPCError(error)
+    }
+  },
+
+  /**
+   * Save file dialog
+   */
+  async saveFile(options?: {
+    title?: string
+    defaultPath?: string
+    buttonLabel?: string
+    filters?: Array<{ name: string; extensions: string[] }>
+  }): Promise<{ canceled: boolean; filePath?: string }> {
+    try {
+      const api = getAPI()
+      return await api.dialog.saveFile(options)
+    } catch (error) {
+      handleIPCError(error)
+    }
+  }
+}
+
+/**
  * Default export with all IPC utilities
  */
 export default {
   fs,
-  http
+  http,
+  dialog
 }

@@ -65,9 +65,9 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const currentChapter =
     bookSlug && chapterSlug
       ? {
-          book: books[bookSlug],
-          chapter: books[bookSlug]?.chapters.find((c) => c.slug === chapterSlug)
-        }
+        book: books[bookSlug],
+        chapter: books[bookSlug]?.chapters.find((c) => c.slug === chapterSlug)
+      }
       : null
 
   // Auto-scroll to bottom on new messages
@@ -177,7 +177,9 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Bot className="h-12 w-12 text-muted mb-4" />
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">AI Writing Assistant</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                AI Writing Assistant
+              </h3>
               <p className="text-xs text-muted-foreground max-w-sm">
                 Ask me anything about your story, characters, or writing. I can help expand scenes,
                 check grammar, suggest improvements, and more.
@@ -292,7 +294,12 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 /**
  * Message bubble component
  */
-const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp, isStreaming = false }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({
+  role,
+  content,
+  timestamp,
+  isStreaming = false
+}) => {
   const isUser = role === 'user'
   const [copied, setCopied] = useState(false)
 
@@ -334,9 +341,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp,
             )}
           >
             <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
-            {isStreaming && (
-              <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
-            )}
+            {isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />}
           </Card>
 
           {/* Copy button - only for assistant messages */}
@@ -347,11 +352,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ role, content, timestamp,
               onClick={handleCopy}
               className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-muted hover:bg-accent"
             >
-              {copied ? (
-                <Check className="h-3 w-3 text-green-400" />
-              ) : (
-                <Copy className="h-3 w-3" />
-              )}
+              {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
             </Button>
           )}
         </div>

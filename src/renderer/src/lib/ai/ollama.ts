@@ -62,7 +62,9 @@ export class OllamaProvider implements AIProviderInterface {
       }
     } catch (error) {
       console.error('Ollama completion error:', error)
-      throw new Error(`Ollama request failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Ollama request failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -93,6 +95,7 @@ export class OllamaProvider implements AIProviderInterface {
 
     try {
       // Use IPC fetch with streaming
+      // TODO: check if this api is correct IPC function
       if (!window.api?.http?.stream) {
         throw new Error('HTTP streaming API not available')
       }
@@ -112,7 +115,9 @@ export class OllamaProvider implements AIProviderInterface {
       })
     } catch (error) {
       console.error('Ollama streaming error:', error)
-      throw new Error(`Ollama streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error( // TODO: it give 400 error
+        `Ollama streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -151,6 +156,7 @@ export class OllamaProvider implements AIProviderInterface {
       const data = JSON.parse(response)
 
       if (data.models && Array.isArray(data.models)) {
+        // TODO: dont use any!
         return data.models.map((m: any) => m.name)
       }
 

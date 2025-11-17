@@ -1,101 +1,69 @@
 import React from 'react'
+import { useSidebarStore, useCoreStore, type PanelId } from '@renderer/store'
+import { ActivityBar } from './ActivityBar'
+import { SidebarPanel } from './SidebarPanel'
 import {
-  FileText,
-  Users,
-  Image as ImageIcon,
-  StickyNote,
-  MessageSquare,
-  Search,
-  Clock,
-  Eye,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
-import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
-import type { PanelId } from '@renderer/store/slices/uiSlice'
+  FileExplorerPanel,
+  EntityBrowserPanel,
+  ImageGalleryPanel,
+  NotesPanel,
+  SearchPanel,
+  AIChatPanel,
+  TimelinePanel,
+  MarkdownPreviewPanel
+} from './panels'
 
-interface SidebarItem {
+interface PanelConfig {
   id: PanelId
-  icon: React.ComponentType<{ className?: string }>
-  label: string
+  title: string
+  component: React.ComponentType
+  requiresWorkspace: boolean
 }
 
-const sidebarItems: SidebarItem[] = [
-  { id: 'file-explorer', icon: FileText, label: 'Files' },
-  { id: 'entity-browser', icon: Users, label: 'Entities' },
-  { id: 'image-gallery', icon: ImageIcon, label: 'Images' },
-  { id: 'notes', icon: StickyNote, label: 'Notes' },
-  { id: 'search', icon: Search, label: 'Search' },
-  { id: 'ai-chat', icon: MessageSquare, label: 'AI Chat' },
-  { id: 'timeline', icon: Clock, label: 'Timeline' },
-  { id: 'markdown-preview', icon: Eye, label: 'Preview' }
+const panelConfigs: PanelConfig[] = [
+  { id: 'file-explorer', title: 'Files', component: FileExplorerPanel, requiresWorkspace: true },
+  { id: 'entity-browser', title: 'Entities', component: EntityBrowserPanel, requiresWorkspace: true },
+  { id: 'image-gallery', title: 'Images', component: ImageGalleryPanel, requiresWorkspace: true },
+  { id: 'notes', title: 'Notes', component: NotesPanel, requiresWorkspace: true },
+  { id: 'search', title: 'Search', component: SearchPanel, requiresWorkspace: true },
+  { id: 'ai-chat', title: 'AI Chat', component: AIChatPanel, requiresWorkspace: false },
+  { id: 'timeline', title: 'Timeline', component: TimelinePanel, requiresWorkspace: true },
+  { id: 'markdown-preview', title: 'Preview', component: MarkdownPreviewPanel, requiresWorkspace: false }
 ]
 
 export const Sidebar: React.FC = () => {
-  const sidebarCollapsed = useStore((state) => state.sidebarCollapsed)
-  const activePanels = useStore((state) => state.activePanels)
-  const toggleSidebar = useStore((state) => state.toggleSidebar)
-  const togglePanel = useStore((state) => state.togglePanel)
+  const activePanel = useSidebarStore((state) => state.activePanel)
+  const panelVisible = useSidebarStore((state) => state.panelVisible)
+  const closePanel = useSidebarStore((state) => state.closePanel)
+  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
 
-  const handleToggle = (): void => {
-    toggleSidebar()
-  }
+  const hasWorkspace = workspaceConfig !== null
 
-  const handlePanelClick = (panelId: PanelId): void => {
-    togglePanel(panelId)
-  }
+  // Find active panel config
+  const activePanelConfig = panelConfigs.find((config) => config.id === activePanel)
+
+  // Close workspace-dependent panels when workspace is closed
+  React.useEffect(() => {
+    if (!hasWorkspace && activePanelConfig?.requiresWorkspace) {
+      closePanel()
+    }
+  }, [hasWorkspace, activePanelConfig, closePanel])
+
+  // Render active panel component
+  const PanelComponent = activePanelConfig?.component
 
   return (
-    <div
-      className={cn(
-        'h-full bg-slate-900 border-r border-slate-700',
-        'flex flex-col transition-all duration-200',
-        sidebarCollapsed ? 'w-12' : 'w-12'
-      )}
-    >
-      {/* Toggle button */}
-      <button
-        onClick={handleToggle}
-        className={cn(
-          'h-10 w-full flex items-center justify-center',
-          'hover:bg-slate-800 transition-colors',
-          'border-b border-slate-700',
-          'text-slate-400 hover:text-slate-200'
-        )}
-        title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-      </button>
+    <div className="h-full flex">
+      {/* Activity Bar (Icon Bar) - Always visible */}
+      <ActivityBar />
 
-      {/* Panel buttons */}
-      {!sidebarCollapsed && (
-        <div className="flex-1 flex flex-col gap-1 py-2">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activePanels.includes(item.id)
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => handlePanelClick(item.id)}
-                className={cn(
-                  'h-10 w-full flex items-center justify-center',
-                  'hover:bg-slate-800 transition-colors relative',
-                  'text-slate-400 hover:text-slate-200',
-                  isActive && 'bg-slate-800 text-blue-500'
-                )}
-                title={item.label}
-              >
-                <Icon className="h-5 w-5" />
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r" />
-                )}
-              </button>
-            )
-          })}
-        </div>
+      {/* Sidebar Panel (Content Area) - Conditionally visible */}
+      {panelVisible && activePanelConfig && PanelComponent && (
+        <SidebarPanel title={activePanelConfig.title}>
+          <PanelComponent />
+        </SidebarPanel>
       )}
     </div>
   )
 }
+

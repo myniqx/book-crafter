@@ -3,6 +3,8 @@ import { cn } from '@renderer/lib/utils'
 
 interface DropdownMenuProps {
   children: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 interface DropdownMenuTriggerProps {
@@ -26,6 +28,10 @@ interface DropdownMenuLabelProps extends React.HTMLAttributes<HTMLDivElement> {
 
 interface DropdownMenuSeparatorProps extends React.HTMLAttributes<HTMLDivElement> {}
 
+interface DropdownMenuShortcutProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode
+}
+
 const DropdownMenuContext = React.createContext<{
   isOpen: boolean
   setIsOpen: (open: boolean) => void
@@ -34,8 +40,21 @@ const DropdownMenuContext = React.createContext<{
   setIsOpen: () => {}
 })
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = React.useState(false)
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ children, open, onOpenChange }) => {
+  const [internalOpen, setInternalOpen] = React.useState(false)
+
+  // Use controlled state if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalOpen
+  const setIsOpen = React.useCallback(
+    (newOpen: boolean) => {
+      if (onOpenChange) {
+        onOpenChange(newOpen)
+      } else {
+        setInternalOpen(newOpen)
+      }
+    },
+    [onOpenChange]
+  )
 
   return (
     <DropdownMenuContext.Provider value={{ isOpen, setIsOpen }}>
@@ -173,11 +192,27 @@ const DropdownMenuSeparator = React.forwardRef<HTMLDivElement, DropdownMenuSepar
 )
 DropdownMenuSeparator.displayName = 'DropdownMenuSeparator'
 
+const DropdownMenuShortcut = React.forwardRef<HTMLSpanElement, DropdownMenuShortcutProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn('ml-auto text-xs tracking-widest opacity-60', className)}
+        {...props}
+      >
+        {children}
+      </span>
+    )
+  }
+)
+DropdownMenuShortcut.displayName = 'DropdownMenuShortcut'
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuShortcut
 }

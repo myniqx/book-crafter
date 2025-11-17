@@ -65,8 +65,9 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     })
 
     // Remove panels that shouldn't be active
+    // NOTE: editor-welcome is always kept
     currentPanelIds.forEach((panelId) => {
-      if (!activePanels.includes(panelId as any) && panelId !== 'file-explorer') {
+      if (!activePanels.includes(panelId as any) && panelId !== 'editor-welcome') {
         console.log('DockLayout: Removing panel', panelId)
         dock.dockMove({ id: panelId } as TabData, null, 'remove')
       }
@@ -78,7 +79,14 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     try {
       const saved = localStorage.getItem('book-crafter-layout')
       if (saved) {
-        return JSON.parse(saved) as LayoutData
+        const layout = JSON.parse(saved) as LayoutData
+
+        // IMPORTANT: Clear floating panels (they cause UI blocking issues)
+        if (layout.floatbox) {
+          layout.floatbox.children = []
+        }
+
+        return layout
       }
     } catch (error) {
       console.error('Failed to load layout:', error)
@@ -127,7 +135,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
 
     // Remove from activePanels if closed in DockLayout
     activePanels.forEach((panelId) => {
-      if (!currentPanelIds.has(panelId) && panelId !== 'file-explorer') {
+      if (!currentPanelIds.has(panelId)) {
         console.log('DockLayout: Panel closed, removing from store:', panelId)
         hidePanel(panelId)
       }

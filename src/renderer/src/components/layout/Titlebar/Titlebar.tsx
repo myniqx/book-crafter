@@ -1,11 +1,12 @@
 import React from 'react'
 import { Minimize2, Maximize2, X, BookOpen } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
+import { useCoreStore } from '@renderer/store'
 import { SettingsDialog } from '@renderer/components/settings/SettingsDialog'
+import { MenuBar } from './MenuBar'
 
 export const Titlebar: React.FC = () => {
-  const workspaceConfig = useStore((state) => state.workspaceConfig)
+  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
   const projectName = workspaceConfig?.projectName || 'Book Crafter'
 
   const handleMinimize = (): void => {
@@ -27,19 +28,24 @@ export const Titlebar: React.FC = () => {
     <div
       className={cn(
         'h-8 bg-[hsl(var(--background))] border-b border-[hsl(var(--border))]',
-        'flex items-center justify-between px-3',
+        'flex items-center justify-between',
         'select-none'
       )}
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
-      {/* Left: App icon and project name */}
-      <div className="flex items-center gap-2">
+      {/* Left: App icon, MenuBar, and project name */}
+      <div className="flex items-center gap-2 pl-3">
         <BookOpen className="h-4 w-4 text-[hsl(var(--primary))]" />
+        <MenuBar />
+        <div className="h-4 w-px bg-[hsl(var(--border))]" /> {/* Separator */}
         <span className="text-sm font-medium text-[hsl(var(--foreground))]">{projectName}</span>
       </div>
 
       {/* Right: Settings and window controls */}
-      <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+      <div
+        className="flex items-center gap-1 pr-3"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
         <SettingsDialog />
         <button
           onClick={handleMinimize}

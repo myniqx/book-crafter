@@ -66,11 +66,45 @@ export interface FetchAPI {
   stream: (url: string, options: StreamOptions) => Promise<void>
 }
 
+// Dialog Types
+export interface DialogOpenFileOptions {
+  title?: string
+  defaultPath?: string
+  filters?: Array<{ name: string; extensions: string[] }>
+  properties?: Array<'openFile' | 'multiSelections'>
+}
+
+export interface DialogOpenDirectoryOptions {
+  title?: string
+  defaultPath?: string
+  buttonLabel?: string
+}
+
+export interface DialogSaveFileOptions {
+  title?: string
+  defaultPath?: string
+  buttonLabel?: string
+  filters?: Array<{ name: string; extensions: string[] }>
+}
+
+export interface DialogResult {
+  canceled: boolean
+  filePath?: string
+  filePaths?: string[]
+}
+
+export interface DialogAPI {
+  openFile: (options?: DialogOpenFileOptions) => Promise<DialogResult>
+  openDirectory: (options?: DialogOpenDirectoryOptions) => Promise<DialogResult>
+  saveFile: (options?: DialogSaveFileOptions) => Promise<DialogResult>
+}
+
 // Combined IPC API
 export interface IPCBridge {
   fs: FileSystemAPI
   fetch: FetchAPI
   http: FetchAPI // Alias for compatibility with AppAPI
+  dialog: DialogAPI
 }
 
 // Error types

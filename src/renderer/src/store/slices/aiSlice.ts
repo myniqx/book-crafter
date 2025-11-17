@@ -83,12 +83,10 @@ export interface AISlice {
 /**
  * Create AI slice
  */
-export const createAISlice: StateCreator<
-  AISlice,
-  [['zustand/immer', never]],
-  [],
-  AISlice
-> = (set, get) => ({
+export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], [], AISlice> = (
+  set,
+  get
+) => ({
   // Initial state
   ollamaConfig: DEFAULT_AI_CONFIGS.ollama,
   openaiConfig: DEFAULT_AI_CONFIGS.openai,
