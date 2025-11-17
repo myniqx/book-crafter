@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig } from './types'
 import { EntityBrowser } from '@renderer/components/entities/EntityBrowser'
@@ -11,7 +11,90 @@ import { NotesList } from '@renderer/components/notes/NotesList'
 import { SearchPanel } from '@renderer/components/search/SearchPanel'
 import { AIChatPanel } from '@renderer/components/ai/AIChatPanel'
 import { AISuggestionsPanel } from '@renderer/components/ai/AISuggestionsPanel'
-import { useStore } from '@renderer/store'
+import { MonacoEditor } from '@renderer/components/editor/MonacoEditor'
+import { useStore, useContentStore } from '@renderer/store'
+import { fs } from '@renderer/lib/ipc'
+import { getChapterContentPath } from '@renderer/lib/books'
+
+// Chapter Editor Panel
+interface ChapterEditorPanelProps {
+  bookSlug: string
+  chapterSlug: string
+}
+
+const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({ bookSlug, chapterSlug }) => {
+  const [content, setContent] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const workspacePath = useStore((state) => state.workspacePath)
+  const book = useContentStore((state) => state.books[bookSlug])
+  const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
+  const updateChapter = useContentStore((state) => state.updateChapter)
+  const setHasUnsavedChanges = useStore((state) => state.setHasUnsavedChanges)
+
+  // Load chapter content from disk
+  useEffect(() => {
+    const loadContent = async () => {
+      if (!workspacePath || !chapter) return
+
+      try {
+        setIsLoading(true)
+        const contentPath = getChapterContentPath(workspacePath, bookSlug, chapterSlug)
+        const loadedContent = await fs.readFile(contentPath, 'utf-8')
+        setContent(loadedContent)
+      } catch (error) {
+        console.error('Failed to load chapter content:', error)
+        setContent('') // Initialize with empty content if file doesn't exist
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadContent()
+  }, [workspacePath, bookSlug, chapterSlug, chapter])
+
+  // Save content with debounce
+  const handleContentChange = (newContent: string | undefined) => {
+    if (newContent === undefined) return
+
+    setContent(newContent)
+    setHasUnsavedChanges(true)
+
+    // Update chapter content in store
+    if (chapter) {
+      updateChapter(bookSlug, chapterSlug, { content: newContent })
+    }
+
+    // TODO: Implement debounced auto-save
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <p className="text-slate-400">Loading chapter...</p>
+      </div>
+    )
+  }
+
+  if (!chapter) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <p className="text-slate-400">Chapter not found</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full w-full">
+      <MonacoEditor
+        value={content}
+        onChange={handleContentChange}
+        language="markdown"
+      />
+    </div>
+  )
+}
 
 // Placeholder panel content components
 // These will be replaced with actual components later
@@ -136,6 +219,24 @@ const EditorWelcome: React.FC = () => (
     </div>
   </div>
 )
+
+// Create editor tabs from store
+export function createEditorTabsFromStore(
+  openEditorTabs: Array<{ bookSlug: string; chapterSlug: string }>,
+  books: Record<string, { title: string; chapters: Array<{ slug: string; title: string }> }>
+): TabData[] {
+  return openEditorTabs.map(({ bookSlug, chapterSlug }) => {
+    const book = books[bookSlug]
+    const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
+
+    return {
+      id: `editor-${bookSlug}-${chapterSlug}`,
+      title: chapter?.title || chapterSlug,
+      content: <ChapterEditorPanel bookSlug={bookSlug} chapterSlug={chapterSlug} />,
+      closable: true
+    }
+  })
+}
 
 // Create default layout
 // NOTE: Sidebar panels (file-explorer, entity-browser, etc.) are managed separately.

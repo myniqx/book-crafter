@@ -11,6 +11,8 @@ import {
 import { useStore, useCoreStore, useSidebarStore } from '@renderer/store'
 import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
+import { CreateProjectDialog } from '@renderer/components/workspace/CreateProjectDialog'
+import { OpenProjectDialog } from '@renderer/components/workspace/OpenProjectDialog'
 
 interface MenuItem {
   label: string
@@ -27,12 +29,16 @@ interface MenuBarProps {
 
 export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [createProjectDialogOpen, setCreateProjectDialogOpen] = useState(false)
+  const [openProjectDialogOpen, setOpenProjectDialogOpen] = useState(false)
 
   // Store hooks (self-contained, no props!)
   const setCreateBookDialogOpen = useCoreStore((state) => state.setCreateBookDialogOpen)
   const setCreateEntityDialogOpen = useCoreStore((state) => state.setCreateEntityDialogOpen)
   const setCreateNoteDialogOpen = useCoreStore((state) => state.setCreateNoteDialogOpen)
   const setSettingsDialogOpen = useCoreStore((state) => state.setSettingsDialogOpen)
+  const setWorkspaceConfig = useCoreStore((state) => state.setWorkspaceConfig)
+  const setWorkspacePath = useCoreStore((state) => state.setWorkspacePath)
   const toggleSidebar = useStore((state) => state.toggleSidebar)
   const togglePanel = useSidebarStore((state) => state.togglePanel)
   const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
@@ -43,23 +49,28 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
 
     switch (action) {
       // File menu
+      case 'new-project':
+        setCreateProjectDialogOpen(true)
+        break
+
+      case 'open-folder':
+        setOpenProjectDialogOpen(true)
+        break
+
+      case 'close-workspace':
+        if (workspaceConfig) {
+          setWorkspaceConfig(null)
+          setWorkspacePath(null)
+          toast.success('Workspace closed', 'Workspace has been closed')
+        }
+        break
+
       case 'new-book':
         setCreateBookDialogOpen(true)
         break
 
       case 'open-workspace':
-        try {
-          const result = await dialog.openDirectory({
-            title: 'Open Workspace',
-            buttonLabel: 'Open'
-          })
-          if (!result.canceled && result.filePath) {
-            toast.info('Open Workspace', `Selected: ${result.filePath}`)
-            // TODO: Load workspace from path
-          }
-        } catch (error) {
-          toast.error('Failed to open workspace', String(error))
-        }
+        setOpenProjectDialogOpen(true)
         break
 
       case 'save':
@@ -165,8 +176,11 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
 
   // File menu items
   const fileMenuItems: MenuItem[] = [
-    { label: 'New Book', action: 'new-book', shortcut: 'Ctrl+N' },
-    { label: 'Open Workspace', action: 'open-workspace', shortcut: 'Ctrl+O' },
+    { label: 'New Project', action: 'new-project', shortcut: 'Ctrl+Shift+N' },
+    { label: 'Open Folder', action: 'open-folder', shortcut: 'Ctrl+O' },
+    { label: 'Close Workspace', action: 'close-workspace', disabled: !workspaceConfig },
+    { separator: true },
+    { label: 'New Book', action: 'new-book', shortcut: 'Ctrl+N', disabled: !workspaceConfig },
     { separator: true },
     { label: 'Save', action: 'save', shortcut: 'Ctrl+S', disabled: !workspaceConfig },
     { label: 'Save All', action: 'save-all', shortcut: 'Ctrl+Shift+S', disabled: !workspaceConfig },
@@ -268,12 +282,21 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   }
 
   return (
-    <div className={cn('flex items-center gap-0.5', className)}>
-      <MenuButton label="File" items={fileMenuItems} />
-      <MenuButton label="Edit" items={editMenuItems} />
-      <MenuButton label="View" items={viewMenuItems} />
-      <MenuButton label="Window" items={windowMenuItems} />
-      <MenuButton label="Help" items={helpMenuItems} />
-    </div>
+    <>
+      <div className={cn('flex items-center gap-0.5', className)}>
+        <MenuButton label="File" items={fileMenuItems} />
+        <MenuButton label="Edit" items={editMenuItems} />
+        <MenuButton label="View" items={viewMenuItems} />
+        <MenuButton label="Window" items={windowMenuItems} />
+        <MenuButton label="Help" items={helpMenuItems} />
+      </div>
+
+      {/* Dialogs */}
+      <CreateProjectDialog
+        open={createProjectDialogOpen}
+        onOpenChange={setCreateProjectDialogOpen}
+      />
+      <OpenProjectDialog open={openProjectDialogOpen} onOpenChange={setOpenProjectDialogOpen} />
+    </>
   )
 }

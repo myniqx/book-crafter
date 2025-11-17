@@ -71,6 +71,12 @@ const dialogAPI = {
     ipcRenderer.invoke('dialog:saveFile', options)
 }
 
+// App API
+const appAPI = {
+  getPath: (name: 'userData' | 'appData' | 'temp' | 'home') =>
+    ipcRenderer.invoke('app:getPath', name)
+}
+
 // Fetch API
 const fetchAPI = {
   request: <T = unknown>(url: string, options?: FetchOptions) =>
@@ -145,7 +151,8 @@ if (process.contextIsolated) {
       fs: fsAPI,
       fetch: fetchAPI,
       http: fetchAPI,
-      dialog: dialogAPI
+      dialog: dialogAPI,
+      app: appAPI
     } as IPCBridge)
   } catch (error) {
     console.error(error)
@@ -158,6 +165,7 @@ if (process.contextIsolated) {
     fs: fsAPI,
     fetch: fetchAPI,
     http: fetchAPI,
-    dialog: dialogAPI
+    dialog: dialogAPI,
+    app: appAPI
   } as IPCBridge
 }

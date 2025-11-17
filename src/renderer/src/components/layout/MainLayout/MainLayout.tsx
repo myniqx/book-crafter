@@ -1,13 +1,18 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Titlebar } from '../Titlebar'
 import { Sidebar } from '../Sidebar'
 import { StatusBar } from '../StatusBar'
 import { DockLayout } from '../DockLayout'
+import { IntegrityCheckDialog, type IntegrityIssue } from '@renderer/components/workspace/IntegrityCheckDialog'
 import { useStore } from '@renderer/store'
 import { useKeyboard } from '@renderer/hooks/useKeyboard'
 import { toast } from '@renderer/lib/toast'
+import { checkWorkspaceIntegrity, repairWorkspaceStructure } from '@renderer/lib/directory'
 
 export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+  const [integrityDialogOpen, setIntegrityDialogOpen] = useState(false)
+  const [integrityIssues, setIntegrityIssues] = useState<IntegrityIssue[]>([])
+
   const workspacePath = useStore((state) => state.workspacePath)
   const loadAllEntities = useStore((state) => state.loadAllEntities)
   const loadAllBooks = useStore((state) => state.loadAllBooks)
@@ -21,6 +26,29 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   // Load entities, books, images, and notes when workspace is available
   useEffect(() => {
     if (workspacePath) {
+      // Check workspace integrity first
+      const performIntegrityCheck = async () => {
+        try {
+          const result = await checkWorkspaceIntegrity(workspacePath)
+
+          if (!result.valid && result.missing.length > 0) {
+            // Convert missing items to IntegrityIssue format
+            const issues: IntegrityIssue[] = result.missing.map((item) => ({
+              type: 'missing_folder',
+              path: item,
+              description: `Missing folder: ${item.split('/').pop()}`
+            }))
+
+            setIntegrityIssues(issues)
+            setIntegrityDialogOpen(true)
+          }
+        } catch (error) {
+          console.error('Integrity check failed:', error)
+        }
+      }
+
+      performIntegrityCheck()
+
       // Load entities
       loadAllEntities(workspacePath).catch((error) => {
         console.error('Failed to load entities:', error)
@@ -77,6 +105,23 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
     toggleSidebar()
   }
 
+  // Integrity check handlers
+  const handleRepairWorkspace = async () => {
+    if (!workspacePath) return
+
+    try {
+      await repairWorkspaceStructure(workspacePath)
+      toast.success('Workspace repaired', 'Missing folders have been created')
+    } catch (error) {
+      toast.error('Repair failed', String(error))
+    }
+  }
+
+  const handleIgnoreIntegrityIssues = () => {
+    // User chose to ignore issues
+    console.log('User ignored integrity issues')
+  }
+
   // Global keyboard shortcuts
   useKeyboard({
     // Editor shortcuts
@@ -103,23 +148,34 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   })
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">
-      {/* Titlebar */}
-      <Titlebar />
+    <>
+      <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">
+        {/* Titlebar */}
+        <Titlebar />
 
-      {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar />
+        {/* Main content area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Sidebar */}
+          <Sidebar />
 
-        {/* Dock layout area */}
-        <div className="flex-1 relative">
-          <DockLayout>{children}</DockLayout>
+          {/* Dock layout area */}
+          <div className="flex-1 relative">
+            <DockLayout>{children}</DockLayout>
+          </div>
         </div>
+
+        {/* Status bar */}
+        <StatusBar />
       </div>
 
-      {/* Status bar */}
-      <StatusBar />
-    </div>
+      {/* Integrity Check Dialog */}
+      <IntegrityCheckDialog
+        open={integrityDialogOpen}
+        onOpenChange={setIntegrityDialogOpen}
+        issues={integrityIssues}
+        onRepair={handleRepairWorkspace}
+        onIgnore={handleIgnoreIntegrityIssues}
+      />
+    </>
   )
 }

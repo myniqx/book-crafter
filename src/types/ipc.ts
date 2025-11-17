@@ -99,12 +99,18 @@ export interface DialogAPI {
   saveFile: (options?: DialogSaveFileOptions) => Promise<DialogResult>
 }
 
+// App API
+export interface AppAPI {
+  getPath: (name: 'userData' | 'appData' | 'temp' | 'home') => Promise<string>
+}
+
 // Combined IPC API
 export interface IPCBridge {
   fs: FileSystemAPI
   fetch: FetchAPI
-  http: FetchAPI // Alias for compatibility with AppAPI
+  http: FetchAPI // Alias for compatibility
   dialog: DialogAPI
+  app: AppAPI
 }
 
 // Error types

@@ -38,8 +38,10 @@ export interface WorkspaceSlice {
   workspaceConfig: WorkspaceConfig | null
   workspacePath: string | null
   isWorkspaceLoaded: boolean
+  hasUnsavedChanges: boolean
   setWorkspaceConfig: (config: WorkspaceConfig) => void
   setWorkspacePath: (path: string) => void
+  setHasUnsavedChanges: (value: boolean) => void
   loadWorkspace: (path: string) => Promise<void>
   saveWorkspace: () => Promise<void>
   createNewWorkspace: (name: string, author: string) => WorkspaceConfig
@@ -80,6 +82,7 @@ export const createWorkspaceSlice: StateCreator<
   workspaceConfig: null,
   workspacePath: null,
   isWorkspaceLoaded: false,
+  hasUnsavedChanges: false,
 
   setWorkspaceConfig: (config) =>
     set((state) => {
@@ -89,6 +92,11 @@ export const createWorkspaceSlice: StateCreator<
   setWorkspacePath: (path) =>
     set((state) => {
       state.workspacePath = path
+    }),
+
+  setHasUnsavedChanges: (value) =>
+    set((state) => {
+      state.hasUnsavedChanges = value
     }),
 
   loadWorkspace: async (path: string) => {

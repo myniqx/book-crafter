@@ -23,28 +23,34 @@ interface UsePersistedStoreOptions {
   debounce?: number
 }
 
-// Get user data path from IPC
+// Get user data path from Electron app.getPath
 let userDataPath: string | null = null
 async function getUserDataPath(): Promise<string> {
   if (!userDataPath) {
-    userDataPath = await window.api.dialog.openDirectory({ title: 'temp' }).then(() => '')
-      .catch(() => '') || await getAppPath()
+    try {
+      // Use Electron's app.getPath('userData') via IPC
+      const api = window.api as any
+      if (api.app?.getPath) {
+        userDataPath = await api.app.getPath('userData')
+      } else {
+        // Fallback: construct path manually if IPC not available
+        userDataPath = process.platform === 'win32'
+          ? `${process.env.APPDATA}/book-crafter`
+          : process.platform === 'darwin'
+            ? `${process.env.HOME}/Library/Application Support/book-crafter`
+            : `${process.env.HOME}/.config/book-crafter`
+      }
+    } catch (error) {
+      console.error('Failed to get user data path:', error)
+      // Final fallback
+      userDataPath = process.platform === 'win32'
+        ? `${process.env.APPDATA}/book-crafter`
+        : process.platform === 'darwin'
+          ? `${process.env.HOME}/Library/Application Support/book-crafter`
+          : `${process.env.HOME}/.config/book-crafter`
+    }
   }
   return userDataPath
-}
-
-async function getAppPath(): Promise<string> {
-  // Fallback: construct path manually
-  const api = window.api as any
-  if (api.getPath) {
-    return await api.getPath('userData')
-  }
-  // Use hardcoded fallback if IPC not available
-  return process.platform === 'win32'
-    ? `${process.env.APPDATA}/book-crafter`
-    : process.platform === 'darwin'
-      ? `${process.env.HOME}/Library/Application Support/book-crafter`
-      : `${process.env.HOME}/.config/book-crafter`
 }
 
 async function getDefaultStorageDir(): Promise<string> {
