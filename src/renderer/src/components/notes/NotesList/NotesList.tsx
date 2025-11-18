@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import {
   searchNotes,
   sortNotes,
@@ -31,12 +31,12 @@ export const NotesList: React.FC<NotesListProps> = ({ className }) => {
   const [filterType, setFilterType] = useState<NoteType | 'all'>('all')
   const [sortBy, setSortBy] = useState<NoteSortBy>('modified')
 
-  const workspacePath = useStore((state) => state.workspacePath)
-  const notes = useStore((state) => state.notes)
-  const selectNote = useStore((state) => state.selectNote)
-  const deleteNoteFromDisk = useStore((state) => state.deleteNoteFromDisk)
-  const togglePin = useStore((state) => state.togglePin)
-  const saveNoteToDisk = useStore((state) => state.saveNoteToDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const notes = useContentStore((state) => state.notes)
+  const selectNote = useContentStore((state) => state.selectNote)
+  const deleteNoteFromDisk = useContentStore((state) => state.deleteNoteFromDisk)
+  const togglePin = useContentStore((state) => state.togglePin)
+  const saveNoteToDisk = useContentStore((state) => state.saveNoteToDisk)
 
   const filteredNotes = useMemo(() => {
     let result = Object.values(notes)

@@ -4,77 +4,126 @@ import 'rc-dock/dist/rc-dock.css'
 import type { LayoutData, TabData } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
 import type { DockLayoutProps } from './types'
-import { createDefaultLayout, getPanel, createEditorTabsFromStore } from './panels'
-import { useStore, useContentStore } from '@renderer/store'
+import {
+  createDefaultLayout,
+  getPanel,
+  createTabDataFromMetadata,
+  extractTabsFromLayout
+} from './panels'
+import { useCoreStore, useSidebarStore } from '@renderer/store'
 
+/**
+ * DockLayout Component
+ * ====================
+ * Manages the main dockable layout with TWO-WAY SYNC to Store
+ *
+ * SYNC FLOW:
+ * 1. Store → DockLayout: useEffect watches openTabs, syncs changes to rc-dock
+ * 2. DockLayout → Store: onLayoutChange extracts tabs, syncs back to store
+ *
+ * IMPORTANT:
+ * - Store is the SINGLE SOURCE OF TRUTH for tab state
+ * - DockLayout mirrors the store state in rc-dock
+ * - User interactions in DockLayout sync back to store via syncTabsFromDockLayout()
+ */
 export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
   const dockRef = useRef<RcDockLayout>(null)
-  const activePanels = useStore((state) => state.activePanels)
-  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
-  const books = useContentStore((state) => state.books)
+  const activePanels = useSidebarStore((state) => state.activePanels)
+
+  // Store tab state (SINGLE SOURCE OF TRUTH)
+  const openTabs = useCoreStore((state) => state.openTabs)
+  const activeTabId = useCoreStore((state) => state.activeTabId)
+  const syncTabsFromDockLayout = useCoreStore((state) => state.syncTabsFromDockLayout)
 
   // Initialize with default layout
   const defaultLayout = createDefaultLayout()
 
-  // Sync editor tabs with DockLayout
+  /**
+   * SYNC 1: Store → DockLayout
+   * ===========================
+   * When store.openTabs changes, update DockLayout to match
+   *
+   * This handles:
+   * - Opening new tabs (via openTab() action)
+   * - Closing tabs (via closeTab() action)
+   * - Activating tabs (via setActiveTab() action)
+   */
   useEffect(() => {
-    if (!dockRef.current) return
+    if (!dockRef.current) {
+      console.log('❌ [DockLayout] Ref not ready, skipping sync')
+      return
+    }
 
     const dock = dockRef.current
     const currentLayout = dock.getLayout()
 
-    // Get currently open editor tab IDs
-    const currentEditorTabIds = new Set<string>()
-    const collectEditorTabIds = (data: LayoutData | any): void => {
-      if (!data) return
+    console.log('┌─────────────────────────────────────────────────────')
+    console.log('│ [DockLayout] 🔄 STORE → DOCKLAYOUT SYNC')
+    console.log('├─────────────────────────────────────────────────────')
+    console.log('│ [DockLayout] 📦 Store has', openTabs.length, 'tabs')
+    openTabs.forEach((tab, idx) => {
+      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}"`)
+    })
 
-      if (data.tabs && Array.isArray(data.tabs)) {
-        data.tabs.forEach((tab: any) => {
-          if (tab.id && tab.id.startsWith('editor-') && tab.id !== 'editor-welcome') {
-            currentEditorTabIds.add(tab.id)
-          }
-        })
-      }
+    // Extract current tab IDs from DockLayout
+    const currentTabs = extractTabsFromLayout(currentLayout)
+    const currentTabIds = new Set(currentTabs.map(t => t.id))
 
-      if (data.children && Array.isArray(data.children)) {
-        data.children.forEach((child: any) => collectEditorTabIds(child))
-      }
+    console.log('│ [DockLayout] 🖼️  DockLayout has', currentTabs.length, 'tabs')
+    currentTabs.forEach((tab, idx) => {
+      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}"`)
+    })
 
-      if (data.dockbox) {
-        collectEditorTabIds(data.dockbox)
-      }
-    }
+    // Find tabs to ADD (in store but not in DockLayout)
+    const storeTabIds = new Set(openTabs.map(t => t.id))
+    const tabsToAdd = openTabs.filter(tab => !currentTabIds.has(tab.id))
 
-    collectEditorTabIds(currentLayout)
+    // Find tabs to REMOVE (in DockLayout but not in store)
+    const tabsToRemove = currentTabs.filter(tab => !storeTabIds.has(tab.id))
 
-    // Create editor tabs from store
-    const editorTabs = createEditorTabsFromStore(openEditorTabs, books)
+    console.log('│ [DockLayout] ➕ Tabs to ADD:', tabsToAdd.length)
+    console.log('│ [DockLayout] ➖ Tabs to REMOVE:', tabsToRemove.length)
 
-    // Add new editor tabs
-    editorTabs.forEach((editorTab) => {
-      if (!currentEditorTabIds.has(editorTab.id)) {
-        console.log('DockLayout: Adding editor tab', editorTab.id)
-        dock.dockMove(editorTab, null, 'middle')
+    // ADD new tabs
+    tabsToAdd.forEach((metadata) => {
+      console.log('│ [DockLayout] ➕ Adding tab:', metadata.id)
+      const tabData = createTabDataFromMetadata(metadata)
+
+      // Find the welcome tab's panel to add new tabs there
+      const welcomeTabPanel = currentLayout.dockbox
+
+      // Add to the same panel as welcome tab
+      const result = dock.dockMove(tabData, welcomeTabPanel, 'middle')
+      console.log('│ [DockLayout] ✅ dockMove completed, result:', result ? 'success' : 'null')
+
+      // Remove welcome tab when first real tab is added
+      if (openTabs.length === 1) {
+        console.log('│ [DockLayout] 🗑️  Removing welcome tab (first real tab opened)')
+        dock.dockMove({ id: 'editor-welcome' } as TabData, null, 'remove')
       }
     })
 
-    // Remove closed editor tabs
-    const expectedEditorTabIds = new Set(editorTabs.map((tab) => tab.id))
-    currentEditorTabIds.forEach((tabId) => {
-      if (!expectedEditorTabIds.has(tabId)) {
-        console.log('DockLayout: Removing editor tab', tabId)
-        dock.dockMove({ id: tabId } as TabData, null, 'remove')
-      }
+    // REMOVE closed tabs
+    tabsToRemove.forEach((metadata) => {
+      console.log('│ [DockLayout] ➖ Removing tab:', metadata.id)
+      dock.dockMove({ id: metadata.id } as TabData, null, 'remove')
     })
-  }, [openEditorTabs, books])
 
-  // Sync activePanels with DockLayout
+    console.log('│ [DockLayout] 🎯 Active tab ID:', activeTabId)
+    console.log('└─────────────────────────────────────────────────────')
+
+  }, [openTabs, activeTabId])
+
+  /**
+   * SYNC 2: Sidebar Panels → DockLayout
+   * ====================================
+   * When sidebar panels are toggled, update DockLayout
+   * (This is existing functionality, keep it)
+   */
   useEffect(() => {
     if (!dockRef.current) return
 
     const dock = dockRef.current
-
-    // Get current layout to see which panels are open
     const currentLayout = dock.getLayout()
     const currentPanelIds = new Set<string>()
 
@@ -106,8 +155,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
       if (!currentPanelIds.has(panelId)) {
         const panelConfig = getPanel(panelId)
         if (panelConfig) {
-          console.log('DockLayout: Adding panel', panelId)
-          // Add to right side as new tab
+          console.log('[DockLayout] Adding panel from sidebar:', panelId)
           dock.dockMove({
             id: panelId,
             title: panelConfig.title,
@@ -119,88 +167,71 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     })
 
     // Remove panels that shouldn't be active
-    // NOTE: editor-welcome is always kept
     currentPanelIds.forEach((panelId) => {
-      if (!activePanels.includes(panelId as any) && panelId !== 'editor-welcome') {
-        console.log('DockLayout: Removing panel', panelId)
+      if (!activePanels.includes(panelId as any) && panelId !== 'editor-welcome' && !panelId.startsWith('editor-')) {
+        console.log('[DockLayout] Removing panel (closed in sidebar):', panelId)
         dock.dockMove({ id: panelId } as TabData, null, 'remove')
       }
     })
   }, [activePanels])
 
-  // Load layout from localStorage
-  const loadLayout = (): LayoutData | undefined => {
-    try {
-      const saved = localStorage.getItem('book-crafter-layout')
-      if (saved) {
-        const layout = JSON.parse(saved) as LayoutData
 
-        // IMPORTANT: Clear floating panels (they cause UI blocking issues)
-        if (layout.floatbox) {
-          layout.floatbox.children = []
-        }
-
-        return layout
-      }
-    } catch (error) {
-      console.error('Failed to load layout:', error)
-    }
-    return undefined
-  }
-
-  // Save layout to localStorage
-  const saveLayout = (layout: LayoutData): void => {
-    try {
-      localStorage.setItem('book-crafter-layout', JSON.stringify(layout))
-    } catch (error) {
-      console.error('Failed to save layout:', error)
-    }
-  }
-
+  /**
+   * SYNC 3: DockLayout → Store
+   * ===========================
+   * When user interacts with DockLayout (closes tab, reorders, etc.),
+   * extract the new state and sync it back to store
+   *
+   * CRITICAL: This completes the two-way sync loop
+   */
   const handleLayoutChange = (newLayout: LayoutData): void => {
-    saveLayout(newLayout)
+    console.log('┌─────────────────────────────────────────────────────')
+    console.log('│ [DockLayout] ⚡ LAYOUT CHANGE EVENT')
+    console.log('├─────────────────────────────────────────────────────')
 
-    // Sync closed panels back to store
-    const hidePanel = useStore.getState().hidePanel
-    const currentPanelIds = new Set<string>()
+    // Extract current tabs from new layout
+    const currentTabs = extractTabsFromLayout(newLayout)
+    console.log('│ [DockLayout] 📊 Extracted tabs:', currentTabs.length)
+    currentTabs.forEach((tab, idx) => {
+      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}" (${tab.type})`)
+    })
 
-    // Collect all currently open panel IDs from new layout
-    const collectPanelIds = (data: LayoutData | any): void => {
-      if (!data) return
+    // Determine active tab (rc-dock doesn't provide this directly, so we keep store's activeTabId)
+    // If the active tab was closed, it will be handled by store's closeTab logic
+    const currentActiveTabId = useCoreStore.getState().activeTabId
+    const activeTabStillExists = currentTabs.some(t => t.id === currentActiveTabId)
 
-      if (data.tabs && Array.isArray(data.tabs)) {
-        data.tabs.forEach((tab: any) => {
-          if (tab.id && tab.id !== 'editor-welcome') {
-            currentPanelIds.add(tab.id)
-          }
-        })
-      }
+    console.log('│ [DockLayout] 🎯 Active tab:', currentActiveTabId)
+    console.log('│ [DockLayout] ✅ Active tab still exists?', activeTabStillExists)
 
-      if (data.children && Array.isArray(data.children)) {
-        data.children.forEach((child: any) => collectPanelIds(child))
-      }
+    const newActiveTabId = activeTabStillExists
+      ? currentActiveTabId
+      : (currentTabs.length > 0 ? currentTabs[0].id : null)
 
-      if (data.dockbox) {
-        collectPanelIds(data.dockbox)
-      }
-    }
+    console.log('│ [DockLayout] 🔄 Syncing to store with activeTabId:', newActiveTabId)
 
-    collectPanelIds(newLayout)
+    // Sync back to store
+    syncTabsFromDockLayout(currentTabs, newActiveTabId)
 
-    // Remove from activePanels if closed in DockLayout
+    // Sync closed panels back to sidebar store
+    const hidePanel = useSidebarStore.getState().hidePanel
+    const currentPanelIds = new Set(currentTabs.map(t => t.id))
+
     activePanels.forEach((panelId) => {
       if (!currentPanelIds.has(panelId)) {
-        console.log('DockLayout: Panel closed, removing from store:', panelId)
+        console.log('│ [DockLayout] 🗑️  Panel closed in layout, removing from sidebar store:', panelId)
         hidePanel(panelId)
       }
     })
+
+    console.log('└─────────────────────────────────────────────────────')
   }
 
   return (
     <div className={cn('h-full w-full', 'dock-layout-container')}>
       <RcDockLayout
         ref={dockRef}
-        defaultLayout={loadLayout() || defaultLayout}
+        defaultLayout={defaultLayout}
         onLayoutChange={handleLayoutChange}
         style={{
           position: 'absolute',

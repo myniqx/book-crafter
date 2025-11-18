@@ -1,5 +1,5 @@
 import React from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
@@ -17,13 +17,13 @@ import { Badge } from '@renderer/components/ui/badge'
 import type { AIProvider } from '@renderer/lib/ai/types'
 
 export const AISettingsTab: React.FC = () => {
-  const config = useStore((state) => state.config)
-  const updateConfig = useStore((state) => state.updateConfig)
-  const ollamaConfig = useStore((state) => state.ollamaConfig)
-  const openaiConfig = useStore((state) => state.openaiConfig)
-  const anthropicConfig = useStore((state) => state.anthropicConfig)
-  const aiPreferences = useStore((state) => state.aiPreferences)
-  const updateAIPreferences = useStore((state) => state.updateAIPreferences)
+  const config = useToolsStore((state) => state.config)
+  const updateConfig = useToolsStore((state) => state.updateConfig)
+  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
+  const openaiConfig = useToolsStore((state) => state.openaiConfig)
+  const anthropicConfig = useToolsStore((state) => state.anthropicConfig)
+  const aiPreferences = useToolsStore((state) => state.aiPreferences)
+  const updateAIPreferences = useToolsStore((state) => state.updateAIPreferences)
 
   const [testing, setTesting] = React.useState(false)
   const [testResult, setTestResult] = React.useState<'success' | 'error' | null>(null)

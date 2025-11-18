@@ -1,5 +1,5 @@
 import React from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
@@ -14,8 +14,8 @@ import { Slider } from '@renderer/components/ui/slider'
 import { Separator } from '@renderer/components/ui/separator'
 
 export const EditorSettingsTab: React.FC = () => {
-  const editorSettings = useStore((state) => state.extendedEditorSettings)
-  const updateEditorSettings = useStore((state) => state.updateExtendedEditorSettings)
+  const editorSettings = useToolsStore((state) => state.extendedEditorSettings)
+  const updateEditorSettings = useToolsStore((state) => state.updateExtendedEditorSettings)
 
   return (
     <div className="space-y-6">

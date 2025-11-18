@@ -12,7 +12,7 @@ import {
 } from '@renderer/components/ui/card'
 import { Separator } from '@renderer/components/ui/separator'
 import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import type { EntityField } from '@renderer/store/slices/entitySlice'
 import type { EntityCardProps } from './types'
 
@@ -29,14 +29,14 @@ const TYPE_LABELS = {
 }
 
 export const EntityCard: React.FC<EntityCardProps> = ({ entitySlug, className }) => {
-  const entity = useStore((state) => state.entities[entitySlug])
-  const updateEntity = useStore((state) => state.updateEntity)
-  const updateEntityField = useStore((state) => state.updateEntityField)
-  const addEntityField = useStore((state) => state.addEntityField)
-  const removeEntityField = useStore((state) => state.removeEntityField)
-  const deleteEntityFromDisk = useStore((state) => state.deleteEntityFromDisk)
-  const saveEntityToDisk = useStore((state) => state.saveEntityToDisk)
-  const workspacePath = useStore((state) => state.workspacePath)
+  const entity = useContentStore((state) => state.entities[entitySlug])
+  const updateEntity = useContentStore((state) => state.updateEntity)
+  const updateEntityField = useContentStore((state) => state.updateEntityField)
+  const addEntityField = useContentStore((state) => state.addEntityField)
+  const removeEntityField = useContentStore((state) => state.removeEntityField)
+  const deleteEntityFromDisk = useContentStore((state) => state.deleteEntityFromDisk)
+  const saveEntityToDisk = useContentStore((state) => state.saveEntityToDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
 
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

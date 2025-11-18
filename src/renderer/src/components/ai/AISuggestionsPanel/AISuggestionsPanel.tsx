@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore } from '@renderer/store'
 import type { AISuggestion } from '@renderer/lib/ai/types'
 import { cn } from '@renderer/lib/utils'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
@@ -10,9 +10,9 @@ import { History, Check, X, Eye, Trash2 } from 'lucide-react'
 import { DiffViewer } from '@renderer/components/ai/DiffViewer'
 
 export const AISuggestionsPanel: React.FC = () => {
-  const suggestions = useStore((state) => state.suggestions)
-  const clearSuggestions = useStore((state) => state.clearSuggestions)
-  const applySuggestion = useStore((state) => state.applySuggestion)
+  const suggestions = useToolsStore((state) => state.suggestions)
+  const clearSuggestions = useToolsStore((state) => state.clearSuggestions)
+  const applySuggestion = useToolsStore((state) => state.applySuggestion)
 
   const [viewingSuggestion, setViewingSuggestion] = useState<AISuggestion | null>(null)
 

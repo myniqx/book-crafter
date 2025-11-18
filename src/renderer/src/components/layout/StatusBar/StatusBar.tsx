@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 
 export const StatusBar: React.FC = () => {
-  const workspaceConfig = useStore((state) => state.workspaceConfig)
-  const openEditorTabs = useStore((state) => state.openEditorTabs)
-  const activeTabIndex = useStore((state) => state.activeTabIndex)
-  const books = useStore((state) => state.books)
+  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
+  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
+  const books = useContentStore((state) => state.books)
 
   // Find active tab and chapter (memoized to prevent unnecessary recalculations)
   const activeTabData = useMemo(() => {

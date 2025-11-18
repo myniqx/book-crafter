@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { formatFileSize } from '@renderer/lib/image'
 import { getImageUrl } from '@renderer/lib/images'
 import { cn } from '@renderer/lib/utils'
@@ -28,13 +28,13 @@ export const ImageCard: React.FC<ImageCardProps> = ({
   const [editedDescription, setEditedDescription] = useState('')
   const [newTag, setNewTag] = useState('')
 
-  const workspacePath = useStore((state) => state.workspacePath)
-  const images = useStore((state) => state.images)
-  const updateDescription = useStore((state) => state.updateDescription)
-  const addTag = useStore((state) => state.addTag)
-  const removeTag = useStore((state) => state.removeTag)
-  const deleteImageFromDisk = useStore((state) => state.deleteImageFromDisk)
-  const saveImageToDisk = useStore((state) => state.saveImageToDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const images = useContentStore((state) => state.images)
+  const updateDescription = useContentStore((state) => state.updateDescription)
+  const addTag = useContentStore((state) => state.addTag)
+  const removeTag = useContentStore((state) => state.removeTag)
+  const deleteImageFromDisk = useContentStore((state) => state.deleteImageFromDisk)
+  const saveImageToDisk = useContentStore((state) => state.saveImageToDisk)
 
   const image = images[imageSlug]
 

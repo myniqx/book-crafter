@@ -19,12 +19,21 @@ export interface SidebarState {
   sidebarWidth: number
   activityBarCollapsed: boolean
 
+  // Legacy compatibility
+  activePanels: PanelId[]
+  sidebarCollapsed: boolean
+
   // Actions
   selectPanel: (panelId: PanelId) => void
   togglePanel: (panelId: PanelId) => void
   closePanel: () => void
   setSidebarWidth: (width: number) => void
   toggleActivityBar: () => void
+
+  // Legacy actions
+  toggleSidebar: () => void
+  showPanel: (panelId: PanelId) => void
+  hidePanel: (panelId: PanelId) => void
 }
 
 const DEFAULT_WIDTH = 250
@@ -40,6 +49,10 @@ export const useSidebarStore = create<SidebarState>()(
         panelVisible: true,
         sidebarWidth: DEFAULT_WIDTH,
         activityBarCollapsed: false,
+
+        // Legacy state
+        activePanels: ['file-explorer'],
+        sidebarCollapsed: false,
 
         // Select and show panel
         selectPanel: (panelId) =>
@@ -78,6 +91,33 @@ export const useSidebarStore = create<SidebarState>()(
         toggleActivityBar: () =>
           set((state) => {
             state.activityBarCollapsed = !state.activityBarCollapsed
+          }),
+
+        // Legacy actions
+        toggleSidebar: () =>
+          set((state) => {
+            state.sidebarCollapsed = !state.sidebarCollapsed
+            state.panelVisible = !state.sidebarCollapsed
+          }),
+
+        showPanel: (panelId) =>
+          set((state) => {
+            if (!state.activePanels.includes(panelId)) {
+              state.activePanels.push(panelId)
+            }
+            state.activePanel = panelId
+            state.panelVisible = true
+          }),
+
+        hidePanel: (panelId) =>
+          set((state) => {
+            const index = state.activePanels.indexOf(panelId)
+            if (index !== -1) {
+              state.activePanels.splice(index, 1)
+            }
+            if (state.activePanel === panelId) {
+              state.panelVisible = false
+            }
           })
       })),
       {
@@ -86,7 +126,9 @@ export const useSidebarStore = create<SidebarState>()(
           activePanel: state.activePanel,
           panelVisible: state.panelVisible,
           sidebarWidth: state.sidebarWidth,
-          activityBarCollapsed: state.activityBarCollapsed
+          activityBarCollapsed: state.activityBarCollapsed,
+          activePanels: state.activePanels,
+          sidebarCollapsed: state.sidebarCollapsed
         })
       }
     ),

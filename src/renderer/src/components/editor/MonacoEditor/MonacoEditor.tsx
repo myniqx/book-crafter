@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import Editor, { OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { useStore } from '@renderer/store'
+import { useCoreStore, useToolsStore } from '@renderer/store'
 import type { MonacoEditorProps } from './types'
 import { cn } from '@renderer/lib/utils'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
@@ -19,13 +19,13 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Get theme and editor settings from store
-  const storeTheme = useStore((state) => state.theme)
-  const editorSettings = useStore((state) => state.workspaceConfig?.editorSettings)
+  const storeTheme = useCoreStore((state) => state.theme)
+  const editorSettings = useCoreStore((state) => state.workspaceConfig?.editorSettings)
 
   // Get AI actions from store
-  const sendMessage = useStore((state) => state.sendMessage)
-  const buildContext = useStore((state) => state.buildContext)
-  const addSuggestion = useStore((state) => state.addSuggestion)
+  const sendMessage = useToolsStore((state) => state.sendMessage)
+  const buildContext = useToolsStore((state) => state.buildContext)
+  const addSuggestion = useToolsStore((state) => state.addSuggestion)
 
   // Determine Monaco theme based on app theme
   const monacoTheme = theme || (storeTheme === 'light' ? 'light' : 'vs-dark')

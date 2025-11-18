@@ -8,8 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from '@renderer/components/ui/dialog'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
@@ -109,25 +108,16 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
               onChange={(e) => setAuthor(e.target.value)}
             />
             {workspaceConfig?.author && (
-              <p className="text-xs text-muted-foreground">
-                Default: {workspaceConfig.author}
-              </p>
+              <p className="text-xs text-muted-foreground">Default: {workspaceConfig.author}</p>
             )}
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            disabled={isCreating}
-            onClick={() => setOpen(false)}
-          >
+          <Button variant="outline" disabled={isCreating} onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!title.trim() || isCreating}
-          >
+          <Button onClick={handleCreate} disabled={!title.trim() || isCreating}>
             {isCreating ? 'Creating...' : 'Create Book'}
           </Button>
         </DialogFooter>

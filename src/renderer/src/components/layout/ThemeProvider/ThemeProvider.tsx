@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect } from 'react'
-import { useStore } from '@renderer/store'
+import { useCoreStore } from '@renderer/store'
 
 type Theme = 'dark' | 'light' | 'system'
 
@@ -11,8 +11,8 @@ interface ThemeProviderContextType {
 const ThemeProviderContext = createContext<ThemeProviderContextType | undefined>(undefined)
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useStore((state) => state.theme)
-  const setTheme = useStore((state) => state.setTheme)
+  const theme = useCoreStore((state) => state.theme)
+  const setTheme = useCoreStore((state) => state.setTheme)
 
   useEffect(() => {
     const root = window.document.documentElement

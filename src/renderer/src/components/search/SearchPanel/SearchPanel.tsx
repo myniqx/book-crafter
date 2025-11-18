@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import {
   globalSearch,
   replaceInText,
@@ -27,12 +27,12 @@ export const SearchPanel: React.FC = () => {
   const [searchInNotes, setSearchInNotes] = useState(true)
   const [showReplace, setShowReplace] = useState(false)
 
-  const workspacePath = useStore((state) => state.workspacePath)
-  const books = useStore((state) => state.books)
-  const entities = useStore((state) => state.entities)
-  const notes = useStore((state) => state.notes)
-  const updateChapterContent = useStore((state) => state.updateChapterContent)
-  const saveChapterToDisk = useStore((state) => state.saveChapterToDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const books = useContentStore((state) => state.books)
+  const entities = useContentStore((state) => state.entities)
+  const notes = useContentStore((state) => state.notes)
+  const updateChapterContent = useContentStore((state) => state.updateChapterContent)
+  const saveChapterToDisk = useContentStore((state) => state.saveChapterToDisk)
 
   const searchOptions: SearchOptions = useMemo(
     () => ({

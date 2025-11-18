@@ -1,5 +1,5 @@
 import React from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
@@ -16,8 +16,8 @@ import { Button } from '@renderer/components/ui/button'
 import { FolderOpen } from 'lucide-react'
 
 export const WorkspaceSettingsTab: React.FC = () => {
-  const workspacePreferences = useStore((state) => state.workspacePreferences)
-  const updateWorkspacePreferences = useStore((state) => state.updateWorkspacePreferences)
+  const workspacePreferences = useToolsStore((state) => state.workspacePreferences)
+  const updateWorkspacePreferences = useToolsStore((state) => state.updateWorkspacePreferences)
 
   const handleSelectBackupPath = async (): Promise<void> => {
     // This would call an IPC function to open directory picker

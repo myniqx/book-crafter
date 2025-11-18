@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { searchImages, sortImages, getAllTags, type ImageSortBy } from '@renderer/lib/image'
 import { cn } from '@renderer/lib/utils'
 import { Search, Upload, Image as ImageIcon, Filter, SortAsc } from 'lucide-react'
@@ -31,8 +31,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ className }) => {
   const [sortBy, setSortBy] = useState<ImageSortBy>('date')
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
 
-  const images = useStore((state) => state.images)
-  const selectImage = useStore((state) => state.selectImage)
+  const images = useContentStore((state) => state.images)
+  const selectImage = useContentStore((state) => state.selectImage)
 
   // Get all unique tags
   const allTags = useMemo(() => getAllTags(images), [images])

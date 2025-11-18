@@ -9,7 +9,7 @@ import {
   SelectValue
 } from '@renderer/components/ui/select'
 import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
+import { useContentStore } from '@renderer/store'
 import { searchEntities, groupEntitiesByType, sortEntities, type EntitySortKey } from '@renderer/lib/entity'
 import { CreateEntityDialog } from '../CreateEntityDialog'
 import type { EntityBrowserProps } from './types'
@@ -31,9 +31,9 @@ export const EntityBrowser: React.FC<EntityBrowserProps> = ({ className }) => {
   const [sortKey, setSortKey] = useState<EntitySortKey>('name')
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
-  const entities = useStore((state) => state.entities)
-  const selectedEntitySlug = useStore((state) => state.selectedEntitySlug)
-  const selectEntity = useStore((state) => state.selectEntity)
+  const entities = useContentStore((state) => state.entities)
+  const selectedEntitySlug = useContentStore((state) => state.selectedEntitySlug)
+  const selectEntity = useContentStore((state) => state.selectEntity)
 
   // Search and filter entities
   const filteredEntities = useMemo(() => {

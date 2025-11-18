@@ -1,21 +1,24 @@
 import React, { useState } from 'react'
 import { BookOpen, FileText, ChevronDown, ChevronRight, Trash2 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { CreateBookDialog } from '../CreateBookDialog'
 import { CreateChapterDialog } from '../CreateChapterDialog'
 import type { BookExplorerProps } from './types'
+import type { TabMetadata, TabEditorData } from '@renderer/components/layout/DockLayout/types'
 
 export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
 
-  const books = useStore((state) => state.books)
-  const activeBookSlug = useStore((state) => state.activeBookSlug)
-  const activeChapterSlug = useStore((state) => state.activeChapterSlug)
-  const openTab = useStore((state) => state.openTab)
-  const deleteBookFromDisk = useStore((state) => state.deleteBookFromDisk)
-  const deleteChapterFromDisk = useStore((state) => state.deleteChapterFromDisk)
-  const workspacePath = useStore((state) => state.workspacePath)
+  const books = useContentStore((state) => state.books)
+  const deleteBookFromDisk = useContentStore((state) => state.deleteBookFromDisk)
+  const deleteChapterFromDisk = useContentStore((state) => state.deleteChapterFromDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+
+  // Use new tab system from UISlice
+  const openTab = useCoreStore((state) => state.openTab)
+  const activeTabId = useCoreStore((state) => state.activeTabId)
+  const openTabs = useCoreStore((state) => state.openTabs)
 
   const booksList = Object.values(books).sort((a, b) =>
     new Date(b.modified).getTime() - new Date(a.modified).getTime()
@@ -33,8 +36,34 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     })
   }
 
+  /**
+   * Handle chapter click - Open chapter in editor
+   * Creates TabMetadata and calls store.openTab()
+   * Store → DockLayout sync happens automatically via useEffect
+   */
   const handleChapterClick = (bookSlug: string, chapterSlug: string): void => {
-    openTab(bookSlug, chapterSlug)
+    const book = books[bookSlug]
+    const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
+
+    if (!book || !chapter) {
+      console.error('[BookExplorer] Book or chapter not found:', bookSlug, chapterSlug)
+      return
+    }
+
+    // Create tab metadata
+    const tabMetadata: TabMetadata = {
+      id: `editor-${bookSlug}-${chapterSlug}`,
+      type: 'editor',
+      title: chapter.title,
+      closable: true,
+      data: {
+        bookSlug,
+        chapterSlug
+      } as TabEditorData
+    }
+
+    // Open tab (this will trigger Store → DockLayout sync)
+    openTab(tabMetadata)
   }
 
   const handleDeleteBook = async (bookSlug: string, bookTitle: string): Promise<void> => {
@@ -87,7 +116,11 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
       <div className="flex-1 overflow-y-auto">
         {booksList.map((book) => {
           const isExpanded = expandedBooks.has(book.slug)
-          const isActive = activeBookSlug === book.slug
+
+          // Check if any chapter from this book is open
+          const hasOpenChapter = openTabs.some(
+            (tab) => tab.type === 'editor' && (tab.data as TabEditorData)?.bookSlug === book.slug
+          )
 
           return (
             <div key={book.slug} className="border-b border-[hsl(var(--border))]">
@@ -97,7 +130,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
                   'flex items-center gap-2 px-3 py-2',
                   'hover:bg-[hsl(var(--accent))] transition-colors',
                   'group',
-                  isActive && 'bg-[hsl(var(--accent))]'
+                  hasOpenChapter && 'bg-[hsl(var(--accent))]'
                 )}
               >
                 <button
@@ -143,8 +176,9 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
                   {book.chapters
                     .sort((a, b) => a.order - b.order)
                     .map((chapter) => {
-                      const isActiveChapter =
-                        activeBookSlug === book.slug && activeChapterSlug === chapter.slug
+                      // Check if this chapter's tab is currently active
+                      const chapterTabId = `editor-${book.slug}-${chapter.slug}`
+                      const isActiveChapter = activeTabId === chapterTabId
 
                       return (
                         <div

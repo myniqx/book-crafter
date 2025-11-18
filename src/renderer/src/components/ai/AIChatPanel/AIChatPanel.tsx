@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useContentStore } from '@renderer/store'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
 import type { AIChatPanelProps, MessageBubbleProps } from './types'
 import { cn } from '@renderer/lib/utils'
@@ -40,19 +40,21 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const [showContext, setShowContext] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Store state
-  const messages = useStore((state) => state.messages)
-  const isStreaming = useStore((state) => state.isStreaming)
-  const currentStreamMessage = useStore((state) => state.currentStreamMessage)
-  const config = useStore((state) => state.config)
-  const books = useStore((state) => state.books)
-  const entities = useStore((state) => state.entities)
-  const customPrompts = useStore((state) => state.customPrompts)
+  // Tools store state
+  const messages = useToolsStore((state) => state.messages)
+  const isStreaming = useToolsStore((state) => state.isStreaming)
+  const currentStreamMessage = useToolsStore((state) => state.currentStreamMessage)
+  const config = useToolsStore((state) => state.config)
+  const customPrompts = useToolsStore((state) => state.customPrompts)
 
-  // Store actions
-  const sendMessage = useStore((state) => state.sendMessage)
-  const clearMessages = useStore((state) => state.clearMessages)
-  const buildContext = useStore((state) => state.buildContext)
+  // Tools store actions
+  const sendMessage = useToolsStore((state) => state.sendMessage)
+  const clearMessages = useToolsStore((state) => state.clearMessages)
+  const buildContext = useToolsStore((state) => state.buildContext)
+
+  // Content store state
+  const books = useContentStore((state) => state.books)
+  const entities = useContentStore((state) => state.entities)
 
   // Build context from props or current state
   const context = buildContext({

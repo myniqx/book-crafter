@@ -1,11 +1,11 @@
-import { useStore } from './store'
+import { useCoreStore } from './store'
 import { WelcomeScreen } from './components/workspace/WelcomeScreen'
 import { MainLayout } from './components/layout/MainLayout'
 import { Toaster } from './components/ui/sonner'
 import { CommandPalette } from './components/command/CommandPalette'
 
 function App(): React.JSX.Element {
-  const workspaceConfig = useStore((state) => state.workspaceConfig)
+  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
 
   return (
     <>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
@@ -13,8 +13,8 @@ import { Checkbox } from '@renderer/components/ui/checkbox'
 import { Separator } from '@renderer/components/ui/separator'
 
 export const GeneralSettingsTab: React.FC = () => {
-  const generalSettings = useStore((state) => state.generalSettings)
-  const updateGeneralSettings = useStore((state) => state.updateGeneralSettings)
+  const generalSettings = useToolsStore((state) => state.generalSettings)
+  const updateGeneralSettings = useToolsStore((state) => state.updateGeneralSettings)
 
   return (
     <div className="space-y-6">

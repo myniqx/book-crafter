@@ -4,7 +4,7 @@ import { Sidebar } from '../Sidebar'
 import { StatusBar } from '../StatusBar'
 import { DockLayout } from '../DockLayout'
 import { IntegrityCheckDialog, type IntegrityIssue } from '@renderer/components/workspace/IntegrityCheckDialog'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore, useSidebarStore } from '@renderer/store'
 import { useKeyboard } from '@renderer/hooks/useKeyboard'
 import { toast } from '@renderer/lib/toast'
 import { checkWorkspaceIntegrity, repairWorkspaceStructure } from '@renderer/lib/directory'
@@ -13,15 +13,15 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   const [integrityDialogOpen, setIntegrityDialogOpen] = useState(false)
   const [integrityIssues, setIntegrityIssues] = useState<IntegrityIssue[]>([])
 
-  const workspacePath = useStore((state) => state.workspacePath)
-  const loadAllEntities = useStore((state) => state.loadAllEntities)
-  const loadAllBooks = useStore((state) => state.loadAllBooks)
-  const loadAllImages = useStore((state) => state.loadAllImages)
-  const loadAllNotes = useStore((state) => state.loadAllNotes)
-  const toggleSidebar = useStore((state) => state.toggleSidebar)
-  const openEditorTabs = useStore((state) => state.openEditorTabs)
-  const activeTabIndex = useStore((state) => state.activeTabIndex)
-  const books = useStore((state) => state.books)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const loadAllEntities = useContentStore((state) => state.loadAllEntities)
+  const loadAllBooks = useContentStore((state) => state.loadAllBooks)
+  const loadAllImages = useContentStore((state) => state.loadAllImages)
+  const loadAllNotes = useContentStore((state) => state.loadAllNotes)
+  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
+  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
+  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
+  const books = useContentStore((state) => state.books)
 
   // Load entities, books, images, and notes when workspace is available
   useEffect(() => {

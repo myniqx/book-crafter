@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { processMarkdownForPreview, countMarkdownWords, getReadingTime } from '@renderer/lib/markdown'
 import { useDebounce } from '@renderer/hooks/useDebounce'
 import type { MarkdownPreviewProps } from './types'
@@ -11,12 +11,12 @@ import { cn } from '@renderer/lib/utils'
 import { BookOpen, FileText, Clock } from 'lucide-react'
 
 export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ className }) => {
-  const entities = useStore((state) => state.entities)
-  const images = useStore((state) => state.images)
-  const workspacePath = useStore((state) => state.workspacePath)
-  const books = useStore((state) => state.books)
-  const openEditorTabs = useStore((state) => state.openEditorTabs)
-  const activeTabIndex = useStore((state) => state.activeTabIndex)
+  const entities = useContentStore((state) => state.entities)
+  const images = useContentStore((state) => state.images)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const books = useContentStore((state) => state.books)
+  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
+  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
 
   // Get active tab data
   const activeTabData = useMemo(() => {

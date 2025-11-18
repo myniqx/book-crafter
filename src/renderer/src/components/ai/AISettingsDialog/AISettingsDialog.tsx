@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore } from '@renderer/store'
 import type { AIProvider, AIConfig } from '@renderer/lib/ai/types'
 import {
   Dialog,
@@ -18,10 +18,10 @@ import { Badge } from '@renderer/components/ui/badge'
 import { Settings, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 export const AISettingsDialog: React.FC = () => {
-  const config = useStore((state) => state.config)
-  const updateConfig = useStore((state) => state.updateConfig)
-  const testConnection = useStore((state) => state.testConnection)
-  const listModels = useStore((state) => state.listModels)
+  const config = useToolsStore((state) => state.config)
+  const updateConfig = useToolsStore((state) => state.updateConfig)
+  const testConnection = useToolsStore((state) => state.testConnection)
+  const listModels = useToolsStore((state) => state.listModels)
 
   // Local state for form
   const [provider, setProvider] = useState<AIProvider>(config.provider)

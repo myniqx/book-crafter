@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
@@ -17,10 +17,10 @@ import { RotateCcw, Edit2, Check, X } from 'lucide-react'
 import type { KeyboardShortcut } from '@renderer/store/slices/settingsSlice'
 
 export const KeyboardShortcutsTab: React.FC = () => {
-  const keyboardShortcuts = useStore((state) => state.keyboardShortcuts)
-  const updateKeyboardShortcut = useStore((state) => state.updateKeyboardShortcut)
-  const resetKeyboardShortcut = useStore((state) => state.resetKeyboardShortcut)
-  const resetAllKeyboardShortcuts = useStore((state) => state.resetAllKeyboardShortcuts)
+  const keyboardShortcuts = useToolsStore((state) => state.keyboardShortcuts)
+  const updateKeyboardShortcut = useToolsStore((state) => state.updateKeyboardShortcut)
+  const resetKeyboardShortcut = useToolsStore((state) => state.resetKeyboardShortcut)
+  const resetAllKeyboardShortcuts = useToolsStore((state) => state.resetAllKeyboardShortcuts)
 
   const [filter, setFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')

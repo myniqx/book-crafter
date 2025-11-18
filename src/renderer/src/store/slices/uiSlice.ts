@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import type { TabMetadata } from '@renderer/components/layout/DockLayout/types'
 
 export type Theme = 'light' | 'dark' | 'system'
 export type PanelId =
@@ -20,11 +21,25 @@ export interface UISlice {
   sidebarCollapsed: boolean
   activePanels: PanelId[]
   panelSizes: Record<string, number>
+
+  /**
+   * DockLayout Tab Management
+   * SINGLE SOURCE OF TRUTH for all open tabs
+   * This array MUST always reflect the actual state of DockLayout
+   */
+  openTabs: TabMetadata[]
+
+  /**
+   * Active tab ID (currently focused tab)
+   */
+  activeTabId: string | null
+
   // Dialog states
   createBookDialogOpen: boolean
   createEntityDialogOpen: boolean
   createNoteDialogOpen: boolean
   settingsDialogOpen: boolean
+
   setTheme: (theme: Theme) => void
   toggleSidebar: () => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -32,6 +47,47 @@ export interface UISlice {
   setPanelSize: (panelId: string, size: number) => void
   showPanel: (panelId: PanelId) => void
   hidePanel: (panelId: PanelId) => void
+
+  /**
+   * Tab Management Actions
+   * These actions update the store, which then syncs to DockLayout via useEffect
+   */
+
+  /**
+   * Open a new tab or activate existing one
+   * Store → DockLayout sync happens automatically
+   */
+  openTab: (metadata: TabMetadata) => void
+
+  /**
+   * Close a tab by ID
+   * Store → DockLayout sync happens automatically
+   */
+  closeTab: (tabId: string) => void
+
+  /**
+   * Set the active (focused) tab
+   * Store → DockLayout sync happens automatically
+   */
+  setActiveTab: (tabId: string | null) => void
+
+  /**
+   * INTERNAL: Sync tabs from DockLayout to Store
+   * Called by DockLayout when user manually closes/reorders tabs
+   * This is the DockLayout → Store sync mechanism
+   */
+  syncTabsFromDockLayout: (tabs: TabMetadata[], activeTabId: string | null) => void
+
+  /**
+   * Helper: Check if a tab is currently open
+   */
+  isTabOpen: (tabId: string) => boolean
+
+  /**
+   * Helper: Get all tabs of a specific type
+   */
+  getTabsByType: (type: TabMetadata['type']) => TabMetadata[]
+
   // Dialog controls
   setCreateBookDialogOpen: (open: boolean) => void
   setCreateEntityDialogOpen: (open: boolean) => void
@@ -44,7 +100,7 @@ export const createUISlice: StateCreator<
   [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
   [],
   UISlice
-> = (set) => ({
+> = (set, get) => ({
   theme: 'dark',
   sidebarCollapsed: false,
   activePanels: ['file-explorer', 'entity-browser'],
@@ -53,6 +109,11 @@ export const createUISlice: StateCreator<
     'entity-browser': 300,
     'markdown-preview': 50 // percentage
   },
+
+  // Tab management state
+  openTabs: [],
+  activeTabId: null,
+
   // Dialog states
   createBookDialogOpen: false,
   createEntityDialogOpen: false,
@@ -123,5 +184,99 @@ export const createUISlice: StateCreator<
   setSettingsDialogOpen: (open) =>
     set((state) => {
       state.settingsDialogOpen = open
-    })
+    }),
+
+  /**
+   * TAB MANAGEMENT ACTIONS
+   * =====================
+   * These actions modify the store, which triggers DockLayout sync via useEffect
+   */
+
+  /**
+   * Open a tab (or activate if already open)
+   * FLOW: Component calls openTab() → Store updates → DockLayout useEffect detects change → DockLayout adds tab
+   */
+  openTab: (metadata) =>
+    set((state) => {
+      // Check if tab already exists
+      const existingIndex = state.openTabs.findIndex((t) => t.id === metadata.id)
+
+      if (existingIndex !== -1) {
+        // Tab exists, just activate it
+        state.activeTabId = metadata.id
+        console.log('[Store] Tab already open, activating:', metadata.id)
+      } else {
+        // Create new array reference to trigger React re-render (immer workaround)
+        state.openTabs = [...state.openTabs, metadata]
+        state.activeTabId = metadata.id
+        console.log('[Store] Opening new tab:', metadata.id)
+      }
+    }),
+
+  /**
+   * Close a tab by ID
+   * FLOW: Component calls closeTab() → Store updates → DockLayout useEffect detects change → DockLayout removes tab
+   */
+  closeTab: (tabId) =>
+    set((state) => {
+      console.log('[Store] Closing tab:', tabId)
+
+      // Create new array reference (immer workaround)
+      state.openTabs = state.openTabs.filter((t) => t.id !== tabId)
+
+      // If active tab was closed, set active to last tab or null
+      if (state.activeTabId === tabId) {
+        state.activeTabId = state.openTabs.length > 0 ? state.openTabs[state.openTabs.length - 1].id : null
+        console.log('[Store] Active tab closed, new active:', state.activeTabId)
+      }
+    }),
+
+  /**
+   * Set active tab
+   * FLOW: Component calls setActiveTab() → Store updates → DockLayout useEffect detects change → DockLayout activates tab
+   */
+  setActiveTab: (tabId) =>
+    set((state) => {
+      if (tabId && state.openTabs.some((t) => t.id === tabId)) {
+        state.activeTabId = tabId
+        console.log('[Store] Setting active tab:', tabId)
+      } else if (tabId === null) {
+        state.activeTabId = null
+        console.log('[Store] Clearing active tab')
+      }
+    }),
+
+  /**
+   * CRITICAL: Sync tabs FROM DockLayout TO Store
+   * This is called when user manually interacts with DockLayout (closes tab, reorders, etc.)
+   * FLOW: User closes tab in DockLayout → DockLayout onLayoutChange → syncTabsFromDockLayout() → Store updates
+   *
+   * @param tabs - Current tabs extracted from DockLayout
+   * @param activeTabId - Currently active tab ID from DockLayout
+   */
+  syncTabsFromDockLayout: (tabs, activeTabId) =>
+    set((state) => {
+      console.log('[Store] Syncing from DockLayout:', tabs.length, 'tabs, active:', activeTabId)
+
+      // Create new array reference (immer workaround)
+      state.openTabs = [...tabs]
+      state.activeTabId = activeTabId
+
+      // NOTE: This update will trigger DockLayout useEffect, but it should be a no-op
+      // because the data is already the same (coming from DockLayout itself)
+    }),
+
+  /**
+   * Helper: Check if tab is open
+   */
+  isTabOpen: (tabId) => {
+    return get().openTabs.some((t) => t.id === tabId)
+  },
+
+  /**
+   * Helper: Get tabs by type
+   */
+  getTabsByType: (type) => {
+    return get().openTabs.filter((t) => t.type === type)
+  }
 })

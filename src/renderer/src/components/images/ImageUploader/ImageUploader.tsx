@@ -1,5 +1,5 @@
 import React, { useRef, useState, DragEvent, ChangeEvent } from 'react'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { validateImageFile, SUPPORTED_IMAGE_EXTENSIONS } from '@renderer/lib/image'
 import { cn } from '@renderer/lib/utils'
 import { Upload, FileImage, AlertCircle, CheckCircle } from 'lucide-react'
@@ -16,9 +16,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const workspacePath = useStore((state) => state.workspacePath)
-  const uploadImage = useStore((state) => state.uploadImage)
-  const uploadProgress = useStore((state) => state.uploadProgress)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const uploadImage = useContentStore((state) => state.uploadImage)
+  const uploadProgress = useContentStore((state) => state.uploadProgress)
 
   const handleFile = async (file: File): Promise<void> => {
     if (!workspacePath) {

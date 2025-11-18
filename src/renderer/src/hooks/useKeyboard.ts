@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore } from '@renderer/store'
 
 /**
  * Type for keyboard shortcut actions
@@ -63,7 +63,7 @@ const eventToShortcut = (event: KeyboardEvent): string => {
  * })
  */
 export const useKeyboard = (actions: Record<string, ShortcutAction>): void => {
-  const keyboardShortcuts = useStore((state) => state.keyboardShortcuts)
+  const keyboardShortcuts = useToolsStore((state) => state.keyboardShortcuts)
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {

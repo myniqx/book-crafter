@@ -29,10 +29,6 @@ export interface Book {
 
 export interface BooksSlice {
   books: Record<string, Book>
-  activeBookSlug: string | null
-  activeChapterSlug: string | null
-  openEditorTabs: Array<{ bookSlug: string; chapterSlug: string }>
-  activeTabIndex: number
   isLoadingBooks: boolean
 
   // CRUD operations
@@ -40,7 +36,6 @@ export interface BooksSlice {
   updateBook: (slug: string, updates: Partial<Book>) => void
   deleteBook: (slug: string) => void
   getBook: (slug: string) => Book | undefined
-  setActiveBook: (slug: string | null) => void
 
   // Chapter operations
   addChapter: (bookSlug: string, chapter: Chapter) => void
@@ -48,12 +43,6 @@ export interface BooksSlice {
   updateChapterContent: (bookSlug: string, chapterSlug: string, content: string) => void
   deleteChapter: (bookSlug: string, chapterSlug: string) => void
   reorderChapters: (bookSlug: string, newOrder: string[]) => void
-  setActiveChapter: (chapterSlug: string | null) => void
-
-  // Tab operations
-  openTab: (bookSlug: string, chapterSlug: string) => void
-  closeTab: (index: number) => void
-  setActiveTab: (index: number) => void
 
   // File operations
   loadAllBooks: (workspacePath: string) => Promise<void>
@@ -61,6 +50,9 @@ export interface BooksSlice {
   saveChapterToDisk: (workspacePath: string, bookSlug: string, chapterSlug: string) => Promise<void>
   deleteBookFromDisk: (workspacePath: string, bookSlug: string) => Promise<void>
   deleteChapterFromDisk: (workspacePath: string, bookSlug: string, chapterSlug: string) => Promise<void>
+
+  // NOTE: Tab management has been moved to UISlice (openTabs, activeTabId)
+  // Use useCoreStore().openTab() instead of this slice
 }
 
 export const createBooksSlice: StateCreator<
@@ -70,10 +62,6 @@ export const createBooksSlice: StateCreator<
   BooksSlice
 > = (set, get) => ({
   books: {},
-  activeBookSlug: null,
-  activeChapterSlug: null,
-  openEditorTabs: [],
-  activeTabIndex: -1,
   isLoadingBooks: false,
 
   addBook: (book) =>
@@ -92,20 +80,9 @@ export const createBooksSlice: StateCreator<
   deleteBook: (slug) =>
     set((state) => {
       delete state.books[slug]
-      if (state.activeBookSlug === slug) {
-        state.activeBookSlug = null
-        state.activeChapterSlug = null
-      }
-      // Remove all tabs for this book
-      state.openEditorTabs = state.openEditorTabs.filter((tab) => tab.bookSlug !== slug)
     }),
 
   getBook: (slug) => get().books[slug],
-
-  setActiveBook: (slug) =>
-    set((state) => {
-      state.activeBookSlug = slug
-    }),
 
   addChapter: (bookSlug, chapter) =>
     set((state) => {
@@ -150,17 +127,6 @@ export const createBooksSlice: StateCreator<
         )
         state.books[bookSlug].metadata.totalChapters = state.books[bookSlug].chapters.length
         state.books[bookSlug].modified = new Date().toISOString()
-
-        // Remove tab if open
-        const tabIndex = state.openEditorTabs.findIndex(
-          (tab) => tab.bookSlug === bookSlug && tab.chapterSlug === chapterSlug
-        )
-        if (tabIndex !== -1) {
-          state.openEditorTabs.splice(tabIndex, 1)
-          if (state.activeTabIndex >= state.openEditorTabs.length) {
-            state.activeTabIndex = state.openEditorTabs.length - 1
-          }
-        }
       }
     }),
 
@@ -178,56 +144,6 @@ export const createBooksSlice: StateCreator<
         state.books[bookSlug].chapters.forEach((chapter, index) => {
           chapter.order = index
         })
-      }
-    }),
-
-  setActiveChapter: (chapterSlug) =>
-    set((state) => {
-      state.activeChapterSlug = chapterSlug
-    }),
-
-  openTab: (bookSlug, chapterSlug) =>
-    set((state) => {
-      const existingIndex = state.openEditorTabs.findIndex(
-        (tab) => tab.bookSlug === bookSlug && tab.chapterSlug === chapterSlug
-      )
-
-      if (existingIndex !== -1) {
-        state.activeTabIndex = existingIndex
-      } else {
-        state.openEditorTabs.push({ bookSlug, chapterSlug })
-        state.activeTabIndex = state.openEditorTabs.length - 1
-      }
-
-      state.activeBookSlug = bookSlug
-      state.activeChapterSlug = chapterSlug
-    }),
-
-  closeTab: (index) =>
-    set((state) => {
-      state.openEditorTabs.splice(index, 1)
-      if (state.activeTabIndex >= state.openEditorTabs.length) {
-        state.activeTabIndex = state.openEditorTabs.length - 1
-      }
-
-      // Update active chapter
-      if (state.activeTabIndex >= 0 && state.openEditorTabs[state.activeTabIndex]) {
-        const activeTab = state.openEditorTabs[state.activeTabIndex]
-        state.activeBookSlug = activeTab.bookSlug
-        state.activeChapterSlug = activeTab.chapterSlug
-      } else {
-        state.activeBookSlug = null
-        state.activeChapterSlug = null
-      }
-    }),
-
-  setActiveTab: (index) =>
-    set((state) => {
-      state.activeTabIndex = index
-      if (index >= 0 && state.openEditorTabs[index]) {
-        const activeTab = state.openEditorTabs[index]
-        state.activeBookSlug = activeTab.bookSlug
-        state.activeChapterSlug = activeTab.chapterSlug
       }
     }),
 
@@ -286,13 +202,10 @@ export const createBooksSlice: StateCreator<
     // Remove from store
     set((state) => {
       delete state.books[bookSlug]
-      if (state.activeBookSlug === bookSlug) {
-        state.activeBookSlug = null
-        state.activeChapterSlug = null
-      }
-      // Remove all tabs for this book
-      state.openEditorTabs = state.openEditorTabs.filter((tab) => tab.bookSlug !== bookSlug)
     })
+
+    // NOTE: Tab closing is handled automatically by DockLayout
+    // When book data is removed, ChapterEditorPanel will show "Chapter not found"
   },
 
   deleteChapterFromDisk: async (workspacePath, bookSlug, chapterSlug) => {
@@ -307,18 +220,10 @@ export const createBooksSlice: StateCreator<
         )
         state.books[bookSlug].metadata.totalChapters = state.books[bookSlug].chapters.length
         state.books[bookSlug].modified = new Date().toISOString()
-
-        // Remove tab if open
-        const tabIndex = state.openEditorTabs.findIndex(
-          (tab) => tab.bookSlug === bookSlug && tab.chapterSlug === chapterSlug
-        )
-        if (tabIndex !== -1) {
-          state.openEditorTabs.splice(tabIndex, 1)
-          if (state.activeTabIndex >= state.openEditorTabs.length) {
-            state.activeTabIndex = state.openEditorTabs.length - 1
-          }
-        }
       }
     })
+
+    // NOTE: Tab closing is handled automatically by DockLayout
+    // When chapter data is removed, ChapterEditorPanel will show "Chapter not found"
   },
 })

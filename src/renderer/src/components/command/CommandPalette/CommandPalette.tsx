@@ -10,7 +10,7 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Badge } from '@renderer/components/ui/badge'
 import { useShortcut } from '@renderer/hooks/useKeyboard'
 import { fuzzySearch, highlightMatches } from '@renderer/lib/fuzzySearch'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore, useSidebarStore } from '@renderer/store'
 import {
   BookOpen,
   FileText,
@@ -35,16 +35,16 @@ export const CommandPalette: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedRef = useRef<HTMLDivElement>(null)
 
-  const toggleSidebar = useStore((state) => state.toggleSidebar)
-  const togglePanel = useStore((state) => state.togglePanel)
-  const sidebarCollapsed = useStore((state) => state.sidebarCollapsed)
-  const openEditorTabs = useStore((state) => state.openEditorTabs)
-  const books = useStore((state) => state.books)
-  const activeTabIndex = useStore((state) => state.activeTabIndex)
-  const setCreateBookDialogOpen = useStore((state) => state.setCreateBookDialogOpen)
-  const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
-  const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
-  const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
+  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
+  const togglePanel = useSidebarStore((state) => state.togglePanel)
+  const sidebarCollapsed = useSidebarStore((state) => state.sidebarCollapsed)
+  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
+  const books = useContentStore((state) => state.books)
+  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
+  const setCreateBookDialogOpen = useCoreStore((state) => state.setCreateBookDialogOpen)
+  const setCreateEntityDialogOpen = useCoreStore((state) => state.setCreateEntityDialogOpen)
+  const setCreateNoteDialogOpen = useCoreStore((state) => state.setCreateNoteDialogOpen)
+  const setSettingsDialogOpen = useCoreStore((state) => state.setSettingsDialogOpen)
 
   // Keyboard shortcut: Ctrl+Shift+P
   useShortcut('commandPalette', () => setOpen(true), { allowInInput: true })

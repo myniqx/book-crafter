@@ -21,6 +21,7 @@ export const useCoreStore = create<CoreStore>()(
         partialize: (state) => ({
           // Persist workspace config and UI preferences (except sidebar)
           workspaceConfig: state.workspaceConfig,
+          workspacePath: state.workspacePath,
           theme: state.theme
         })
       }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useStore } from '@renderer/store'
+import { useToolsStore, useCoreStore } from '@renderer/store'
 import { Label } from '@renderer/components/ui/label'
 import { Checkbox } from '@renderer/components/ui/checkbox'
 import { Slider } from '@renderer/components/ui/slider'
@@ -10,9 +10,9 @@ import { Alert, AlertDescription } from '@renderer/components/ui/alert'
 import { settingsToast } from '@renderer/lib/toast'
 
 export const AdvancedSettingsTab: React.FC = () => {
-  const advancedSettings = useStore((state) => state.advancedSettings)
-  const updateAdvancedSettings = useStore((state) => state.updateAdvancedSettings)
-  const resetAllSettings = useStore((state) => state.resetAllSettings)
+  const advancedSettings = useToolsStore((state) => state.advancedSettings)
+  const updateAdvancedSettings = useToolsStore((state) => state.updateAdvancedSettings)
+  const resetAllSettings = useToolsStore((state) => state.resetAllSettings)
 
   const handleClearCache = (): void => {
     if (confirm('Are you sure you want to clear all cached data? This will reload the app.')) {

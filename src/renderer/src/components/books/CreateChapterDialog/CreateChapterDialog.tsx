@@ -8,25 +8,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from '@renderer/components/ui/dialog'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
-import { useStore } from '@renderer/store'
+import { useContentStore, useCoreStore } from '@renderer/store'
 import { createChapter } from '@renderer/lib/books'
 import type { CreateChapterDialogProps } from './types'
 
-export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSlug, triggerProps }) => {
+export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({
+  bookSlug,
+  triggerProps
+}) => {
   const [title, setTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const book = useStore((state) => state.books[bookSlug])
-  const addChapter = useStore((state) => state.addChapter)
-  const saveChapterToDisk = useStore((state) => state.saveChapterToDisk)
-  const saveBookToDisk = useStore((state) => state.saveBookToDisk)
-  const workspacePath = useStore((state) => state.workspacePath)
+  const book = useContentStore((state) => state.books[bookSlug])
+  const addChapter = useContentStore((state) => state.addChapter)
+  const saveChapterToDisk = useContentStore((state) => state.saveChapterToDisk)
+  const saveBookToDisk = useContentStore((state) => state.saveBookToDisk)
+  const workspacePath = useCoreStore((state) => state.workspacePath)
 
   if (!book) {
     return null
@@ -74,9 +76,7 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSl
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle>Create New Chapter</DialogTitle>
-          <DialogDescription>
-            Add a new chapter to "{book.title}"
-          </DialogDescription>
+          <DialogDescription>Add a new chapter to "{book.title}"</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -95,23 +95,17 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({ bookSl
           {/* Info */}
           <div className="rounded-md border p-3 bg-muted/50 text-sm">
             <p className="text-muted-foreground">
-              Chapter will be added at position {book.chapters.length + 1}. You can reorder chapters later.
+              Chapter will be added at position {book.chapters.length + 1}. You can reorder chapters
+              later.
             </p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            disabled={isCreating}
-            onClick={() => setOpen(false)}
-          >
+          <Button variant="outline" disabled={isCreating} onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!title.trim() || isCreating}
-          >
+          <Button onClick={handleCreate} disabled={!title.trim() || isCreating}>
             {isCreating ? 'Creating...' : 'Create Chapter'}
           </Button>
         </DialogFooter>

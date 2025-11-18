@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuShortcut
 } from '@renderer/components/ui/dropdown-menu'
-import { useStore, useCoreStore, useSidebarStore } from '@renderer/store'
+import { useCoreStore, useSidebarStore } from '@renderer/store'
 import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
 import { CreateProjectDialog } from '@renderer/components/workspace/CreateProjectDialog'
@@ -39,7 +39,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   const setSettingsDialogOpen = useCoreStore((state) => state.setSettingsDialogOpen)
   const setWorkspaceConfig = useCoreStore((state) => state.setWorkspaceConfig)
   const setWorkspacePath = useCoreStore((state) => state.setWorkspacePath)
-  const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
   const togglePanel = useSidebarStore((state) => state.togglePanel)
   const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
 
