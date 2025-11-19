@@ -17,7 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@renderer/components/ui/badge'
 import { Settings, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
-export const AISettingsDialog: React.FC = () => {
+interface AISettingsDialogProps {
+  trigger?: React.ReactNode
+}
+
+export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) => {
   const config = useToolsStore((state) => state.config)
   const updateConfig = useToolsStore((state) => state.updateConfig)
   const testConnection = useToolsStore((state) => state.testConnection)
@@ -119,9 +123,11 @@ export const AISettingsDialog: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Settings className="h-4 w-4" />
-        </Button>
+        {trigger || (
+          <Button variant="ghost" size="sm">
+            <Settings className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

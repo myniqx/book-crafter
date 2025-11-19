@@ -1,43 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useToolsStore, useContentStore } from '@renderer/store'
-import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
-import type { AIChatPanelProps, MessageBubbleProps } from './types'
-import type { AIProvider } from '@renderer/lib/ai/types'
-import { cn } from '@renderer/lib/utils'
-import {
-  Bot,
-  Send,
-  Trash2,
-  Sparkles,
-  FileText,
-  Users,
-  ChevronDown,
-  Copy,
-  Check
-} from 'lucide-react'
+import type { AIChatPanelProps } from './types'
+import { Bot, Send, Sparkles, FileText, Users } from 'lucide-react'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
-import { Badge } from '@renderer/components/ui/badge'
-import { Card } from '@renderer/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel
-} from '@renderer/components/ui/dropdown-menu'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
-import { AISettingsDialog } from '@renderer/components/ai/AISettingsDialog'
-import { CustomPromptsDialog } from '@renderer/components/ai/CustomPromptsDialog'
-
-// Predefined models for each provider
-const PROVIDER_MODELS: Record<AIProvider, string[]> = {
-  ollama: [], // Will be fetched dynamically
-  openai: ['gpt-4-turbo', 'gpt-4', 'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'],
-  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229']
-}
+import { ModelSelector } from './ModelSelector'
+import { PresetPromptsSelector } from './PresetPromptsSelector'
+import { MessageBubble } from './MessageBubble'
+import { HeaderMenu } from './HeaderMenu'
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -47,62 +18,18 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 }) => {
   const [prompt, setPrompt] = useState(initialPrompt || '')
   const [showContext, setShowContext] = useState(true)
-  const [ollamaModels, setOllamaModels] = useState<string[]>([])
-  const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Tools store state
   const messages = useToolsStore((state) => state.messages)
   const isStreaming = useToolsStore((state) => state.isStreaming)
   const currentStreamMessage = useToolsStore((state) => state.currentStreamMessage)
-  const config = useToolsStore((state) => state.config)
-  const customPrompts = useToolsStore((state) => state.customPrompts)
-  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
 
   // Tools store actions
   const sendMessage = useToolsStore((state) => state.sendMessage)
   const clearMessages = useToolsStore((state) => state.clearMessages)
   const buildContext = useToolsStore((state) => state.buildContext)
-  const updateConfig = useToolsStore((state) => state.updateConfig)
-
-  // Fetch Ollama models when provider is ollama
-  useEffect(() => {
-    const fetchOllamaModels = async (): Promise<void> => {
-      if (config.provider === 'ollama') {
-        try {
-          const endpoint = ollamaConfig.endpoint || 'http://localhost:11434'
-          const response = await fetch(`${endpoint}/api/tags`)
-          if (response.ok) {
-            const data = await response.json()
-            if (data.models && Array.isArray(data.models)) {
-              setOllamaModels(data.models.map((m: { name: string }) => m.name))
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch Ollama models:', error)
-        }
-      }
-    }
-    fetchOllamaModels()
-  }, [config.provider, ollamaConfig.endpoint])
-
-  // Get available models for current provider
-  const getAvailableModels = (): string[] => {
-    if (config.provider === 'ollama') {
-      return ollamaModels
-    }
-    return PROVIDER_MODELS[config.provider] || []
-  }
-
-  const handleProviderChange = (provider: AIProvider): void => {
-    updateConfig({ provider })
-    setModelSelectorOpen(false)
-  }
-
-  const handleModelChange = (model: string): void => {
-    updateConfig({ model })
-    setModelSelectorOpen(false)
-  }
 
   // Content store state
   const books = useContentStore((state) => state.books)
@@ -128,6 +55,13 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, currentStreamMessage])
 
+  // Focus input when streaming ends
+  useEffect(() => {
+    if (!isStreaming) {
+      inputRef.current?.focus()
+    }
+  }, [isStreaming])
+
   const handleSend = async (): Promise<void> => {
     if (!prompt.trim() || isStreaming) return
 
@@ -137,10 +71,6 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
     } catch (error) {
       console.error('Failed to send message:', error)
     }
-  }
-
-  const handlePresetPrompt = (presetPrompt: string): void => {
-    setPrompt(presetPrompt)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -154,87 +84,22 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-purple-500" />
-            <span className="text-sm font-medium text-foreground">AI Assistant</span>
-            <Popover open={modelSelectorOpen} onOpenChange={setModelSelectorOpen}>
-              <PopoverTrigger asChild>
-                <Badge
-                  variant="secondary"
-                  className="text-xs cursor-pointer hover:bg-accent transition-colors"
-                >
-                  {config.provider} / {config.model}
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Badge>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-0" align="start">
-                <div className="p-2 border-b border-border">
-                  <p className="text-xs font-medium text-muted-foreground">Provider</p>
-                  <div className="flex gap-1 mt-1">
-                    {(['ollama', 'openai', 'anthropic'] as AIProvider[]).map((provider) => (
-                      <Button
-                        key={provider}
-                        size="sm"
-                        variant={config.provider === provider ? 'default' : 'outline'}
-                        className="h-6 text-xs capitalize"
-                        onClick={() => handleProviderChange(provider)}
-                      >
-                        {provider}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <ScrollArea className="h-48">
-                  <div className="p-2">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Models</p>
-                    {getAvailableModels().length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">
-                        {config.provider === 'ollama'
-                          ? 'No models found. Is Ollama running?'
-                          : 'No models available'}
-                      </p>
-                    ) : (
-                      <div className="space-y-1">
-                        {getAvailableModels().map((model) => (
-                          <Button
-                            key={model}
-                            size="sm"
-                            variant={config.model === model ? 'secondary' : 'ghost'}
-                            className="w-full justify-start h-7 text-xs font-mono"
-                            onClick={() => handleModelChange(model)}
-                          >
-                            {model}
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </PopoverContent>
-            </Popover>
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-col gap-2 grow">
+            <div className="flex flex-row gap-2">
+              <Bot className="h-5 w-5 text-purple-500" />
+              <span className="text-sm font-medium text-foreground line-clamp-1">AI Assistant</span>
+            </div>
+            <ModelSelector />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowContext(!showContext)}
-              className="h-7"
-            >
-              <FileText className="h-3 w-3" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => clearMessages()}
-              disabled={messages.length === 0}
-              className="h-7"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-            <CustomPromptsDialog />
-            <AISettingsDialog />
+          <div className="shrink-0">
+            <HeaderMenu
+              showContext={showContext}
+              onShowContextChange={setShowContext}
+              messagesCount={messages.length}
+              onClearMessages={clearMessages}
+            />
           </div>
         </div>
 
@@ -319,67 +184,13 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       <div className="border-t border-border bg-card p-4 space-y-2">
         {/* Preset Prompts */}
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="h-7">
-                <Sparkles className="h-3 w-3 mr-1" />
-                Presets
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.expandScene)}>
-                Expand Scene
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.checkGrammar)}>
-                Check Grammar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.makeDramatic)}>
-                Make Dramatic
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.writeDialogue)}>
-                Write Dialogue
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Analysis</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.summarize)}>
-                Summarize
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePresetPrompt(PRESET_PROMPTS.findPlotHoles)}>
-                Find Plot Holes
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handlePresetPrompt(PRESET_PROMPTS.suggestImprovements)}
-              >
-                Suggest Improvements
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handlePresetPrompt(PRESET_PROMPTS.characterConsistency)}
-              >
-                Check Character Consistency
-              </DropdownMenuItem>
-
-              {/* Custom Prompts */}
-              {customPrompts.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Custom Prompts</DropdownMenuLabel>
-                  {customPrompts.map((cp) => (
-                    <DropdownMenuItem key={cp.id} onClick={() => handlePresetPrompt(cp.prompt)}>
-                      {cp.name}
-                    </DropdownMenuItem>
-                  ))}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <PresetPromptsSelector onSelectPrompt={setPrompt} />
         </div>
 
         {/* Input */}
         <div className="flex items-end gap-2">
           <Input
+            ref={inputRef}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -390,86 +201,6 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
           <Button onClick={handleSend} disabled={!prompt.trim() || isStreaming} size="icon">
             <Send className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Message bubble component
- */
-const MessageBubble: React.FC<MessageBubbleProps> = ({
-  role,
-  content,
-  timestamp,
-  isStreaming = false
-}) => {
-  const isUser = role === 'user'
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async (): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(content)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy:', error)
-    }
-  }
-
-  return (
-    <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
-      {/* Avatar */}
-      <div
-        className={cn(
-          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-          isUser ? 'bg-blue-500' : 'bg-purple-500'
-        )}
-      >
-        {isUser ? (
-          <span className="text-xs font-medium text-white">You</span>
-        ) : (
-          <Bot className="h-4 w-4 text-white" />
-        )}
-      </div>
-
-      {/* Message */}
-      <div className={cn('flex-1 space-y-1', isUser && 'flex flex-col items-end')}>
-        <div className="relative group">
-          <Card
-            className={cn(
-              'inline-block max-w-[85%] p-3',
-              isUser
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-muted text-foreground border-border'
-            )}
-          >
-            <p className="text-sm whitespace-pre-wrap wrap-break-word">{content}</p>
-            {isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />}
-          </Card>
-
-          {/* Copy button - only for assistant messages */}
-          {!isUser && !isStreaming && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleCopy}
-              className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-muted hover:bg-accent"
-            >
-              {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
-            </Button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            {new Date(timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </span>
-          {copied && <span className="text-xs text-green-400">Copied!</span>}
         </div>
       </div>
     </div>

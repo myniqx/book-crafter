@@ -22,13 +22,23 @@ interface PanelConfig {
 
 const panelConfigs: PanelConfig[] = [
   { id: 'file-explorer', title: 'Files', component: FileExplorerPanel, requiresWorkspace: true },
-  { id: 'entity-browser', title: 'Entities', component: EntityBrowserPanel, requiresWorkspace: true },
+  {
+    id: 'entity-browser',
+    title: 'Entities',
+    component: EntityBrowserPanel,
+    requiresWorkspace: true
+  },
   { id: 'image-gallery', title: 'Images', component: ImageGalleryPanel, requiresWorkspace: true },
   { id: 'notes', title: 'Notes', component: NotesPanel, requiresWorkspace: true },
   { id: 'search', title: 'Search', component: SearchPanel, requiresWorkspace: true },
   { id: 'ai-chat', title: 'AI Chat', component: AIChatPanel, requiresWorkspace: false },
   { id: 'timeline', title: 'Timeline', component: TimelinePanel, requiresWorkspace: true },
-  { id: 'markdown-preview', title: 'Preview', component: MarkdownPreviewPanel, requiresWorkspace: false }
+  {
+    id: 'markdown-preview',
+    title: 'Preview',
+    component: MarkdownPreviewPanel,
+    requiresWorkspace: false
+  }
 ]
 
 export const Sidebar: React.FC = () => {
@@ -66,4 +76,3 @@ export const Sidebar: React.FC = () => {
     </div>
   )
 }
-

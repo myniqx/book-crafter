@@ -1,4 +1,10 @@
-import type { MessageRole } from '@renderer/lib/ai/types'
+import type { MessageRole, AIProvider } from '@renderer/lib/ai/types'
+
+export interface ModelSelectorProps {
+  className?: string
+}
+
+export type ProviderModels = Record<AIProvider, string[]>
 
 export interface AIChatPanelProps {
   // Optional props for pre-set context
@@ -34,4 +40,17 @@ export interface ContextDisplayProps {
       name: string
     }>
   }
+}
+
+export interface PresetPromptsSelectorProps {
+  onSelectPrompt: (prompt: string) => void
+  className?: string
+}
+
+export interface HeaderMenuProps {
+  showContext: boolean
+  onShowContextChange: (value: boolean) => void
+  messagesCount: number
+  onClearMessages: () => void
+  className?: string
 }

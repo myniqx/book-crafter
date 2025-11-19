@@ -1,7 +1,6 @@
-import React from 'react'
-import { X } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useSidebarStore } from '@renderer/store'
+import React from 'react'
 import { ResizeHandle } from './ResizeHandle'
 
 interface SidebarPanelProps {
@@ -9,10 +8,9 @@ interface SidebarPanelProps {
   children: React.ReactNode
 }
 
-export const SidebarPanel: React.FC<SidebarPanelProps> = ({ title, children }) => {
+export const SidebarPanel: React.FC<SidebarPanelProps> = ({ children }) => {
   const panelVisible = useSidebarStore((state) => state.panelVisible)
   const sidebarWidth = useSidebarStore((state) => state.sidebarWidth)
-  const closePanel = useSidebarStore((state) => state.closePanel)
 
   if (!panelVisible) {
     return null
@@ -28,23 +26,6 @@ export const SidebarPanel: React.FC<SidebarPanelProps> = ({ title, children }) =
       )}
       style={{ width: `${sidebarWidth}px` }}
     >
-      {/* Panel Header */}
-      <div className="h-10 px-4 flex items-center justify-between border-b border-slate-700 flex-shrink-0">
-        <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wide">{title}</h2>
-        <button
-          onClick={closePanel}
-          className={cn(
-            'h-6 w-6 flex items-center justify-center rounded',
-            'hover:bg-slate-700 transition-colors',
-            'text-slate-400 hover:text-slate-200'
-          )}
-          title="Close panel"
-          aria-label="Close panel"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
       {/* Panel Content */}
       <div className="flex-1 overflow-hidden">{children}</div>
 

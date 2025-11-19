@@ -1,8 +1,9 @@
-@import "tailwindcss/theme" layer(theme);
-@import "tailwindcss/preflight" layer(base);
-@import "tailwindcss/utilities" layer(utilities);
+@import "tailwindcss";
 
-@layer theme {
+/* Load tailwind.config.js for backward compatibility */
+@config "../../../../tailwind.config.js";
+
+@layer base {
   :root {
     /* Dark theme (default) */
     --background: 222.2 84% 4.9%;
@@ -58,9 +59,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-}
 
-@layer base {
   body {
     min-height: 100vh;
     background-color: hsl(var(--background));
@@ -77,7 +76,35 @@
     height: 100vh;
   }
 
-  /* rc-dock custom styling */
+  /* Modern scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  //   rc-dock custom styling 
   .dock-layout-container .dock-panel {
     background: hsl(var(--background));
     border: 1px solid hsl(var(--border));

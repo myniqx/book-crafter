@@ -18,7 +18,11 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Card } from '@renderer/components/ui/card'
 import { Sparkles, Plus, Pencil, Trash2, Save, X } from 'lucide-react'
 
-export const CustomPromptsDialog: React.FC = () => {
+interface CustomPromptsDialogProps {
+  trigger?: React.ReactNode
+}
+
+export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigger }) => {
   const customPrompts = useToolsStore((state) => state.customPrompts)
   const addCustomPrompt = useToolsStore((state) => state.addCustomPrompt)
   const updateCustomPrompt = useToolsStore((state) => state.updateCustomPrompt)
@@ -74,10 +78,12 @@ export const CustomPromptsDialog: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Sparkles className="h-4 w-4 mr-1" />
-          Custom Prompts
-        </Button>
+        {trigger || (
+          <Button variant="ghost" size="sm">
+            <Sparkles className="h-4 w-4 mr-1" />
+            Custom Prompts
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-w-3xl max-h-[90vh]">

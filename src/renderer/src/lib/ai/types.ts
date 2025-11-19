@@ -254,13 +254,51 @@ export function estimateTokens(text: string): number {
 /**
  * Preset prompts for common tasks
  */
-export const PRESET_PROMPTS = {
-  expandScene: 'Expand this scene with more descriptive details and sensory information.',
-  checkGrammar: 'Check the grammar and style of the selected text. List all issues found.',
-  makeDramatic: 'Rewrite this text to make it more dramatic and emotionally engaging.',
-  writeDialogue: 'Write a dialogue between the mentioned characters based on their personalities.',
-  summarize: 'Provide a concise summary of this chapter.',
-  findPlotHoles: 'Analyze this content for any plot holes or inconsistencies.',
-  suggestImprovements: 'Suggest improvements to make this text more compelling.',
-  characterConsistency: 'Check if the character behavior is consistent with their defined personality and background.'
+export interface PresetPrompt {
+  label: string
+  prompt: string
+  category: 'writing' | 'analysis'
+}
+
+export const PRESET_PROMPTS: Record<string, PresetPrompt> = {
+  expandScene: {
+    label: 'Expand Scene',
+    prompt: 'Expand this scene with more descriptive details and sensory information.',
+    category: 'writing'
+  },
+  checkGrammar: {
+    label: 'Check Grammar',
+    prompt: 'Check the grammar and style of the selected text. List all issues found.',
+    category: 'writing'
+  },
+  makeDramatic: {
+    label: 'Make Dramatic',
+    prompt: 'Rewrite this text to make it more dramatic and emotionally engaging.',
+    category: 'writing'
+  },
+  writeDialogue: {
+    label: 'Write Dialogue',
+    prompt: 'Write a dialogue between the mentioned characters based on their personalities.',
+    category: 'writing'
+  },
+  summarize: {
+    label: 'Summarize',
+    prompt: 'Provide a concise summary of this chapter.',
+    category: 'analysis'
+  },
+  findPlotHoles: {
+    label: 'Find Plot Holes',
+    prompt: 'Analyze this content for any plot holes or inconsistencies.',
+    category: 'analysis'
+  },
+  suggestImprovements: {
+    label: 'Suggest Improvements',
+    prompt: 'Suggest improvements to make this text more compelling.',
+    category: 'analysis'
+  },
+  characterConsistency: {
+    label: 'Check Character Consistency',
+    prompt: 'Check if the character behavior is consistent with their defined personality and background.',
+    category: 'analysis'
+  }
 }
