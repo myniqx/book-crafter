@@ -6,11 +6,18 @@ import {
   type AIProviderInterface,
   type CustomPrompt,
   type AISuggestion,
-  DEFAULT_AI_CONFIGS
+  type ToolCall,
+  type ToolResult,
+  type ToolExecution,
+  type AgenticSettings,
+  DEFAULT_AI_CONFIGS,
+  DEFAULT_AGENTIC_SETTINGS
 } from '@renderer/lib/ai/types'
 import { createAIProvider } from '@renderer/lib/ai'
-import type { Entity } from './entitySlice'
+import { getToolByName, executeToolCall, filterEnabledTools } from '@renderer/lib/ai/tools'
+import type { StoreAccess } from '@renderer/lib/ai/tools/executor'
 import type { Book } from './booksSlice'
+import type { Entity } from './entitySlice'
 
 // UUID generator helper
 function generateUUID(): string {
@@ -49,6 +56,13 @@ export interface AISlice {
   // Suggestions history
   suggestions: AISuggestion[]
 
+  // Agentic state
+  agenticSettings: AgenticSettings
+  isAgentRunning: boolean
+  currentIteration: number
+  pendingApproval: ToolCall | null
+  toolHistory: ToolExecution[]
+
   // Provider instance (not persisted)
   _provider: AIProviderInterface | null
 
@@ -69,6 +83,21 @@ export interface AISlice {
   }) => AIContext | undefined
   getProvider: () => AIProviderInterface
 
+  // Agentic actions
+  sendAgenticMessage: (
+    prompt: string,
+    context?: AIContext,
+    storeAccess?: StoreAccess,
+    onStream?: (chunk: string) => void,
+    onToolCall?: (toolCall: ToolCall) => void
+  ) => Promise<void>
+  approveToolCall: (storeAccess: StoreAccess) => Promise<void>
+  rejectToolCall: () => void
+  stopAgent: () => void
+  updateAgenticSettings: (settings: Partial<AgenticSettings>) => void
+  setPendingStoreAccess: (storeAccess: StoreAccess | null) => void
+  _pendingStoreAccess: StoreAccess | null
+
   // Custom prompts actions
   addCustomPrompt: (prompt: Omit<CustomPrompt, 'id' | 'created' | 'modified'>) => void
   updateCustomPrompt: (id: string, prompt: Partial<CustomPrompt>) => void
@@ -88,7 +117,18 @@ export interface AISlice {
 }
 
 // Re-export types for use in other modules
-export type { AIConfig, AIMessage, AIContext, CustomPrompt, AISuggestion }
+export type {
+  AIConfig,
+  AIMessage,
+  AIContext,
+  CustomPrompt,
+  AISuggestion,
+  ToolCall,
+  ToolResult,
+  ToolExecution,
+  AgenticSettings
+}
+export type { StoreAccess } from '@renderer/lib/ai/tools/executor'
 export type OllamaConfig = AIConfig
 export type OpenAIConfig = AIConfig
 export type AnthropicConfig = AIConfig
@@ -110,7 +150,13 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
   currentStreamMessage: '',
   customPrompts: [],
   suggestions: [],
+  agenticSettings: DEFAULT_AGENTIC_SETTINGS,
+  isAgentRunning: false,
+  currentIteration: 0,
+  pendingApproval: null,
+  toolHistory: [],
   _provider: null,
+  _pendingStoreAccess: null,
 
   // Update configuration
   updateConfig: (newConfig) => {
@@ -161,14 +207,19 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
 
   // Build context from current state
   buildContext: (options) => {
-    const state = get() as any // Access full store state
+    // Access full store state - this works because AISlice is part of ToolsStore
+    // which doesn't have books/entities, but we're using this in components that have both
+    const state = get() as AISlice & {
+      books?: Record<string, Book>
+      entities?: Record<string, Entity>
+    }
 
     const context: AIContext = {}
 
     // Add current chapter if specified
     if (options.currentChapter) {
       const { bookSlug, chapterSlug } = options.currentChapter
-      const book = state.books?.[bookSlug] as Book | undefined
+      const book = state.books?.[bookSlug]
       const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
 
       if (chapter) {
@@ -188,8 +239,7 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
 
     // Add entities if requested
     if (options.includeEntities && state.entities) {
-      const entities = state.entities as Record<string, Entity>
-      context.entities = Object.values(entities).map((entity) => ({
+      context.entities = Object.values(state.entities).map((entity) => ({
         slug: entity.slug,
         name: entity.name,
         fields: entity.fields.map((f) => ({ name: f.name, value: f.value }))
@@ -397,5 +447,304 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
     set((state) => {
       state.anthropicConfig = config
     })
+  },
+
+  // Agentic settings
+  updateAgenticSettings: (settings) => {
+    set((state) => {
+      state.agenticSettings = { ...state.agenticSettings, ...settings }
+    })
+  },
+
+  // Stop running agent
+  stopAgent: () => {
+    set((state) => {
+      state.isAgentRunning = false
+      state.pendingApproval = null
+      state.currentIteration = 0
+    })
+  },
+
+  // Reject pending tool call
+  rejectToolCall: () => {
+    set((state) => {
+      if (state.pendingApproval) {
+        // Add rejection to history
+        state.toolHistory.push({
+          id: generateUUID(),
+          toolCall: state.pendingApproval,
+          status: 'rejected',
+          timestamp: new Date().toISOString()
+        })
+
+        // Add rejection message
+        state.messages.push({
+          role: 'tool_result',
+          content: `Tool call "${state.pendingApproval.name}" was rejected by user`,
+          timestamp: new Date().toISOString(),
+          toolResult: {
+            toolCallId: state.pendingApproval.id,
+            content: 'Tool call was rejected by user',
+            isError: true
+          }
+        })
+
+        state.pendingApproval = null
+        state.isAgentRunning = false
+      }
+    })
+  },
+
+  // Set pending store access for approval
+  setPendingStoreAccess: (storeAccess) => {
+    set((state) => {
+      state._pendingStoreAccess = storeAccess
+    })
+  },
+
+  // Approve pending tool call
+  approveToolCall: async (storeAccess) => {
+    const state = get()
+    const toolCall = state.pendingApproval
+
+    if (!toolCall) return
+
+    // Mark as approved
+    set((s) => {
+      s.pendingApproval = null
+      const execution = s.toolHistory.find((t) => t.toolCall.id === toolCall.id)
+      if (execution) {
+        execution.status = 'running'
+        execution.approvedAt = new Date().toISOString()
+      }
+    })
+
+    // Execute the tool with provided store access
+    const result = await executeToolCall(toolCall, storeAccess)
+
+    // Update execution record
+    set((s) => {
+      const execution = s.toolHistory.find((t) => t.toolCall.id === toolCall.id)
+      if (execution) {
+        execution.status = result.isError ? 'error' : 'completed'
+        execution.result = result
+        execution.completedAt = new Date().toISOString()
+      }
+    })
+
+    // Add tool result message
+    set((s) => {
+      s.messages.push({
+        role: 'tool_result',
+        content: result.content,
+        timestamp: new Date().toISOString(),
+        toolResult: result
+      })
+    })
+
+    // Continue agent loop if not stopped
+    if (get().isAgentRunning) {
+      // This will be handled by the main agentic loop
+    }
+  },
+
+  // Main agentic message handler
+  sendAgenticMessage: async (prompt, context, storeAccess, onStream, onToolCall) => {
+    const state = get()
+    const { agenticSettings } = state
+
+    // If agentic is disabled, use regular sendMessage
+    if (!agenticSettings.enabled) {
+      return get().sendMessage(prompt, context, onStream)
+    }
+
+    // Store the store access for approval callbacks
+    set((s) => {
+      s._pendingStoreAccess = storeAccess || null
+    })
+
+    try {
+      set((s) => {
+        s.isStreaming = true
+        s.isAgentRunning = true
+        s.currentIteration = 0
+        s.currentStreamMessage = ''
+        s.toolHistory = []
+      })
+
+      // Add user message
+      const userMessage: AIMessage = {
+        role: 'user',
+        content: prompt,
+        timestamp: new Date().toISOString()
+      }
+
+      set((s) => {
+        s.messages.push(userMessage)
+      })
+
+      const provider = get().getProvider()
+      const tools = filterEnabledTools(agenticSettings.enabledTools)
+
+      // Agentic loop
+      let iteration = 0
+      while (iteration < agenticSettings.maxIterations && get().isAgentRunning) {
+        set((s) => {
+          s.currentIteration = iteration + 1
+        })
+
+        // Get conversation history for context
+        const messages = get().messages
+
+        // Make API call with tools
+        const response = await provider.complete({
+          prompt: iteration === 0 ? prompt : '',
+          context: {
+            ...context,
+            conversationHistory: messages.slice(-20)
+          },
+          tools: tools.length > 0 ? tools : undefined,
+          toolChoice: 'auto'
+        })
+
+        // Handle text response
+        if (response.content) {
+          set((s) => {
+            s.currentStreamMessage = response.content
+          })
+          onStream?.(response.content)
+
+          // Add assistant message
+          const assistantMessage: AIMessage = {
+            role: 'assistant',
+            content: response.content,
+            timestamp: new Date().toISOString(),
+            toolCalls: response.toolCalls
+          }
+
+          set((s) => {
+            s.messages.push(assistantMessage)
+          })
+        }
+
+        // Handle tool calls
+        if (response.toolCalls && response.toolCalls.length > 0) {
+          for (const toolCall of response.toolCalls) {
+            // Check if still running
+            if (!get().isAgentRunning) break
+
+            onToolCall?.(toolCall)
+
+            const tool = getToolByName(toolCall.name)
+            const needsApproval = tool?.requiresApproval && agenticSettings.approvalMode !== 'none'
+            const isWriteOp = tool?.requiresApproval
+            const shouldAskApproval =
+              agenticSettings.approvalMode === 'all' ||
+              (agenticSettings.approvalMode === 'write_only' && isWriteOp)
+
+            // Add to history
+            set((s) => {
+              s.toolHistory.push({
+                id: generateUUID(),
+                toolCall,
+                status: shouldAskApproval ? 'pending' : 'running',
+                timestamp: new Date().toISOString()
+              })
+            })
+
+            if (shouldAskApproval) {
+              // Wait for approval
+              set((s) => {
+                s.pendingApproval = toolCall
+              })
+
+              // Wait for approval/rejection
+              await new Promise<void>((resolve) => {
+                const checkApproval = setInterval(() => {
+                  const currentState = get()
+                  if (!currentState.pendingApproval || !currentState.isAgentRunning) {
+                    clearInterval(checkApproval)
+                    resolve()
+                  }
+                }, 100)
+              })
+
+              // Check if rejected or stopped
+              if (!get().isAgentRunning) break
+            } else if (storeAccess) {
+              // Execute immediately with provided store access
+              const result = await executeToolCall(toolCall, storeAccess)
+
+              // Update execution record
+              set((s) => {
+                const execution = s.toolHistory.find((t) => t.toolCall.id === toolCall.id)
+                if (execution) {
+                  execution.status = result.isError ? 'error' : 'completed'
+                  execution.result = result
+                  execution.completedAt = new Date().toISOString()
+                }
+              })
+
+              // Add tool result message
+              set((s) => {
+                s.messages.push({
+                  role: 'tool_result',
+                  content: result.content,
+                  timestamp: new Date().toISOString(),
+                  toolResult: result
+                })
+              })
+            } else {
+              // No store access provided, skip tool execution
+              set((s) => {
+                const execution = s.toolHistory.find((t) => t.toolCall.id === toolCall.id)
+                if (execution) {
+                  execution.status = 'error'
+                  execution.result = {
+                    toolCallId: toolCall.id,
+                    content: 'Store access not available',
+                    isError: true
+                  }
+                }
+              })
+            }
+          }
+        }
+
+        // Check if we should stop
+        if (response.finishReason !== 'tool_use') {
+          break
+        }
+
+        iteration++
+      }
+
+      // Clean up
+      set((s) => {
+        s.isStreaming = false
+        s.isAgentRunning = false
+        s.currentIteration = 0
+        s.currentStreamMessage = ''
+        s.pendingApproval = null
+      })
+    } catch (error) {
+      console.error('Agentic message error:', error)
+
+      // Add error message
+      set((s) => {
+        s.messages.push({
+          role: 'assistant',
+          content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          timestamp: new Date().toISOString()
+        })
+        s.isStreaming = false
+        s.isAgentRunning = false
+        s.currentIteration = 0
+        s.currentStreamMessage = ''
+        s.pendingApproval = null
+      })
+
+      throw error
+    }
   }
 })

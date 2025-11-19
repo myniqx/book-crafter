@@ -6,7 +6,85 @@ export type AIProvider = 'ollama' | 'openai' | 'anthropic'
 /**
  * AI Message role
  */
-export type MessageRole = 'user' | 'assistant' | 'system'
+export type MessageRole = 'user' | 'assistant' | 'system' | 'tool_result'
+
+/**
+ * Tool categories
+ */
+export type ToolCategory = 'file' | 'analysis' | 'generation' | 'editing'
+
+/**
+ * Approval mode for tool execution
+ */
+export type ApprovalMode = 'all' | 'write_only' | 'none'
+
+/**
+ * Tool definition (JSON Schema based)
+ */
+export interface ToolDefinition {
+  name: string
+  description: string
+  category: ToolCategory
+  requiresApproval: boolean // true for write operations
+  parameters: {
+    type: 'object'
+    properties: Record<string, ToolParameterSchema>
+    required?: string[]
+  }
+}
+
+/**
+ * Tool parameter schema
+ */
+export interface ToolParameterSchema {
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object'
+  description: string
+  enum?: string[]
+  items?: ToolParameterSchema
+  default?: unknown
+}
+
+/**
+ * Tool call from AI
+ */
+export interface ToolCall {
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+}
+
+/**
+ * Tool execution result
+ */
+export interface ToolResult {
+  toolCallId: string
+  content: string
+  isError?: boolean
+}
+
+/**
+ * Tool execution status
+ */
+export type ToolExecutionStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'running'
+  | 'completed'
+  | 'error'
+
+/**
+ * Tool execution record
+ */
+export interface ToolExecution {
+  id: string
+  toolCall: ToolCall
+  status: ToolExecutionStatus
+  result?: ToolResult
+  timestamp: string
+  approvedAt?: string
+  completedAt?: string
+}
 
 /**
  * AI Message
@@ -15,6 +93,8 @@ export interface AIMessage {
   role: MessageRole
   content: string
   timestamp: string
+  toolCalls?: ToolCall[]
+  toolResult?: ToolResult
 }
 
 /**
@@ -89,6 +169,8 @@ export interface AIRequestOptions {
   stream?: boolean
   systemPrompt?: string
   conversationHistory?: AIMessage[]
+  tools?: ToolDefinition[]
+  toolChoice?: 'auto' | 'none' | 'required' | { type: 'tool'; name: string }
 }
 
 /**
@@ -96,12 +178,60 @@ export interface AIRequestOptions {
  */
 export interface AIResponse {
   content: string
-  finishReason?: 'stop' | 'length' | 'error'
+  finishReason?: 'stop' | 'length' | 'error' | 'tool_use'
+  toolCalls?: ToolCall[]
   usage?: {
     promptTokens: number
     completionTokens: number
     totalTokens: number
   }
+}
+
+/**
+ * Streaming callback with tool support
+ */
+export type StreamCallbackExtended = (event: StreamEvent) => void
+
+/**
+ * Stream event types
+ */
+export type StreamEvent =
+  | { type: 'text'; content: string; done: boolean }
+  | { type: 'tool_call_start'; toolCall: Partial<ToolCall> }
+  | { type: 'tool_call_delta'; id: string; arguments: string }
+  | { type: 'tool_call_end'; toolCall: ToolCall }
+  | { type: 'done'; finishReason: string }
+  | { type: 'error'; error: string }
+
+/**
+ * Agentic settings
+ */
+export interface AgenticSettings {
+  enabled: boolean
+  maxIterations: number
+  approvalMode: ApprovalMode
+  enabledTools: string[]
+}
+
+/**
+ * Default agentic settings
+ */
+export const DEFAULT_AGENTIC_SETTINGS: AgenticSettings = {
+  enabled: true,
+  maxIterations: 10,
+  approvalMode: 'write_only',
+  enabledTools: []
+}
+
+/**
+ * Model info for dynamic model management
+ */
+export interface ModelInfo {
+  id: string
+  name: string
+  provider: AIProvider
+  visible: boolean
+  order: number
 }
 
 /**
@@ -178,13 +308,7 @@ export const OLLAMA_MODELS = [
 /**
  * Available OpenAI models
  */
-export const OPENAI_MODELS = [
-  'gpt-4o',
-  'gpt-4o-mini',
-  'gpt-4-turbo',
-  'gpt-4',
-  'gpt-3.5-turbo'
-]
+export const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']
 
 /**
  * Available Anthropic models
@@ -298,7 +422,8 @@ export const PRESET_PROMPTS: Record<string, PresetPrompt> = {
   },
   characterConsistency: {
     label: 'Check Character Consistency',
-    prompt: 'Check if the character behavior is consistent with their defined personality and background.',
+    prompt:
+      'Check if the character behavior is consistent with their defined personality and background.',
     category: 'analysis'
   }
 }

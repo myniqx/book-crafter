@@ -1,4 +1,10 @@
-import type { MessageRole, AIProvider } from '@renderer/lib/ai/types'
+import type {
+  MessageRole,
+  AIProvider,
+  ToolCall,
+  ToolResult,
+  ToolExecutionStatus
+} from '@renderer/lib/ai/types'
 
 export interface ModelSelectorProps {
   className?: string
@@ -23,6 +29,11 @@ export interface MessageBubbleProps {
   content: string
   timestamp: string
   isStreaming?: boolean
+  toolCalls?: ToolCall[]
+  toolResult?: ToolResult
+  toolStatus?: ToolExecutionStatus
+  onApprove?: () => void
+  onReject?: () => void
 }
 
 export interface ContextDisplayProps {

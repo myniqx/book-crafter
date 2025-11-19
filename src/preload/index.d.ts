@@ -1,9 +1,9 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
+import type { FetchResponse, FetchOptions, StreamOptions } from '../types/ipc'
 
 interface HTTPAPI {
-  get(url: string, headers?: Record<string, string>): Promise<string>
-  post(url: string, body: unknown, headers?: Record<string, string>): Promise<string>
-  stream(url: string, body: unknown, onChunk: (chunk: string) => void, headers?: Record<string, string>): Promise<void>
+  request: <T = unknown>(url: string, options?: FetchOptions) => Promise<FetchResponse<T>>
+  stream: (url: string, options: StreamOptions) => Promise<void>
 }
 
 interface FSAPI {

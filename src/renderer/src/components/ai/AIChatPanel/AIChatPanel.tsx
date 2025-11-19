@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useToolsStore, useContentStore } from '@renderer/store'
 import type { AIChatPanelProps } from './types'
-import { Bot, Send, Sparkles, FileText, Users } from 'lucide-react'
+import type { StoreAccess } from '@renderer/store/slices/aiSlice'
+import { Bot, Send, Sparkles, FileText, Users, Square, Loader2 } from 'lucide-react'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
@@ -9,6 +10,7 @@ import { ModelSelector } from './ModelSelector'
 import { PresetPromptsSelector } from './PresetPromptsSelector'
 import { MessageBubble } from './MessageBubble'
 import { HeaderMenu } from './HeaderMenu'
+import { ApprovalDialog } from '../ApprovalDialog'
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -25,14 +27,73 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const messages = useToolsStore((state) => state.messages)
   const isStreaming = useToolsStore((state) => state.isStreaming)
   const currentStreamMessage = useToolsStore((state) => state.currentStreamMessage)
+  const isAgentRunning = useToolsStore((state) => state.isAgentRunning)
+  const currentIteration = useToolsStore((state) => state.currentIteration)
+  const pendingApproval = useToolsStore((state) => state.pendingApproval)
+  const agenticSettings = useToolsStore((state) => state.agenticSettings)
 
   // Tools store actions
   const sendMessage = useToolsStore((state) => state.sendMessage)
+  const sendAgenticMessage = useToolsStore((state) => state.sendAgenticMessage)
   const clearMessages = useToolsStore((state) => state.clearMessages)
   const buildContext = useToolsStore((state) => state.buildContext)
+  const approveToolCall = useToolsStore((state) => state.approveToolCall)
+  const rejectToolCall = useToolsStore((state) => state.rejectToolCall)
+  const stopAgent = useToolsStore((state) => state.stopAgent)
 
   // Content store state
   const books = useContentStore((state) => state.books)
+  const entities = useContentStore((state) => state.entities)
+
+  // Content store actions
+  const addChapter = useContentStore((state) => state.addChapter)
+  const updateChapterContent = useContentStore((state) => state.updateChapterContent)
+  const deleteChapter = useContentStore((state) => state.deleteChapter)
+  const addEntity = useContentStore((state) => state.addEntity)
+  const updateEntity = useContentStore((state) => state.updateEntity)
+  const deleteEntity = useContentStore((state) => state.deleteEntity)
+
+  // Create store access for tool execution
+  const storeAccess: StoreAccess = useMemo(
+    () => ({
+      getBooks: () => books,
+      getBook: (slug: string) => books[slug],
+      getChapter: (bSlug: string, cSlug: string) => {
+        const book = books[bSlug]
+        return book?.chapters.find((c) => c.slug === cSlug)
+      },
+      addChapter: (bSlug: string, chapter: unknown) => {
+        addChapter(bSlug, chapter as Parameters<typeof addChapter>[1])
+      },
+      updateChapter: (bSlug: string, cSlug: string, content: string) => {
+        updateChapterContent(bSlug, cSlug, content)
+      },
+      deleteChapter: (bSlug: string, cSlug: string) => {
+        deleteChapter(bSlug, cSlug)
+      },
+      getEntities: () => entities,
+      getEntity: (slug: string) => entities[slug],
+      addEntity: (entity: unknown) => {
+        addEntity(entity as Parameters<typeof addEntity>[0])
+      },
+      updateEntity: (slug: string, updates: unknown) => {
+        updateEntity(slug, updates as Parameters<typeof updateEntity>[1])
+      },
+      deleteEntity: (slug: string) => {
+        deleteEntity(slug)
+      }
+    }),
+    [
+      books,
+      entities,
+      addChapter,
+      updateChapterContent,
+      deleteChapter,
+      addEntity,
+      updateEntity,
+      deleteEntity
+    ]
+  )
 
   // Build context from props or current state
   const context = buildContext({
@@ -66,11 +127,24 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
     if (!prompt.trim() || isStreaming) return
 
     try {
-      await sendMessage(prompt, context)
+      // Use agentic message if enabled
+      if (agenticSettings?.enabled) {
+        await sendAgenticMessage(prompt, context, storeAccess)
+      } else {
+        await sendMessage(prompt, context)
+      }
       setPrompt('')
     } catch (error) {
       console.error('Failed to send message:', error)
     }
+  }
+
+  const handleApprove = async (): Promise<void> => {
+    await approveToolCall(storeAccess)
+  }
+
+  const handleStop = (): void => {
+    stopAgent()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -163,6 +237,8 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
               role={message.role}
               content={message.content}
               timestamp={message.timestamp}
+              toolCalls={message.toolCalls}
+              toolResult={message.toolResult}
             />
           ))}
 
@@ -196,13 +272,35 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
             onKeyDown={handleKeyDown}
             placeholder="Ask me anything..."
             className="flex-1"
-            disabled={isStreaming}
+            disabled={isStreaming || isAgentRunning}
           />
-          <Button onClick={handleSend} disabled={!prompt.trim() || isStreaming} size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
+          {isAgentRunning ? (
+            <Button onClick={handleStop} variant="destructive" size="icon">
+              <Square className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSend} disabled={!prompt.trim() || isStreaming} size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          )}
         </div>
+
+        {/* Agent status */}
+        {isAgentRunning && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>Agent running (iteration {currentIteration})...</span>
+          </div>
+        )}
       </div>
+
+      {/* Approval Dialog */}
+      <ApprovalDialog
+        toolCall={pendingApproval}
+        open={!!pendingApproval}
+        onApprove={handleApprove}
+        onReject={rejectToolCall}
+      />
     </div>
   )
 }
