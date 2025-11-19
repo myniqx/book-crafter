@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react'
-import { useCoreStore } from '@renderer/store'
-
-type Theme = 'dark' | 'light' | 'system'
+import { useToolsStore } from '@renderer/store'
+import type { Theme } from '@renderer/store/slices/settingsSlice'
 
 interface ThemeProviderContextType {
   theme: Theme
@@ -11,8 +10,12 @@ interface ThemeProviderContextType {
 const ThemeProviderContext = createContext<ThemeProviderContextType | undefined>(undefined)
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useCoreStore((state) => state.theme)
-  const setTheme = useCoreStore((state) => state.setTheme)
+  const theme = useToolsStore((state) => state.generalSettings.theme)
+  const updateGeneralSettings = useToolsStore((state) => state.updateGeneralSettings)
+
+  const setTheme = (newTheme: Theme): void => {
+    updateGeneralSettings({ theme: newTheme })
+  }
 
   useEffect(() => {
     const root = window.document.documentElement

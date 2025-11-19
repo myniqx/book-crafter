@@ -82,7 +82,7 @@ export class OllamaProvider implements AIProviderInterface {
       fullPrompt = `${contextPrompt}\n\nUser: ${options.prompt}\n\nAssistant:`
     }
 
-    const body = {
+    const requestBody = {
       model: this.config.model,
       prompt: fullPrompt,
       stream: true,
@@ -95,27 +95,44 @@ export class OllamaProvider implements AIProviderInterface {
 
     try {
       // Use IPC fetch with streaming
-      // TODO: check if this api is correct IPC function
       if (!window.api?.http?.stream) {
         throw new Error('HTTP streaming API not available')
       }
 
-      await window.api.http.stream(url, body, (chunk: string) => {
-        try {
-          const data = JSON.parse(chunk)
-          if (data.response) {
-            callback(data.response, data.done || false)
+      await window.api.http.stream(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: requestBody,
+        onChunk: (chunk: string) => {
+          try {
+            // Ollama sends newline-delimited JSON
+            const lines = chunk.split('\n').filter((line) => line.trim())
+            for (const line of lines) {
+              const data = JSON.parse(line)
+              if (data.response) {
+                callback(data.response, data.done || false)
+              }
+              if (data.done) {
+                callback('', true)
+              }
+            }
+          } catch (error) {
+            console.error('Failed to parse stream chunk:', error)
           }
-          if (data.done) {
-            callback('', true)
-          }
-        } catch (error) {
-          console.error('Failed to parse stream chunk:', error)
+        },
+        onError: (error: Error) => {
+          console.error('Stream error:', error)
+          throw error
+        },
+        onComplete: () => {
+          // Stream completed
         }
       })
     } catch (error) {
       console.error('Ollama streaming error:', error)
-      throw new Error( // TODO: it give 400 error
+      throw new Error(
         `Ollama streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
     }
@@ -156,8 +173,7 @@ export class OllamaProvider implements AIProviderInterface {
       const data = JSON.parse(response)
 
       if (data.models && Array.isArray(data.models)) {
-        // TODO: dont use any!
-        return data.models.map((m: any) => m.name)
+        return data.models.map((m: { name: string }) => m.name)
       }
 
       return []

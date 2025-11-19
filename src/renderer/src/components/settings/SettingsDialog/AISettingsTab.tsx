@@ -245,14 +245,16 @@ export const AISettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="temperature">
               Temperature:{' '}
-              <span className="text-muted-foreground">{config.temperature.toFixed(1)}</span>
+              <span className="text-muted-foreground">
+                {(config.temperature ?? 0.7).toFixed(1)}
+              </span>
             </Label>
             <Slider
               id="temperature"
               min={0}
               max={2}
               step={0.1}
-              value={[config.temperature]}
+              value={[config.temperature ?? 0.7]}
               onValueChange={([value]) => updateConfig({ temperature: value })}
             />
             <p className="text-xs text-muted-foreground">
@@ -262,14 +264,15 @@ export const AISettingsTab: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="max-tokens">
-              Max Tokens: <span className="text-muted-foreground">{config.maxTokens}</span>
+              Max Tokens:{' '}
+              <span className="text-muted-foreground">{config.maxTokens ?? 2000}</span>
             </Label>
             <Slider
               id="max-tokens"
               min={100}
               max={4000}
               step={100}
-              value={[config.maxTokens]}
+              value={[config.maxTokens ?? 2000]}
               onValueChange={([value]) => updateConfig({ maxTokens: value })}
             />
           </div>

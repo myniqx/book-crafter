@@ -13,7 +13,7 @@ import {
 import { Button } from '@renderer/components/ui/button'
 import { useCoreStore } from '@renderer/store'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
-import { dialog, fs } from '@renderer/lib/ipc'
+import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
 import type { OpenProjectDialogProps } from './types'
 import type { RecentProject } from '../WelcomeScreen/types'
@@ -27,8 +27,7 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
   const [selectedPath, setSelectedPath] = useState<string>('')
 
   const hasUnsavedChanges = useCoreStore((state) => state.hasUnsavedChanges)
-  const setWorkspaceConfig = useCoreStore((state) => state.setWorkspaceConfig)
-  const setWorkspacePath = useCoreStore((state) => state.setWorkspacePath)
+  const loadWorkspace = useCoreStore((state) => state.loadWorkspace)
 
   // Handle dialog open/close with unsaved changes check
   const handleOpenChange = (newOpen: boolean) => {
@@ -70,27 +69,16 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
     setIsOpening(true)
 
     try {
-      // Check if it's a valid workspace
-      const configPath = `${selectedPath}/book-crafter.json`
-      const exists = await fs.exists(configPath).catch(() => false)
+      // Load workspace using store action
+      await loadWorkspace(selectedPath)
 
-      if (!exists) {
-        toast.error('Not a workspace', 'Selected folder is not a Book Crafter workspace')
-        setIsOpening(false)
-        return
-      }
-
-      // Load workspace config
-      const configContent = await fs.readFile(configPath, 'utf-8')
-      const config = JSON.parse(configContent)
-
-      setWorkspaceConfig(config)
-      setWorkspacePath(selectedPath)
+      // Get the loaded config for project name
+      const config = useCoreStore.getState().workspaceConfig
 
       // Add to recent projects
       const newProject: RecentProject = {
         path: selectedPath,
-        name: config.projectName,
+        name: config?.projectName || 'Unknown Project',
         lastOpened: new Date().toISOString(),
         exists: true
       }
@@ -99,7 +87,7 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
       const filtered = recentProjects.filter((p) => p.path !== selectedPath)
       setRecentProjects([newProject, ...filtered.slice(0, 9)]) // Keep max 10
 
-      toast.success('Workspace opened', config.projectName)
+      toast.success('Workspace opened', config?.projectName || 'Project')
 
       // Reset and close dialog
       setSelectedPath('')

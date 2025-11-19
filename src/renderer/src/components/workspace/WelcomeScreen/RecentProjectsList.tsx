@@ -2,15 +2,18 @@ import React from 'react'
 import { FolderOpen, Trash2, Clock } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
+import { useCoreStore } from '@renderer/store'
 import type { RecentProject } from './types'
 import { toast } from '@renderer/lib/toast'
-import { fs } from '@renderer/lib/ipc'
+import { fs } from '@renderer/lib/ipc'  // Still needed for validateProjects
 
 export const RecentProjectsList: React.FC = () => {
   const [recentProjects, setRecentProjects] = usePersistedStore<RecentProject[]>(
     'recentProjects',
     []
   )
+
+  const loadWorkspace = useCoreStore((state) => state.loadWorkspace)
 
   // Validate projects on mount
   React.useEffect(() => {
@@ -38,14 +41,20 @@ export const RecentProjectsList: React.FC = () => {
     }
 
     try {
-      // TODO: Load workspace from path
-      toast.info('Opening project', project.name)
+      // Load workspace using store action
+      await loadWorkspace(project.path)
 
-      // Update last opened time
+      // Update last opened time and move to top
       const updated = recentProjects.map((p) =>
-        p.path === project.path ? { ...p, lastOpened: new Date().toISOString() } : p
+        p.path === project.path
+          ? { ...p, lastOpened: new Date().toISOString() }
+          : p
       )
+      // Sort by lastOpened (most recent first)
+      updated.sort((a, b) => new Date(b.lastOpened).getTime() - new Date(a.lastOpened).getTime())
       setRecentProjects(updated)
+
+      toast.success('Workspace opened', project.name)
     } catch (error) {
       toast.error('Failed to open project', String(error))
     }

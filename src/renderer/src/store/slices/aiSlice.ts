@@ -73,12 +73,25 @@ export interface AISlice {
   addCustomPrompt: (prompt: Omit<CustomPrompt, 'id' | 'created' | 'modified'>) => void
   updateCustomPrompt: (id: string, prompt: Partial<CustomPrompt>) => void
   deleteCustomPrompt: (id: string) => void
+  setCustomPrompts: (prompts: CustomPrompt[]) => void
 
   // Suggestions actions
   addSuggestion: (suggestion: Omit<AISuggestion, 'id' | 'timestamp'>) => void
   applySuggestion: (id: string) => void
   clearSuggestions: () => void
+
+  // Direct setters for persistence
+  setConfig: (config: AIConfig) => void
+  setOllamaConfig: (config: AIConfig) => void
+  setOpenAIConfig: (config: AIConfig) => void
+  setAnthropicConfig: (config: AIConfig) => void
 }
+
+// Re-export types for use in other modules
+export type { AIConfig, AIMessage, AIContext, CustomPrompt, AISuggestion }
+export type OllamaConfig = AIConfig
+export type OpenAIConfig = AIConfig
+export type AnthropicConfig = AIConfig
 
 /**
  * Create AI slice
@@ -102,9 +115,26 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
   // Update configuration
   updateConfig: (newConfig) => {
     set((state) => {
-      state.config = { ...state.config, ...newConfig }
-      // Also update the provider-specific config if provider changed
-      const provider = newConfig.provider || state.config.provider
+      // If provider is changing, load the full config for that provider
+      if (newConfig.provider && newConfig.provider !== state.config.provider) {
+        // Get the stored config for the new provider
+        let baseConfig: AIConfig
+        if (newConfig.provider === 'ollama') {
+          baseConfig = state.ollamaConfig
+        } else if (newConfig.provider === 'openai') {
+          baseConfig = state.openaiConfig
+        } else {
+          baseConfig = state.anthropicConfig
+        }
+        // Merge with any additional settings from newConfig
+        state.config = { ...baseConfig, ...newConfig }
+      } else {
+        // Just update the current config
+        state.config = { ...state.config, ...newConfig }
+      }
+
+      // Also update the provider-specific config
+      const provider = state.config.provider
       if (provider === 'ollama') {
         state.ollamaConfig = { ...state.ollamaConfig, ...state.config }
       } else if (provider === 'openai') {
@@ -306,6 +336,12 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
     })
   },
 
+  setCustomPrompts: (prompts) => {
+    set((state) => {
+      state.customPrompts = prompts
+    })
+  },
+
   // Suggestions actions
   addSuggestion: (suggestion) => {
     set((state) => {
@@ -334,6 +370,32 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
   clearSuggestions: () => {
     set((state) => {
       state.suggestions = []
+    })
+  },
+
+  // Direct setters for persistence
+  setConfig: (config) => {
+    set((state) => {
+      state.config = config
+      state._provider = null // Reset provider to force recreation
+    })
+  },
+
+  setOllamaConfig: (config) => {
+    set((state) => {
+      state.ollamaConfig = config
+    })
+  },
+
+  setOpenAIConfig: (config) => {
+    set((state) => {
+      state.openaiConfig = config
+    })
+  },
+
+  setAnthropicConfig: (config) => {
+    set((state) => {
+      state.anthropicConfig = config
     })
   }
 })

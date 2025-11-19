@@ -1,8 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
-import type { TabMetadata } from '@renderer/components/layout/DockLayout/types'
 
-export type Theme = 'light' | 'dark' | 'system'
 export type PanelId =
   | 'file-explorer'
   | 'entity-browser'
@@ -16,8 +14,52 @@ export type PanelId =
   | 'timeline'
   | 'markdown-preview'
 
+/**
+ * Tab Type System
+ * Defines all possible tab types that can be opened in DockLayout
+ */
+export type TabType = 'editor' | 'panel'
+
+/**
+ * Tab Metadata
+ * Generic structure for all tabs in DockLayout
+ * This is the single source of truth for tab state
+ */
+export interface TabMetadata {
+  /** Unique identifier for the tab (e.g., 'editor-book1-chapter1') */
+  id: string
+
+  /** Type of the tab */
+  type: TabType
+
+  /** Display title */
+  title: string
+
+  /** Whether the tab can be closed */
+  closable: boolean
+
+  /** Type-specific data */
+  data?: TabEditorData | TabPanelData
+}
+
+/**
+ * Editor Tab Data
+ * For chapter/document editors
+ */
+export interface TabEditorData {
+  bookSlug: string
+  chapterSlug: string
+}
+
+/**
+ * Panel Tab Data
+ * For fixed panels (entity-detail, image-detail, etc.)
+ */
+export interface TabPanelData {
+  panelId: PanelId
+}
+
 export interface UISlice {
-  theme: Theme
   sidebarCollapsed: boolean
   activePanels: PanelId[]
   panelSizes: Record<string, number>
@@ -40,7 +82,6 @@ export interface UISlice {
   createNoteDialogOpen: boolean
   settingsDialogOpen: boolean
 
-  setTheme: (theme: Theme) => void
   toggleSidebar: () => void
   setSidebarCollapsed: (collapsed: boolean) => void
   togglePanel: (panelId: PanelId) => void
@@ -97,11 +138,10 @@ export interface UISlice {
 
 export const createUISlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/immer', never], ['zustand/devtools', never]],
   [],
   UISlice
 > = (set, get) => ({
-  theme: 'dark',
   sidebarCollapsed: false,
   activePanels: ['file-explorer', 'entity-browser'],
   panelSizes: {
@@ -119,11 +159,6 @@ export const createUISlice: StateCreator<
   createEntityDialogOpen: false,
   createNoteDialogOpen: false,
   settingsDialogOpen: false,
-
-  setTheme: (theme) =>
-    set((state) => {
-      state.theme = theme
-    }),
 
   toggleSidebar: () =>
     set((state) => {

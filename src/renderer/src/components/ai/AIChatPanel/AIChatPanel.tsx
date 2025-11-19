@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useToolsStore, useContentStore } from '@renderer/store'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
 import type { AIChatPanelProps, MessageBubbleProps } from './types'
+import type { AIProvider } from '@renderer/lib/ai/types'
 import { cn } from '@renderer/lib/utils'
 import {
   Bot,
@@ -27,8 +28,16 @@ import {
   DropdownMenuLabel
 } from '@renderer/components/ui/dropdown-menu'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
+import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
 import { AISettingsDialog } from '@renderer/components/ai/AISettingsDialog'
 import { CustomPromptsDialog } from '@renderer/components/ai/CustomPromptsDialog'
+
+// Predefined models for each provider
+const PROVIDER_MODELS: Record<AIProvider, string[]> = {
+  ollama: [], // Will be fetched dynamically
+  openai: ['gpt-4-turbo', 'gpt-4', 'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'],
+  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229']
+}
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -38,6 +47,8 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 }) => {
   const [prompt, setPrompt] = useState(initialPrompt || '')
   const [showContext, setShowContext] = useState(true)
+  const [ollamaModels, setOllamaModels] = useState<string[]>([])
+  const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Tools store state
@@ -46,15 +57,55 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const currentStreamMessage = useToolsStore((state) => state.currentStreamMessage)
   const config = useToolsStore((state) => state.config)
   const customPrompts = useToolsStore((state) => state.customPrompts)
+  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
 
   // Tools store actions
   const sendMessage = useToolsStore((state) => state.sendMessage)
   const clearMessages = useToolsStore((state) => state.clearMessages)
   const buildContext = useToolsStore((state) => state.buildContext)
+  const updateConfig = useToolsStore((state) => state.updateConfig)
+
+  // Fetch Ollama models when provider is ollama
+  useEffect(() => {
+    const fetchOllamaModels = async (): Promise<void> => {
+      if (config.provider === 'ollama') {
+        try {
+          const endpoint = ollamaConfig.endpoint || 'http://localhost:11434'
+          const response = await fetch(`${endpoint}/api/tags`)
+          if (response.ok) {
+            const data = await response.json()
+            if (data.models && Array.isArray(data.models)) {
+              setOllamaModels(data.models.map((m: { name: string }) => m.name))
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch Ollama models:', error)
+        }
+      }
+    }
+    fetchOllamaModels()
+  }, [config.provider, ollamaConfig.endpoint])
+
+  // Get available models for current provider
+  const getAvailableModels = (): string[] => {
+    if (config.provider === 'ollama') {
+      return ollamaModels
+    }
+    return PROVIDER_MODELS[config.provider] || []
+  }
+
+  const handleProviderChange = (provider: AIProvider): void => {
+    updateConfig({ provider })
+    setModelSelectorOpen(false)
+  }
+
+  const handleModelChange = (model: string): void => {
+    updateConfig({ model })
+    setModelSelectorOpen(false)
+  }
 
   // Content store state
   const books = useContentStore((state) => state.books)
-  const entities = useContentStore((state) => state.entities)
 
   // Build context from props or current state
   const context = buildContext({
@@ -107,9 +158,61 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-purple-500" />
             <span className="text-sm font-medium text-foreground">AI Assistant</span>
-            <Badge variant="secondary" className="text-xs">
-              {config.provider} / {config.model}
-            </Badge>
+            <Popover open={modelSelectorOpen} onOpenChange={setModelSelectorOpen}>
+              <PopoverTrigger asChild>
+                <Badge
+                  variant="secondary"
+                  className="text-xs cursor-pointer hover:bg-accent transition-colors"
+                >
+                  {config.provider} / {config.model}
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Badge>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0" align="start">
+                <div className="p-2 border-b border-border">
+                  <p className="text-xs font-medium text-muted-foreground">Provider</p>
+                  <div className="flex gap-1 mt-1">
+                    {(['ollama', 'openai', 'anthropic'] as AIProvider[]).map((provider) => (
+                      <Button
+                        key={provider}
+                        size="sm"
+                        variant={config.provider === provider ? 'default' : 'outline'}
+                        className="h-6 text-xs capitalize"
+                        onClick={() => handleProviderChange(provider)}
+                      >
+                        {provider}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <ScrollArea className="h-48">
+                  <div className="p-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Models</p>
+                    {getAvailableModels().length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">
+                        {config.provider === 'ollama'
+                          ? 'No models found. Is Ollama running?'
+                          : 'No models available'}
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {getAvailableModels().map((model) => (
+                          <Button
+                            key={model}
+                            size="sm"
+                            variant={config.model === model ? 'secondary' : 'ghost'}
+                            className="w-full justify-start h-7 text-xs font-mono"
+                            onClick={() => handleModelChange(model)}
+                          >
+                            {model}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="flex items-center gap-2">
@@ -342,7 +445,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 : 'bg-muted text-foreground border-border'
             )}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+            <p className="text-sm whitespace-pre-wrap wrap-break-word">{content}</p>
             {isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />}
           </Card>
 

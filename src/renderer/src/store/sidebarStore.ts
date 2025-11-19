@@ -1,16 +1,9 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
+import type { PanelId } from './slices/uiSlice'
 
-export type PanelId =
-  | 'file-explorer'
-  | 'entity-browser'
-  | 'image-gallery'
-  | 'notes'
-  | 'search'
-  | 'ai-chat'
-  | 'timeline'
-  | 'markdown-preview'
+export type { PanelId }
 
 export interface SidebarState {
   // Sidebar state
@@ -42,96 +35,83 @@ const MAX_WIDTH = 400
 
 export const useSidebarStore = create<SidebarState>()(
   devtools(
-    persist(
-      immer((set, get) => ({
-        // Initial state
-        activePanel: 'file-explorer',
-        panelVisible: true,
-        sidebarWidth: DEFAULT_WIDTH,
-        activityBarCollapsed: false,
+    immer((set) => ({
+      // Initial state
+      activePanel: 'file-explorer',
+      panelVisible: true,
+      sidebarWidth: DEFAULT_WIDTH,
+      activityBarCollapsed: false,
 
-        // Legacy state
-        activePanels: ['file-explorer'],
-        sidebarCollapsed: false,
+      // Legacy state
+      activePanels: ['file-explorer'],
+      sidebarCollapsed: false,
 
-        // Select and show panel
-        selectPanel: (panelId) =>
-          set((state) => {
+      // Select and show panel
+      selectPanel: (panelId) =>
+        set((state) => {
+          state.activePanel = panelId
+          state.panelVisible = true
+        }),
+
+      // Toggle panel (if same panel clicked, close it)
+      togglePanel: (panelId) =>
+        set((state) => {
+          if (state.activePanel === panelId) {
+            // Same panel clicked - toggle visibility
+            state.panelVisible = !state.panelVisible
+          } else {
+            // Different panel - switch to it
             state.activePanel = panelId
             state.panelVisible = true
-          }),
+          }
+        }),
 
-        // Toggle panel (if same panel clicked, close it)
-        togglePanel: (panelId) =>
-          set((state) => {
-            if (state.activePanel === panelId) {
-              // Same panel clicked - toggle visibility
-              state.panelVisible = !state.panelVisible
-            } else {
-              // Different panel - switch to it
-              state.activePanel = panelId
-              state.panelVisible = true
-            }
-          }),
+      // Close panel
+      closePanel: () =>
+        set((state) => {
+          state.panelVisible = false
+        }),
 
-        // Close panel
-        closePanel: () =>
-          set((state) => {
+      // Set sidebar width (with constraints)
+      setSidebarWidth: (width) =>
+        set((state) => {
+          const constrainedWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width))
+          state.sidebarWidth = constrainedWidth
+        }),
+
+      // Toggle activity bar collapse (for future use)
+      toggleActivityBar: () =>
+        set((state) => {
+          state.activityBarCollapsed = !state.activityBarCollapsed
+        }),
+
+      // Legacy actions
+      toggleSidebar: () =>
+        set((state) => {
+          state.sidebarCollapsed = !state.sidebarCollapsed
+          state.panelVisible = !state.sidebarCollapsed
+        }),
+
+      showPanel: (panelId) =>
+        set((state) => {
+          if (!state.activePanels.includes(panelId)) {
+            state.activePanels.push(panelId)
+          }
+          state.activePanel = panelId
+          state.panelVisible = true
+        }),
+
+      hidePanel: (panelId) =>
+        set((state) => {
+          const index = state.activePanels.indexOf(panelId)
+          if (index !== -1) {
+            state.activePanels.splice(index, 1)
+          }
+          if (state.activePanel === panelId) {
             state.panelVisible = false
-          }),
-
-        // Set sidebar width (with constraints)
-        setSidebarWidth: (width) =>
-          set((state) => {
-            const constrainedWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width))
-            state.sidebarWidth = constrainedWidth
-          }),
-
-        // Toggle activity bar collapse (for future use)
-        toggleActivityBar: () =>
-          set((state) => {
-            state.activityBarCollapsed = !state.activityBarCollapsed
-          }),
-
-        // Legacy actions
-        toggleSidebar: () =>
-          set((state) => {
-            state.sidebarCollapsed = !state.sidebarCollapsed
-            state.panelVisible = !state.sidebarCollapsed
-          }),
-
-        showPanel: (panelId) =>
-          set((state) => {
-            if (!state.activePanels.includes(panelId)) {
-              state.activePanels.push(panelId)
-            }
-            state.activePanel = panelId
-            state.panelVisible = true
-          }),
-
-        hidePanel: (panelId) =>
-          set((state) => {
-            const index = state.activePanels.indexOf(panelId)
-            if (index !== -1) {
-              state.activePanels.splice(index, 1)
-            }
-            if (state.activePanel === panelId) {
-              state.panelVisible = false
-            }
-          })
-      })),
-      {
-        name: 'sidebar-storage',
-        partialize: (state) => ({
-          activePanel: state.activePanel,
-          panelVisible: state.panelVisible,
-          sidebarWidth: state.sidebarWidth,
-          activityBarCollapsed: state.activityBarCollapsed,
-          activePanels: state.activePanels,
-          sidebarCollapsed: state.sidebarCollapsed
+          }
         })
-      }
-    ),
+    })),
     { name: 'SidebarStore' }
   )
 )

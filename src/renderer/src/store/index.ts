@@ -24,3 +24,6 @@ export type { ImageSlice } from './slices/imageSlice'
 export type { NoteSlice } from './slices/noteSlice'
 export type { AISlice } from './slices/aiSlice'
 export type { SettingsSlice } from './slices/settingsSlice'
+
+// Re-export TabMetadata types from uiSlice
+export type { TabMetadata, TabEditorData, TabPanelData, TabType } from './slices/uiSlice'

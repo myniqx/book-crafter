@@ -1,5 +1,7 @@
 import { StateCreator } from 'zustand'
 
+export type Theme = 'light' | 'dark' | 'system'
+
 /**
  * General settings
  */
@@ -11,6 +13,7 @@ export interface GeneralSettings {
   timeFormat: '12h' | '24h'
   confirmOnDelete: boolean
   confirmOnClose: boolean
+  theme: Theme
 }
 
 /**
@@ -98,7 +101,8 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   dateFormat: 'DD/MM/YYYY',
   timeFormat: '24h',
   confirmOnDelete: true,
-  confirmOnClose: false
+  confirmOnClose: false,
+  theme: 'dark'
 }
 
 export const DEFAULT_EXTENDED_EDITOR_SETTINGS: ExtendedEditorSettings = {

@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import { fs } from '@renderer/lib/ipc'
 
 export interface WorkspaceConfig {
   projectName: string
@@ -75,7 +76,7 @@ const defaultWorkspaceConfig: WorkspaceConfig = {
 
 export const createWorkspaceSlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/immer', never], ['zustand/devtools', never]],
   [],
   WorkspaceSlice
 > = (set, get) => ({
@@ -100,11 +101,32 @@ export const createWorkspaceSlice: StateCreator<
     }),
 
   loadWorkspace: async (path: string) => {
-    // This will be implemented with IPC later
-    set((state) => {
-      state.workspacePath = path
-      state.isWorkspaceLoaded = true
-    })
+    try {
+      // Check if config file exists
+      const configPath = `${path}/book-crafter.json`
+      const exists = await fs.exists(configPath)
+
+      if (!exists) {
+        throw new Error('Not a valid Book Crafter workspace')
+      }
+
+      // Read and parse config
+      const configContent = await fs.readFile(configPath, 'utf-8')
+      const config = JSON.parse(configContent) as WorkspaceConfig
+
+      // Update store
+      set((state) => {
+        state.workspaceConfig = config
+        state.workspacePath = path
+        state.isWorkspaceLoaded = true
+        state.hasUnsavedChanges = false
+      })
+
+      console.log('[WorkspaceSlice] Loaded workspace:', config.projectName)
+    } catch (error) {
+      console.error('[WorkspaceSlice] Failed to load workspace:', error)
+      throw error
+    }
   },
 
   saveWorkspace: async () => {

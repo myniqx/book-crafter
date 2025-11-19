@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 // Import slices
@@ -11,21 +11,10 @@ export type CoreStore = WorkspaceSlice & UISlice
 
 export const useCoreStore = create<CoreStore>()(
   devtools(
-    persist(
-      immer((set, get, api) => ({
-        ...createWorkspaceSlice(set as never, get as never, api as never),
-        ...createUISlice(set as never, get as never, api as never)
-      })),
-      {
-        name: 'core-storage',
-        partialize: (state) => ({
-          // Persist workspace config and UI preferences (except sidebar)
-          workspaceConfig: state.workspaceConfig,
-          workspacePath: state.workspacePath,
-          theme: state.theme
-        })
-      }
-    ),
+    immer((set, get, api) => ({
+      ...createWorkspaceSlice(set as never, get as never, api as never),
+      ...createUISlice(set as never, get as never, api as never)
+    })),
     { name: 'CoreStore' }
   )
 )

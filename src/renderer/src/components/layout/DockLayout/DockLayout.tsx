@@ -1,16 +1,11 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 import { DockLayout as RcDockLayout } from 'rc-dock'
 import 'rc-dock/dist/rc-dock.css'
-import type { LayoutData, TabData } from 'rc-dock'
+import type { LayoutData, TabData, DropDirection } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
 import type { DockLayoutProps } from './types'
-import {
-  createDefaultLayout,
-  getPanel,
-  createTabDataFromMetadata,
-  extractTabsFromLayout
-} from './panels'
-import { useCoreStore, useSidebarStore } from '@renderer/store'
+import { createDefaultLayout, createTabDataFromMetadata, extractTabsFromLayout } from './utils'
+import { useCoreStore, type TabMetadata } from '@renderer/store'
 
 /**
  * DockLayout Component
@@ -28,7 +23,6 @@ import { useCoreStore, useSidebarStore } from '@renderer/store'
  */
 export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
   const dockRef = useRef<RcDockLayout>(null)
-  const activePanels = useSidebarStore((state) => state.activePanels)
 
   // Store tab state (SINGLE SOURCE OF TRUTH)
   const openTabs = useCoreStore((state) => state.openTabs)
@@ -37,6 +31,64 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
 
   // Initialize with default layout
   const defaultLayout = createDefaultLayout()
+
+  /**
+   * Helper Functions for Dock Operations
+   * =====================================
+   * These wrap rc-dock's dockMove API for common operations
+   */
+
+  // Remove a tab by ID
+  const removeTab = useCallback((tabId: string): void => {
+    if (!dockRef.current) return
+    const tab = dockRef.current.find(tabId)
+    if (tab) {
+      dockRef.current.dockMove(tab as TabData, null, 'middle')
+    }
+  }, [])
+
+  // Add a tab to a panel (or to main dockbox if no panelId)
+  const addTab = useCallback((tabData: TabData, panelId?: string): void => {
+    if (!dockRef.current) return
+    const dock = dockRef.current
+    if (panelId) {
+      const panel = dock.find(panelId)
+      if (panel) {
+        dock.dockMove(tabData, panel, 'middle')
+      }
+    } else {
+      const layout = dock.getLayout()
+      dock.dockMove(tabData, layout.dockbox, 'middle')
+    }
+  }, [])
+
+  // Move a tab to a target with specified direction
+  const moveTab = useCallback((tabId: string, targetId: string, direction: DropDirection): void => {
+    if (!dockRef.current) return
+    const tab = dockRef.current.find(tabId)
+    const target = dockRef.current.find(targetId)
+    if (tab && target) {
+      dockRef.current.dockMove(tab as TabData, target, direction)
+    }
+  }, [])
+
+  // Maximize a tab
+  const maximizeTab = useCallback((tabId: string): void => {
+    if (!dockRef.current) return
+    const tab = dockRef.current.find(tabId)
+    if (tab) {
+      dockRef.current.dockMove(tab as TabData, null, 'maximize')
+    }
+  }, [])
+
+  // Float a tab
+  const floatTab = useCallback((tabId: string): void => {
+    if (!dockRef.current) return
+    const tab = dockRef.current.find(tabId)
+    if (tab) {
+      dockRef.current.dockMove(tab as TabData, null, 'float')
+    }
+  }, [])
 
   /**
    * SYNC 1: Store → DockLayout
@@ -57,127 +109,40 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     const dock = dockRef.current
     const currentLayout = dock.getLayout()
 
-    console.log('┌─────────────────────────────────────────────────────')
-    console.log('│ [DockLayout] 🔄 STORE → DOCKLAYOUT SYNC')
-    console.log('├─────────────────────────────────────────────────────')
-    console.log('│ [DockLayout] 📦 Store has', openTabs.length, 'tabs')
-    openTabs.forEach((tab, idx) => {
-      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}"`)
-    })
-
     // Extract current tab IDs from DockLayout
     const currentTabs = extractTabsFromLayout(currentLayout)
-    const currentTabIds = new Set(currentTabs.map(t => t.id))
-
-    console.log('│ [DockLayout] 🖼️  DockLayout has', currentTabs.length, 'tabs')
-    currentTabs.forEach((tab, idx) => {
-      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}"`)
-    })
+    const currentTabIds = new Set(currentTabs.map((t: TabMetadata) => t.id))
 
     // Find tabs to ADD (in store but not in DockLayout)
-    const storeTabIds = new Set(openTabs.map(t => t.id))
-    const tabsToAdd = openTabs.filter(tab => !currentTabIds.has(tab.id))
+    const storeTabIds = new Set(openTabs.map((t: TabMetadata) => t.id))
+    const tabsToAdd = openTabs.filter((tab: TabMetadata) => !currentTabIds.has(tab.id))
 
     // Find tabs to REMOVE (in DockLayout but not in store)
-    const tabsToRemove = currentTabs.filter(tab => !storeTabIds.has(tab.id))
-
-    console.log('│ [DockLayout] ➕ Tabs to ADD:', tabsToAdd.length)
-    console.log('│ [DockLayout] ➖ Tabs to REMOVE:', tabsToRemove.length)
+    const tabsToRemove = currentTabs.filter((tab: TabMetadata) => !storeTabIds.has(tab.id))
 
     // ADD new tabs
-    tabsToAdd.forEach((metadata) => {
-      console.log('│ [DockLayout] ➕ Adding tab:', metadata.id)
+    tabsToAdd.forEach((metadata: TabMetadata) => {
       const tabData = createTabDataFromMetadata(metadata)
 
       // Find the welcome tab's panel to add new tabs there
       const welcomeTabPanel = currentLayout.dockbox
 
-      // Add to the same panel as welcome tab
-      const result = dock.dockMove(tabData, welcomeTabPanel, 'middle')
-      console.log('│ [DockLayout] ✅ dockMove completed, result:', result ? 'success' : 'null')
-
-      // Remove welcome tab when first real tab is added
-      if (openTabs.length === 1) {
-        console.log('│ [DockLayout] 🗑️  Removing welcome tab (first real tab opened)')
-        dock.dockMove({ id: 'editor-welcome' } as TabData, null, 'remove')
-      }
+      dock.dockMove(tabData, welcomeTabPanel, 'middle')
     })
+
+    // Remove welcome tab when any real tab is added
+    if (openTabs.length > 0) {
+      removeTab('editor-welcome')
+    }
 
     // REMOVE closed tabs
-    tabsToRemove.forEach((metadata) => {
-      console.log('│ [DockLayout] ➖ Removing tab:', metadata.id)
+    tabsToRemove.forEach((metadata: TabMetadata) => {
       dock.dockMove({ id: metadata.id } as TabData, null, 'remove')
     })
-
-    console.log('│ [DockLayout] 🎯 Active tab ID:', activeTabId)
-    console.log('└─────────────────────────────────────────────────────')
-
   }, [openTabs, activeTabId])
 
   /**
-   * SYNC 2: Sidebar Panels → DockLayout
-   * ====================================
-   * When sidebar panels are toggled, update DockLayout
-   * (This is existing functionality, keep it)
-   */
-  useEffect(() => {
-    if (!dockRef.current) return
-
-    const dock = dockRef.current
-    const currentLayout = dock.getLayout()
-    const currentPanelIds = new Set<string>()
-
-    // Collect all currently open panel IDs from layout
-    const collectPanelIds = (data: LayoutData | any): void => {
-      if (!data) return
-
-      if (data.tabs && Array.isArray(data.tabs)) {
-        data.tabs.forEach((tab: any) => {
-          if (tab.id && tab.id !== 'editor-welcome') {
-            currentPanelIds.add(tab.id)
-          }
-        })
-      }
-
-      if (data.children && Array.isArray(data.children)) {
-        data.children.forEach((child: any) => collectPanelIds(child))
-      }
-
-      if (data.dockbox) {
-        collectPanelIds(data.dockbox)
-      }
-    }
-
-    collectPanelIds(currentLayout)
-
-    // Add panels that should be active but aren't
-    activePanels.forEach((panelId) => {
-      if (!currentPanelIds.has(panelId)) {
-        const panelConfig = getPanel(panelId)
-        if (panelConfig) {
-          console.log('[DockLayout] Adding panel from sidebar:', panelId)
-          dock.dockMove({
-            id: panelId,
-            title: panelConfig.title,
-            content: panelConfig.content,
-            closable: panelConfig.closable
-          } as TabData, null, 'right')
-        }
-      }
-    })
-
-    // Remove panels that shouldn't be active
-    currentPanelIds.forEach((panelId) => {
-      if (!activePanels.includes(panelId as any) && panelId !== 'editor-welcome' && !panelId.startsWith('editor-')) {
-        console.log('[DockLayout] Removing panel (closed in sidebar):', panelId)
-        dock.dockMove({ id: panelId } as TabData, null, 'remove')
-      }
-    })
-  }, [activePanels])
-
-
-  /**
-   * SYNC 3: DockLayout → Store
+   * SYNC 2: DockLayout → Store
    * ===========================
    * When user interacts with DockLayout (closes tab, reorders, etc.),
    * extract the new state and sync it back to store
@@ -185,46 +150,22 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
    * CRITICAL: This completes the two-way sync loop
    */
   const handleLayoutChange = (newLayout: LayoutData): void => {
-    console.log('┌─────────────────────────────────────────────────────')
-    console.log('│ [DockLayout] ⚡ LAYOUT CHANGE EVENT')
-    console.log('├─────────────────────────────────────────────────────')
-
     // Extract current tabs from new layout
     const currentTabs = extractTabsFromLayout(newLayout)
-    console.log('│ [DockLayout] 📊 Extracted tabs:', currentTabs.length)
-    currentTabs.forEach((tab, idx) => {
-      console.log(`│   ${idx + 1}. ${tab.id} - "${tab.title}" (${tab.type})`)
-    })
 
     // Determine active tab (rc-dock doesn't provide this directly, so we keep store's activeTabId)
     // If the active tab was closed, it will be handled by store's closeTab logic
     const currentActiveTabId = useCoreStore.getState().activeTabId
-    const activeTabStillExists = currentTabs.some(t => t.id === currentActiveTabId)
-
-    console.log('│ [DockLayout] 🎯 Active tab:', currentActiveTabId)
-    console.log('│ [DockLayout] ✅ Active tab still exists?', activeTabStillExists)
+    const activeTabStillExists = currentTabs.some((t: TabMetadata) => t.id === currentActiveTabId)
 
     const newActiveTabId = activeTabStillExists
       ? currentActiveTabId
-      : (currentTabs.length > 0 ? currentTabs[0].id : null)
-
-    console.log('│ [DockLayout] 🔄 Syncing to store with activeTabId:', newActiveTabId)
+      : currentTabs.length > 0
+        ? currentTabs[0].id
+        : null
 
     // Sync back to store
     syncTabsFromDockLayout(currentTabs, newActiveTabId)
-
-    // Sync closed panels back to sidebar store
-    const hidePanel = useSidebarStore.getState().hidePanel
-    const currentPanelIds = new Set(currentTabs.map(t => t.id))
-
-    activePanels.forEach((panelId) => {
-      if (!currentPanelIds.has(panelId)) {
-        console.log('│ [DockLayout] 🗑️  Panel closed in layout, removing from sidebar store:', panelId)
-        hidePanel(panelId)
-      }
-    })
-
-    console.log('└─────────────────────────────────────────────────────')
   }
 
   return (
