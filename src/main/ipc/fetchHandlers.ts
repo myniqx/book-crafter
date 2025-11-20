@@ -79,7 +79,11 @@ export function registerFetchHandlers(): void {
   // Stream Request (for AI responses)
   ipcMain.handle(
     'fetch:stream',
-    async (event: IpcMainInvokeEvent, url: string, options: Omit<StreamOptions, 'onChunk' | 'onError' | 'onComplete'>) => {
+    async (
+      event: IpcMainInvokeEvent,
+      url: string,
+      options: Omit<StreamOptions, 'onChunk' | 'onError' | 'onComplete'>
+    ) => {
       try {
         const method = options?.method || 'POST'
         const headers = options?.headers || {}
@@ -110,11 +114,9 @@ export function registerFetchHandlers(): void {
 
         if (!response.ok) {
           clearTimeout(timeoutId)
-          throw createIPCError(
-            `HTTP ${response.status}: ${response.statusText}`,
-            'NETWORK_ERROR',
-            { status: response.status }
-          )
+          throw createIPCError(`HTTP ${response.status}: ${response.statusText}`, 'NETWORK_ERROR', {
+            status: response.status
+          })
         }
 
         if (!response.body) {

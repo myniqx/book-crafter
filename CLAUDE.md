@@ -404,27 +404,6 @@ export const EntityCard: React.FC<EntityCardProps> = ({
 
 Book Crafter should feel like a professional writing tool (Notion, Obsidian, Ulysses).
 
-**Typography:**
-
-- **Headings:** Clean, bold, modern (Inter, System UI)
-- **Body:** Readable, comfortable (System fonts)
-- **Code/Monospace:** Monaco, Consolas, SF Mono
-- **Line Height:** Generous for readability (1.6 - 1.8)
-
-**Spacing:**
-
-- Use consistent spacing scale: `2, 4, 6, 8, 12, 16, 24, 32, 48`
-- Generous padding in panels and cards
-- Clear visual hierarchy
-
-**Components Style:**
-
-- **Rounded corners:** Medium (`rounded-lg`, `rounded-xl`)
-- **Shadows:** Subtle, layered (`shadow-sm`, `shadow-md`)
-- **Borders:** Minimal, subtle (`border-slate-700`)
-- **Hover states:** Smooth transitions, clear feedback
-- **Focus states:** Ring with accent color
-
 **Layout Principles:**
 
 - **Clean workspace:** Minimal chrome, focus on content
@@ -436,9 +415,6 @@ Book Crafter should feel like a professional writing tool (Notion, Obsidian, Uly
 **Icons:**
 
 - Use Lucide React (already installed)
-- Consistent stroke width (1.5 - 2)
-- 16px or 20px for most UI elements
-- 24px for prominent actions
 
 **Animations:**
 
@@ -469,44 +445,155 @@ Book Crafter should feel like a professional writing tool (Notion, Obsidian, Uly
 
 ---
 
-## Key Features Checklist
+## IPC API Reference
 
-### Phase 1: Foundation ✅
+**IMPORTANT:** When working with IPC operations (file system, HTTP requests, dialogs), always refer to `src/types/ipc.ts` for available APIs and their parameters.
 
-- [x] Electron + Vite + React + TypeScript
-- [x] Tailwind CSS 4
-- [x] Shadcn/ui components
-- [x] Zustand store (4 slices)
+### Available IPC APIs
 
-### Phase 2: IPC Bridge (Next)
+All IPC APIs are available through `window.api` object (defined in preload script):
 
-- [ ] File system IPC handlers
-- [ ] Fetch wrapper for AI
-- [ ] Preload script
-- [ ] IPC client utilities
+#### 1. File System API (`window.api.fs`)
 
-### Phase 3: Workspace & File Structure
+```tsx
+// Read file
+const content = await window.api.fs.readFile('/path/to/file.md', { encoding: 'utf-8' })
 
-- [ ] book-crafter.json schema
-- [ ] Directory structure manager
-- [ ] Book/Chapter file operations
+// Write file
+await window.api.fs.writeFile('/path/to/file.md', content, {
+  encoding: 'utf-8',
+  backup: true // Creates backup before writing
+})
 
-### Phase 4: Monaco Editor
+// Read directory
+const files = await window.api.fs.readDir('/path/to/dir', {
+  recursive: true,
+  withFileTypes: true
+})
 
-- [ ] Monaco integration
-- [ ] Custom markdown language
-- [ ] @mention IntelliSense
-- [ ] Hover provider
-- [ ] Diagnostics
+// Create directory
+await window.api.fs.mkdir('/path/to/new/dir', true) // recursive
 
-### Phase 5: Entity System
+// Delete file/directory
+await window.api.fs.delete('/path/to/file')
 
-- [ ] Entity CRUD
-- [ ] Templates (person, place, custom)
-- [ ] Relations & Notes
-- [ ] Usage tracking
+// Move/rename
+await window.api.fs.move('/old/path', '/new/path')
 
----
+// Copy file
+await window.api.fs.copyFile('/source', '/destination')
+
+// Check if exists
+const exists = await window.api.fs.exists('/path/to/file')
+
+// Get file stats
+const stats = await window.api.fs.stats('/path/to/file')
+// Returns: { size, created, modified, isFile, isDirectory }
+
+// Watch file/directory for changes
+const unwatch = await window.api.fs.watch('/path', (event, filename) => {
+  console.log(`${event} on ${filename}`)
+})
+// Later: unwatch() to stop watching
+```
+
+#### 2. Fetch/HTTP API (`window.api.fetch` or `window.api.http`)
+
+```tsx
+// Simple GET request
+const response = await window.api.fetch.request<ResponseType>('https://api.example.com/data')
+
+// POST with options
+const response = await window.api.fetch.request<ResponseType>('https://api.example.com/data', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer token'
+  },
+  body: { key: 'value' }, // Auto-stringified if object
+  timeout: 5000 // 5 seconds
+})
+
+// Stream response (for AI streaming)
+await window.api.fetch.stream('https://api.example.com/stream', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: { prompt: 'Hello' },
+  onChunk: (chunk) => {
+    console.log('Received chunk:', chunk)
+  },
+  onError: (error) => {
+    console.error('Stream error:', error)
+  },
+  onComplete: () => {
+    console.log('Stream completed')
+  }
+})
+```
+
+#### 3. Dialog API (`window.api.dialog`)
+
+```tsx
+// Open file dialog
+const result = await window.api.dialog.openFile({
+  title: 'Select Markdown File',
+  filters: [
+    { name: 'Markdown', extensions: ['md', 'markdown'] },
+    { name: 'All Files', extensions: ['*'] }
+  ],
+  properties: ['openFile', 'multiSelections']
+})
+
+if (!result.canceled) {
+  const filePath = result.filePath // Single file
+  const filePaths = result.filePaths // Multiple files if multiSelections
+}
+
+// Open directory dialog
+const dirResult = await window.api.dialog.openDirectory({
+  title: 'Select Workspace',
+  buttonLabel: 'Select Workspace'
+})
+
+// Save file dialog
+const saveResult = await window.api.dialog.saveFile({
+  title: 'Save Book',
+  defaultPath: 'my-book.md',
+  filters: [{ name: 'Markdown', extensions: ['md'] }]
+})
+```
+
+#### 4. App API (`window.api.app`)
+
+```tsx
+// Get special paths
+const userDataPath = await window.api.app.getPath('userData') // App data directory
+const appDataPath = await window.api.app.getPath('appData') // OS app data
+const tempPath = await window.api.app.getPath('temp') // Temp directory
+const homePath = await window.api.app.getPath('home') // User home
+```
+
+### Error Handling
+
+All IPC calls can throw `IPCError`. Always wrap in try-catch:
+
+```tsx
+import type { IPCError } from '@/types/ipc'
+
+try {
+  const content = await window.api.fs.readFile('/path/to/file.md')
+} catch (error) {
+  if ((error as IPCError).code === 'FILE_NOT_FOUND') {
+    console.error('File does not exist')
+  } else if ((error as IPCError).code === 'PERMISSION_DENIED') {
+    console.error('Permission denied')
+  } else {
+    console.error('Unknown error:', error)
+  }
+}
+```
+
+**Reference:** For complete type definitions and all available options, always check `src/types/ipc.ts`.
 
 ## Important Notes
 

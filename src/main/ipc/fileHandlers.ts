@@ -56,11 +56,7 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           throw createIPCError('File not found', 'FILE_NOT_FOUND', { path: filePath })
         }
-        throw createIPCError(
-          `Failed to read file: ${(error as Error).message}`,
-          'UNKNOWN',
-          error
-        )
+        throw createIPCError(`Failed to read file: ${(error as Error).message}`, 'UNKNOWN', error)
       }
     }
   )
@@ -95,11 +91,7 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
 
         await fs.writeFile(validPath, content, { encoding })
       } catch (error: unknown) {
-        throw createIPCError(
-          `Failed to write file: ${(error as Error).message}`,
-          'UNKNOWN',
-          error
-        )
+        throw createIPCError(`Failed to write file: ${(error as Error).message}`, 'UNKNOWN', error)
       }
     }
   )
@@ -176,11 +168,7 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
           path: targetPath
         })
       }
-      throw createIPCError(
-        `Failed to delete: ${(error as Error).message}`,
-        'UNKNOWN',
-        error
-      )
+      throw createIPCError(`Failed to delete: ${(error as Error).message}`, 'UNKNOWN', error)
     }
   })
 
@@ -198,11 +186,7 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
 
         await fs.rename(validOldPath, validNewPath)
       } catch (error: unknown) {
-        throw createIPCError(
-          `Failed to move file: ${(error as Error).message}`,
-          'UNKNOWN',
-          error
-        )
+        throw createIPCError(`Failed to move file: ${(error as Error).message}`, 'UNKNOWN', error)
       }
     }
   )
@@ -271,11 +255,7 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
       // Return unwatcher function identifier
       return watcherId
     } catch (error: unknown) {
-      throw createIPCError(
-        `Failed to watch file: ${(error as Error).message}`,
-        'UNKNOWN',
-        error
-      )
+      throw createIPCError(`Failed to watch file: ${(error as Error).message}`, 'UNKNOWN', error)
     }
   })
 

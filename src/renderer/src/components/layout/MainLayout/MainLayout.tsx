@@ -3,7 +3,10 @@ import { Titlebar } from '../Titlebar'
 import { Sidebar } from '../Sidebar'
 import { StatusBar } from '../StatusBar'
 import { DockLayout } from '../DockLayout'
-import { IntegrityCheckDialog, type IntegrityIssue } from '@renderer/components/workspace/IntegrityCheckDialog'
+import {
+  IntegrityCheckDialog,
+  type IntegrityIssue
+} from '@renderer/components/workspace/IntegrityCheckDialog'
 import { useContentStore, useCoreStore, useSidebarStore } from '@renderer/store'
 import { useKeyboard } from '@renderer/hooks/useKeyboard'
 import { toast } from '@renderer/lib/toast'
@@ -27,7 +30,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (workspacePath) {
       // Check workspace integrity first
-      const performIntegrityCheck = async () => {
+      const performIntegrityCheck = async (): Promise<void> => {
         try {
           const result = await checkWorkspaceIntegrity(workspacePath)
 

@@ -36,6 +36,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
    * Helper Functions for Dock Operations
    * =====================================
    * These wrap rc-dock's dockMove API for common operations
+   * IMPORTANT: These are the CORE operations for tab management
    */
 
   // Remove a tab by ID
@@ -43,20 +44,36 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     if (!dockRef.current) return
     const tab = dockRef.current.find(tabId)
     if (tab) {
-      dockRef.current.dockMove(tab as TabData, null, 'middle')
+      dockRef.current.dockMove(tab as TabData, null, 'remove')
     }
   }, [])
 
-  // Add a tab to a panel (or to main dockbox if no panelId)
+  // Add a tab to a panel (or to active tab's panel if no panelId specified)
   const addTab = useCallback((tabData: TabData, panelId?: string): void => {
     if (!dockRef.current) return
     const dock = dockRef.current
+
     if (panelId) {
+      // Specific panel provided, add there
       const panel = dock.find(panelId)
       if (panel) {
         dock.dockMove(tabData, panel, 'middle')
       }
     } else {
+      // No panel specified: add to active tab's panel (or dockbox if no active tab)
+      const currentActiveTabId = useCoreStore.getState().activeTabId
+
+      if (currentActiveTabId) {
+        // Find the active tab's panel
+        const activeTab = dock.find(currentActiveTabId)
+        if (activeTab) {
+          // Add to the same panel as active tab
+          dock.dockMove(tabData, activeTab, 'middle')
+          return
+        }
+      }
+
+      // Fallback: add to main dockbox
       const layout = dock.getLayout()
       dock.dockMove(tabData, layout.dockbox, 'middle')
     }
@@ -120,14 +137,10 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
     // Find tabs to REMOVE (in DockLayout but not in store)
     const tabsToRemove = currentTabs.filter((tab: TabMetadata) => !storeTabIds.has(tab.id))
 
-    // ADD new tabs
+    // ADD new tabs (using helper function)
     tabsToAdd.forEach((metadata: TabMetadata) => {
       const tabData = createTabDataFromMetadata(metadata)
-
-      // Find the welcome tab's panel to add new tabs there
-      const welcomeTabPanel = currentLayout.dockbox
-
-      dock.dockMove(tabData, welcomeTabPanel, 'middle')
+      addTab(tabData) // Uses the helper function
     })
 
     // Remove welcome tab when any real tab is added
@@ -135,11 +148,11 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
       removeTab('editor-welcome')
     }
 
-    // REMOVE closed tabs
+    // REMOVE closed tabs (using helper function)
     tabsToRemove.forEach((metadata: TabMetadata) => {
-      dock.dockMove({ id: metadata.id } as TabData, null, 'remove')
+      removeTab(metadata.id) // Uses the helper function
     })
-  }, [openTabs, activeTabId])
+  }, [openTabs, activeTabId, addTab, removeTab])
 
   /**
    * SYNC 2: DockLayout → Store
