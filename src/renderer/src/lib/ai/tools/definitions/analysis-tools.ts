@@ -2,11 +2,30 @@ import type { ToolDefinition } from '../../types'
 
 /**
  * Analysis tools - checking consistency, summarizing, finding issues
+ * These tools retrieve data from the store for AI to analyze
  */
 export const analysisTools: ToolDefinition[] = [
+  /**
+   * ANALYZE ENTITY USAGE
+   *
+   * What it does:
+   * - Retrieves all mentions of an entity (@entity-slug) across chapters
+   * - Returns usage locations, frequency, and context excerpts
+   * - AI then analyzes the data for patterns and insights
+   *
+   * Parameters:
+   * - entitySlug: Entity to analyze (required)
+   * - bookSlug: Limit to specific book (optional)
+   *
+   * Returns:
+   * - Usage data with excerpts for AI to analyze
+   *
+   * Requires Approval: false (read-only operation)
+   */
   {
     name: 'analyze_entity_usage',
-    description: 'Analyze how an entity is used across chapters, including frequency and context',
+    description:
+      'Retrieve usage data for an entity (@mention) across chapters for AI to analyze frequency, context, and patterns',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -24,10 +43,27 @@ export const analysisTools: ToolDefinition[] = [
       required: ['entitySlug']
     }
   },
+  /**
+   * CHECK CONSISTENCY
+   *
+   * What it does:
+   * - Retrieves all chapter contents from a book
+   * - Returns the content for AI to analyze for consistency issues
+   * - AI checks entity descriptions, timeline, plot logic
+   *
+   * Parameters:
+   * - bookSlug: Book to check (required)
+   * - checkType: What to check (optional)
+   *
+   * Returns:
+   * - All chapter contents for AI to analyze
+   *
+   * Requires Approval: false (read-only)
+   */
   {
     name: 'check_consistency',
     description:
-      'Check for consistency issues in entity descriptions, timeline, or plot across chapters',
+      'Retrieve all chapter contents from a book for AI to analyze and identify consistency issues in entities, timeline, or plot',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -46,9 +82,15 @@ export const analysisTools: ToolDefinition[] = [
       required: ['bookSlug']
     }
   },
+  /**
+   * SUMMARIZE CHAPTER
+   *
+   * Retrieves chapter content for AI to generate a summary.
+   * Does not write anything - AI creates summary from content.
+   */
   {
     name: 'summarize_chapter',
-    description: 'Generate a summary of a chapter',
+    description: 'Retrieve chapter content for AI to generate a summary',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -71,9 +113,14 @@ export const analysisTools: ToolDefinition[] = [
       required: ['bookSlug', 'chapterSlug']
     }
   },
+  /**
+   * SUMMARIZE BOOK
+   *
+   * Retrieves all chapter contents for AI to generate book summary.
+   */
   {
     name: 'summarize_book',
-    description: 'Generate a summary of an entire book',
+    description: 'Retrieve all chapter contents for AI to generate a book summary',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -92,9 +139,15 @@ export const analysisTools: ToolDefinition[] = [
       required: ['bookSlug']
     }
   },
+  /**
+   * FIND PLOT HOLES
+   *
+   * Returns narrative content for AI to identify plot holes and logical inconsistencies.
+   */
   {
     name: 'find_plot_holes',
-    description: 'Identify potential plot holes or logical inconsistencies in the narrative',
+    description:
+      'Retrieve narrative content for AI to identify potential plot holes or logical inconsistencies',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -112,9 +165,15 @@ export const analysisTools: ToolDefinition[] = [
       required: ['bookSlug']
     }
   },
+  /**
+   * ANALYZE CHARACTER ARC
+   *
+   * Returns character entity details and usage data for AI to analyze development arc.
+   */
   {
     name: 'analyze_character_arc',
-    description: "Analyze a character's development and arc throughout the story",
+    description:
+      "Retrieve character entity details and usage data for AI to analyze the character's development and arc throughout the story",
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -132,9 +191,16 @@ export const analysisTools: ToolDefinition[] = [
       required: ['entitySlug', 'bookSlug']
     }
   },
+  /**
+   * GET WORD COUNT
+   *
+   * Calculates and returns word count statistics.
+   * This tool actually computes the stats, not just retrieves data.
+   */
   {
     name: 'get_word_count',
-    description: 'Get word count statistics for a book or chapter',
+    description:
+      'Calculate and return word count statistics for a book or specific chapter (words, characters)',
     category: 'analysis',
     requiresApproval: false,
     parameters: {
@@ -152,9 +218,15 @@ export const analysisTools: ToolDefinition[] = [
       required: ['bookSlug']
     }
   },
+  /**
+   * COMPARE CHAPTERS
+   *
+   * Returns contents of two chapters for AI to compare style, tone, and content.
+   */
   {
     name: 'compare_chapters',
-    description: 'Compare two chapters for style, tone, or content differences',
+    description:
+      'Retrieve contents of two chapters for AI to compare and analyze differences in style, tone, or content',
     category: 'analysis',
     requiresApproval: false,
     parameters: {

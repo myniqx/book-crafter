@@ -5,6 +5,16 @@ import type { ToolDefinition } from '../../types'
  */
 export const fileTools: ToolDefinition[] = [
   {
+    name: 'list_books',
+    description: 'List all available books in the workspace with their chapter counts',
+    category: 'file',
+    requiresApproval: false,
+    parameters: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
     name: 'read_chapter',
     description: 'Read the content of a specific chapter from a book',
     category: 'file',

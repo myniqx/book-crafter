@@ -200,7 +200,7 @@ export type StreamEvent =
   | { type: 'tool_call_start'; toolCall: Partial<ToolCall> }
   | { type: 'tool_call_delta'; id: string; arguments: string }
   | { type: 'tool_call_end'; toolCall: ToolCall }
-  | { type: 'done'; finishReason: string }
+  | { type: 'done'; finishReason?: 'stop' | 'length' | 'error' | 'tool_use' }
   | { type: 'error'; error: string }
 
 /**

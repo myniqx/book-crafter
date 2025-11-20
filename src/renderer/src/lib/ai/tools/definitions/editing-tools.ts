@@ -2,11 +2,32 @@ import type { ToolDefinition } from '../../types'
 
 /**
  * Editing tools - proofreading, style adaptation, translation
+ * These tools provide text and parameters for AI to perform editing operations
+ * AI preserves @mention syntax and returns edited text
  */
 export const editingTools: ToolDefinition[] = [
+  /**
+   * PROOFREAD
+   *
+   * What it does:
+   * - Provides text for AI to check grammar, spelling, punctuation
+   * - AI returns corrected text or list of errors
+   * - Preserves @mention syntax and markdown formatting
+   *
+   * Parameters:
+   * - text: Text to proofread (required)
+   * - language: Text language (optional)
+   * - returnCorrected: Return corrected text or just errors (optional)
+   *
+   * Returns:
+   * - AI-generated proofreading with corrections/suggestions
+   *
+   * Requires Approval: false (doesn't write to files)
+   */
   {
     name: 'proofread',
-    description: 'Check text for grammar, spelling, and punctuation errors',
+    description:
+      'Provide text for AI to check grammar, spelling, and punctuation errors while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -30,9 +51,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text']
     }
   },
+  /**
+   * ADAPT STYLE
+   * Provides text and target style for AI to adapt writing style while preserving @mentions.
+   */
   {
     name: 'adapt_style',
-    description: 'Adapt text to a different writing style',
+    description:
+      'Provide text and target style for AI to adapt writing style (formal, casual, literary, etc.) while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -56,9 +82,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text', 'targetStyle']
     }
   },
+  /**
+   * CHANGE POV
+   * Provides text and target POV for AI to transform perspective while preserving @mentions.
+   */
   {
     name: 'change_pov',
-    description: 'Change the point of view of a text (first person, third person, etc.)',
+    description:
+      'Provide text and target POV for AI to change point of view (first person, third person, etc.) while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -81,9 +112,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text', 'targetPOV']
     }
   },
+  /**
+   * CHANGE TENSE
+   * Provides text and target tense for AI to transform verb tenses while preserving @mentions.
+   */
   {
     name: 'change_tense',
-    description: 'Change the tense of a text (past, present, future)',
+    description:
+      'Provide text and target tense for AI to change verb tenses (past, present, future) while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -102,9 +138,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text', 'targetTense']
     }
   },
+  /**
+   * SIMPLIFY TEXT
+   * Provides text and reading level for AI to simplify while preserving @mentions.
+   */
   {
     name: 'simplify_text',
-    description: 'Simplify complex text for better readability',
+    description:
+      'Provide text and target reading level for AI to simplify complex text while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -123,9 +164,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text']
     }
   },
+  /**
+   * INTENSIFY EMOTION
+   * Provides text and emotion parameters for AI to adjust emotional intensity while preserving @mentions.
+   */
   {
     name: 'intensify_emotion',
-    description: 'Intensify or reduce the emotional intensity of text',
+    description:
+      'Provide text and emotion parameters for AI to intensify or reduce emotional intensity while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {

@@ -51,7 +51,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className="flex-1 space-y-1">
           <Card
             className={cn(
-              'inline-block max-w-4xl p-3',
+              'inline-block max-w-4xl p-3 select-text',
               toolResult.isError
                 ? 'bg-red-500/10 border-red-500/30'
                 : 'bg-purple-500/10 border-purple-500/30'
@@ -63,7 +63,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             </pre>
           </Card>
 
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground select-text">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'
@@ -84,7 +84,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
       >
         {isUser ? (
-          <span className="text-xs font-medium text-white">You</span>
+          <span className="text-xs font-medium text-white select-text">You</span>
         ) : (
           <Bot className="h-4 w-4 text-white" />
         )}
@@ -97,7 +97,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           <div className="relative group">
             <Card
               className={cn(
-                'inline-block max-w-4xl p-3',
+                'inline-block max-w-4xl p-3 select-text',
                 isUser
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-muted text-foreground border-border'

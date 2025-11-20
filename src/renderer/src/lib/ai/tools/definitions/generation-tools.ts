@@ -2,100 +2,152 @@ import type { ToolDefinition } from '../../types'
 
 /**
  * Generation tools - creating content, characters, scenes
+ * These tools create entities and generate content for writing
  */
 export const generationTools: ToolDefinition[] = [
+  /**
+   * CREATE CHARACTER ENTITY
+   *
+   * What it does:
+   * - Creates a new character entity using the person template
+   * - Adds entity to store and saves to .entities/{slug}.json
+   * - Entity can be referenced in chapters using @entity-slug syntax
+   * - Enables usage tracking and statistics
+   *
+   * Parameters:
+   * - name: Character name (required) - used to generate slug
+   * - age: Character age (optional)
+   * - occupation: Character's job/role (optional)
+   * - description: Character backstory and personality (optional)
+   *
+   * Returns:
+   * - Success message with entity slug for @mention usage
+   * - Example: "Successfully created character 'John Doe' (@john-doe)"
+   *
+   * Requires Approval: true (creates entity file on disk)
+   */
   {
     name: 'generate_character',
-    description: 'Generate a new character with detailed attributes based on requirements',
+    description:
+      'Create a new character entity that can be referenced in chapters using @mention syntax (e.g., @john-doe or @john-doe.age)',
     category: 'generation',
     requiresApproval: true,
     parameters: {
       type: 'object',
       properties: {
-        role: {
+        name: {
           type: 'string',
-          description: 'The role of the character (protagonist, antagonist, supporting, minor)'
+          description: 'Full name of the character (required)'
         },
-        traits: {
-          type: 'array',
-          description: 'Desired personality traits',
-          items: {
-            type: 'string'
-          }
+        age: {
+          type: 'number',
+          description: 'Age of the character (optional)'
         },
-        context: {
+        occupation: {
           type: 'string',
-          description: 'Context about the story/setting for character generation'
+          description: 'Occupation or role of the character (optional)'
         },
-        gender: {
+        description: {
           type: 'string',
-          description: 'Optional: preferred gender',
-          enum: ['male', 'female', 'non-binary', 'any']
-        },
-        ageRange: {
-          type: 'string',
-          description: 'Optional: age range',
-          enum: ['child', 'teen', 'young-adult', 'adult', 'middle-aged', 'elderly']
+          description:
+            'Character backstory, personality, and other details (optional, can be multi-line)'
         }
       },
-      required: ['role']
+      required: ['name']
     }
   },
+  /**
+   * CREATE LOCATION ENTITY
+   *
+   * What it does:
+   * - Creates a new location entity using the place template
+   * - Adds entity to store and saves to .entities/{slug}.json
+   * - Entity can be referenced in chapters using @entity-slug syntax
+   * - Enables usage tracking and statistics
+   *
+   * Parameters:
+   * - name: Location name (required) - used to generate slug
+   * - location: Geographic location or address (optional)
+   * - description: Location details, atmosphere, features (optional)
+   *
+   * Returns:
+   * - Success message with entity slug for @mention usage
+   * - Example: "Successfully created location 'Cafe Noir' (@cafe-noir)"
+   *
+   * Requires Approval: true (creates entity file on disk)
+   */
   {
     name: 'generate_location',
-    description: 'Generate a new location with detailed description',
+    description:
+      'Create a new location entity that can be referenced in chapters using @mention syntax (e.g., @london or @london.description)',
     category: 'generation',
     requiresApproval: true,
     parameters: {
       type: 'object',
       properties: {
-        type: {
+        name: {
           type: 'string',
-          description: 'Type of location',
-          enum: ['city', 'building', 'natural', 'room', 'vehicle', 'other']
+          description: 'Name of the location (required)'
         },
-        mood: {
+        location: {
           type: 'string',
-          description: 'The mood/atmosphere of the location',
-          enum: ['peaceful', 'ominous', 'bustling', 'abandoned', 'mysterious', 'cozy']
+          description:
+            'Geographic location, address, or relative position (e.g., "Downtown Paris", "Near the lake") (optional)'
         },
-        context: {
+        description: {
           type: 'string',
-          description: 'Context about the story/setting'
-        },
-        features: {
-          type: 'array',
-          description: 'Specific features to include',
-          items: {
-            type: 'string'
-          }
+          description:
+            'Detailed description of the location including atmosphere, features, and significance (optional, can be multi-line)'
         }
       },
-      required: ['type']
+      required: ['name']
     }
   },
+  /**
+   * WRITE SCENE
+   *
+   * What it does:
+   * - Provides scene parameters and character context for AI to write a scene
+   * - Returns entity details to help AI use @mention syntax
+   * - AI writes the scene using @entity-slug for characters and locations
+   * - Does NOT write to chapter automatically (user must use write_chapter)
+   *
+   * Parameters:
+   * - goal: What should happen in the scene (required)
+   * - characters: Entity slugs of characters (optional)
+   * - location: Entity slug of location (optional)
+   * - mood: Emotional tone (optional)
+   * - wordCount: Target word count (optional)
+   *
+   * Returns:
+   * - Scene setup with entity details and @mention guidance
+   * - AI then writes the scene content using @entity-slug syntax
+   *
+   * Requires Approval: false (only provides context, doesn't write to files)
+   */
   {
     name: 'write_scene',
-    description: 'Write a scene based on given parameters',
+    description:
+      'Provide scene parameters and entity context for AI to write a scene using @mention syntax for characters and locations',
     category: 'generation',
-    requiresApproval: true,
+    requiresApproval: false,
     parameters: {
       type: 'object',
       properties: {
+        goal: {
+          type: 'string',
+          description: 'What should happen in this scene'
+        },
         characters: {
           type: 'array',
-          description: 'Entity slugs of characters in the scene',
+          description: 'Entity slugs of characters in the scene (e.g., ["john-doe", "mary-jane"])',
           items: {
             type: 'string'
           }
         },
         location: {
           type: 'string',
-          description: 'Entity slug of the location (or description if no entity)'
-        },
-        goal: {
-          type: 'string',
-          description: 'What should happen in this scene'
+          description: 'Entity slug of the location (e.g., "cafe-noir")'
         },
         mood: {
           type: 'string',
@@ -110,9 +162,29 @@ export const generationTools: ToolDefinition[] = [
       required: ['goal']
     }
   },
+  /**
+   * SUGGEST DIALOGUE
+   *
+   * What it does:
+   * - Provides character context for AI to generate dialogue
+   * - AI creates dialogue using @mention syntax
+   * - Returns conversation between specified characters
+   *
+   * Parameters:
+   * - characters: Entity slugs (required)
+   * - topic: What to discuss (required)
+   * - mood: Tone of conversation (optional)
+   * - lines: Approximate dialogue length (optional)
+   *
+   * Returns:
+   * - Character details and dialogue suggestion using @mentions
+   *
+   * Requires Approval: false (only provides context)
+   */
   {
     name: 'suggest_dialogue',
-    description: 'Generate dialogue between characters',
+    description:
+      'Provide character context for AI to generate dialogue using @mention syntax for characters',
     category: 'generation',
     requiresApproval: false,
     parameters: {
@@ -143,9 +215,15 @@ export const generationTools: ToolDefinition[] = [
       required: ['characters', 'topic']
     }
   },
+  /**
+   * GENERATE OUTLINE
+   *
+   * Provides parameters for AI to generate chapter/story outline.
+   * Returns outline structure - does not write to files.
+   */
   {
     name: 'generate_outline',
-    description: 'Generate a chapter or story outline',
+    description: 'Provide parameters for AI to generate a chapter or story outline',
     category: 'generation',
     requiresApproval: false,
     parameters: {
@@ -176,9 +254,16 @@ export const generationTools: ToolDefinition[] = [
       required: ['scope', 'premise']
     }
   },
+  /**
+   * EXPAND TEXT
+   *
+   * Provides text and parameters for AI to expand into longer version.
+   * AI preserves @mentions and writing style while expanding.
+   */
   {
     name: 'expand_text',
-    description: 'Expand a short text into a longer, more detailed version',
+    description:
+      'Provide text and expansion parameters for AI to create a longer, more detailed version while preserving @mentions',
     category: 'generation',
     requiresApproval: false,
     parameters: {
@@ -202,9 +287,16 @@ export const generationTools: ToolDefinition[] = [
       required: ['text']
     }
   },
+  /**
+   * BRAINSTORM IDEAS
+   *
+   * Provides topic and constraints for AI to brainstorm creative ideas.
+   * Returns multiple idea suggestions - does not create entities or write files.
+   */
   {
     name: 'brainstorm_ideas',
-    description: 'Generate creative ideas for plot, characters, or scenes',
+    description:
+      'Provide topic and constraints for AI to generate creative ideas for plot, characters, or scenes',
     category: 'generation',
     requiresApproval: false,
     parameters: {

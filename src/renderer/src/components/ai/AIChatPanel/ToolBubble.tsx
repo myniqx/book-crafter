@@ -75,7 +75,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
     <div className={cn('rounded-lg border p-3 text-sm', config.bg, config.border, className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 select-text">
           <Wrench className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{toolCall.name}</span>
           <StatusIcon
@@ -93,7 +93,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
 
       {/* Expandable content */}
       {isExpanded && (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-3 select-text">
           {/* Arguments */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1">Arguments</p>

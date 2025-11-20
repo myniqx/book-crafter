@@ -280,7 +280,7 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
         {
           prompt,
           context,
-          conversationHistory: get().messages.slice(-10)
+          conversationHistory: get().messages.slice(-20)
         },
         (chunk) => {
           set((state) => {
@@ -597,8 +597,12 @@ export const createAISlice: StateCreator<AISlice, [['zustand/immer', never]], []
         const messages = get().messages
 
         // Make API call with tools
+        // For subsequent iterations, conversation history contains tool results
+        // LLM will naturally continue based on context
+        const currentPrompt = iteration === 0 ? prompt : ''
+
         const response = await provider.complete({
-          prompt: iteration === 0 ? prompt : '',
+          prompt: currentPrompt,
           context: {
             ...context,
             conversationHistory: messages.slice(-20)

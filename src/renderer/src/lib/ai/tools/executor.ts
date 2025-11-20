@@ -20,6 +20,12 @@ export interface StoreAccess {
   addEntity: (entity: unknown) => void
   updateEntity: (slug: string, updates: unknown) => void
   deleteEntity: (slug: string) => void
+
+  // Context - current working state
+  getCurrentBookSlug?: () => string | null
+  getCurrentChapterSlug?: () => string | null
+  getAvailableBookSlugs?: () => string[]
+  getEntitySlugs?: () => string[]
 }
 
 /**
@@ -65,6 +71,8 @@ async function executeToolByName(
 ): Promise<unknown> {
   switch (name) {
     // File tools
+    case 'list_books':
+      return executeListBooks(store)
     case 'read_chapter':
       return executeReadChapter(args, store)
     case 'write_chapter':
@@ -106,9 +114,13 @@ async function executeToolByName(
     case 'compare_chapters':
       return executeCompareChapters(args, store)
 
-    // Generation tools - these return prompts for AI to process
+    // Entity generation tools - these create actual entities
     case 'generate_character':
+      return executeGenerateCharacter(args, store)
     case 'generate_location':
+      return executeGenerateLocation(args, store)
+
+    // Content generation tools - these return prompts for AI to process
     case 'write_scene':
     case 'suggest_dialogue':
     case 'generate_outline':
@@ -134,6 +146,23 @@ async function executeToolByName(
 }
 
 // ============ File Tool Implementations ============
+
+function executeListBooks(store: StoreAccess): string {
+  const books = store.getBooks() as Record<string, { title?: string; chapters?: unknown[] }>
+  const entries = Object.entries(books)
+
+  if (entries.length === 0) {
+    return 'No books found in the workspace.'
+  }
+
+  const lines = ['# Available Books', '']
+  entries.forEach(([slug, book]) => {
+    const chapterCount = book.chapters?.length || 0
+    lines.push(`- **${book.title || slug}** (slug: \`${slug}\`) - ${chapterCount} chapters`)
+  })
+
+  return lines.join('\n')
+}
 
 function executeReadChapter(args: Record<string, unknown>, store: StoreAccess): string {
   const { bookSlug, chapterSlug } = args as { bookSlug: string; chapterSlug: string }
@@ -293,6 +322,86 @@ function executeListEntities(args: Record<string, unknown>, store: StoreAccess):
   }
 
   return filtered.map(([slug, entity]) => `- ${entity.name} (${slug}) [${entity.type}]`).join('\n')
+}
+
+/**
+ * Generate Character - Creates a person entity
+ * Template: person (Name, Age, Occupation, Description)
+ */
+function executeGenerateCharacter(args: Record<string, unknown>, store: StoreAccess): string {
+  const { name, age, occupation, description } = args as {
+    name: string
+    age?: number
+    occupation?: string
+    description?: string
+  }
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  store.addEntity({
+    slug,
+    name,
+    type: 'person',
+    fields: [
+      { name: 'Name', value: name, type: 'text' },
+      { name: 'Age', value: age ? String(age) : '', type: 'number' },
+      { name: 'Occupation', value: occupation || '', type: 'text' },
+      { name: 'Description', value: description || '', type: 'textarea' }
+    ],
+    defaultField: 'Name',
+    notes: [],
+    relations: [],
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      usageCount: 0,
+      usageLocations: []
+    }
+  })
+
+  return `Successfully created character "${name}" (@${slug}). You can now reference this character in chapters using @${slug} or @${slug}.age, @${slug}.occupation, etc.`
+}
+
+/**
+ * Generate Location - Creates a place entity
+ * Template: place (Name, Location, Description)
+ */
+function executeGenerateLocation(args: Record<string, unknown>, store: StoreAccess): string {
+  const { name, location, description } = args as {
+    name: string
+    location?: string
+    description?: string
+  }
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  store.addEntity({
+    slug,
+    name,
+    type: 'place',
+    fields: [
+      { name: 'Name', value: name, type: 'text' },
+      { name: 'Location', value: location || '', type: 'text' },
+      { name: 'Description', value: description || '', type: 'textarea' }
+    ],
+    defaultField: 'Name',
+    notes: [],
+    relations: [],
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      usageCount: 0,
+      usageLocations: []
+    }
+  })
+
+  return `Successfully created location "${name}" (@${slug}). You can now reference this location in chapters using @${slug} or @${slug}.location, @${slug}.description.`
 }
 
 function executeCreateEntity(args: Record<string, unknown>, store: StoreAccess): string {
@@ -561,14 +670,78 @@ function executeCompareChapters(args: Record<string, unknown>, store: StoreAcces
 // ============ Generation & Editing Tool Implementations ============
 // These return context for AI to generate content
 
+/**
+ * Execute Generation Tool
+ * Provides context and parameters for AI to generate content
+ * Special handling for write_scene to encourage @mention usage
+ */
 function executeGenerationTool(
   name: string,
   args: Record<string, unknown>,
   store: StoreAccess
 ): string {
-  // Get any entity context
+  // Special handling for write_scene - provide rich entity context
+  if (name === 'write_scene') {
+    const { goal, characters, location, mood, wordCount } = args as {
+      goal: string
+      characters?: string[]
+      location?: string
+      mood?: string
+      wordCount?: number
+    }
+
+    const lines: string[] = []
+    lines.push('# Scene Writing Context')
+    lines.push(`\n**Goal:** ${goal}`)
+
+    if (mood) lines.push(`**Mood:** ${mood}`)
+    if (wordCount) lines.push(`**Target Length:** ~${wordCount} words`)
+
+    // Character details with @mention syntax
+    if (characters && characters.length > 0) {
+      lines.push('\n## Characters')
+      for (const slug of characters) {
+        try {
+          const entities = store.getEntities() as Record<string, { name: string; type: string }>
+          const entity = entities[slug]
+          if (entity) {
+            lines.push(`- **@${slug}** (${entity.name})`)
+          } else {
+            lines.push(`- @${slug} (not found - will create as needed)`)
+          }
+        } catch {
+          lines.push(`- @${slug} (not found)`)
+        }
+      }
+    }
+
+    // Location details
+    if (location) {
+      lines.push('\n## Location')
+      try {
+        const entities = store.getEntities() as Record<string, { name: string; type: string }>
+        const entity = entities[location]
+        if (entity) {
+          lines.push(`- **@${location}** (${entity.name})`)
+        } else {
+          lines.push(`- @${location} (not found - will create as needed)`)
+        }
+      } catch {
+        lines.push(`- @${location}`)
+      }
+    }
+
+    lines.push(
+      '\n---\n**IMPORTANT:** When writing this scene, use @mention syntax for all characters and locations (e.g., @john-doe, @cafe-noir) to enable usage tracking.'
+    )
+
+    return lines.join('\n')
+  }
+
+  // Generic generation tool handling
   const entityContext: string[] = []
 
+  // Handle character lists
   if (args.characters) {
     const characters = args.characters as string[]
     for (const slug of characters) {
@@ -576,7 +749,7 @@ function executeGenerationTool(
         const entity = executeGetEntity({ entitySlug: slug }, store)
         entityContext.push(entity)
       } catch {
-        entityContext.push(`Character "${slug}" not found`)
+        entityContext.push(`Character "@${slug}" not found`)
       }
     }
   }
@@ -588,7 +761,7 @@ function executeGenerationTool(
         const entity = executeGetEntity({ entitySlug: slug }, store)
         entityContext.push(entity)
       } catch {
-        entityContext.push(`Character "${slug}" not found`)
+        entityContext.push(`Character "@${slug}" not found`)
       }
     }
   }
