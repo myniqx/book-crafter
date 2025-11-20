@@ -195,9 +195,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text', 'emotion', 'intensity']
     }
   },
+  /**
+   * TRANSLATE
+   * Provides text and target language for AI to translate while preserving literary style and @mentions.
+   */
   {
     name: 'translate',
-    description: 'Translate text to another language while preserving literary style',
+    description:
+      'Provide text and target language for AI to translate while preserving literary style and @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -221,9 +226,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text', 'targetLanguage']
     }
   },
+  /**
+   * ADD DESCRIPTIONS
+   * Provides text and sensory parameters for AI to enhance with sensory descriptions while preserving @mentions.
+   */
   {
     name: 'add_descriptions',
-    description: 'Add sensory descriptions to text (sight, sound, smell, etc.)',
+    description:
+      'Provide text and sensory parameters for AI to enhance with sensory descriptions (sight, sound, smell, etc.) while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
@@ -251,9 +261,14 @@ export const editingTools: ToolDefinition[] = [
       required: ['text']
     }
   },
+  /**
+   * REMOVE FILTER WORDS
+   * Provides text for AI to remove filter words and strengthen prose while preserving @mentions.
+   */
   {
     name: 'remove_filter_words',
-    description: 'Remove filter words and strengthen prose (e.g., "seemed", "felt", "appeared")',
+    description:
+      'Provide text for AI to remove filter words (e.g., "seemed", "felt", "appeared") and strengthen prose while preserving @mentions',
     category: 'editing',
     requiresApproval: false,
     parameters: {
