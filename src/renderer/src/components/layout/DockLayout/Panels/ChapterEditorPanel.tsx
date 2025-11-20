@@ -13,7 +13,6 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   bookSlug,
   chapterSlug
 }) => {
-  const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,9 +20,8 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   const book = useContentStore((state) => state.books[bookSlug])
   const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
   const updateChapter = useContentStore((state) => state.updateChapter)
-  const setHasUnsavedChanges = useCoreStore((state) => state.setHasUnsavedChanges)
 
-  // Load chapter content from disk
+  // Load chapter content from disk (only on mount or when chapter changes)
   useEffect(() => {
     const loadContent = async (): Promise<void> => {
       if (!workspacePath) {
@@ -47,32 +45,32 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
         console.log('[ChapterEditorPanel] Loading content from:', contentPath)
         const loadedContent = await fs.readFile(contentPath, 'utf-8')
         console.log('[ChapterEditorPanel] Content loaded, length:', loadedContent.length)
-        setContent(loadedContent)
+
+        // Update store with loaded content (if different)
+        if (chapter.content !== loadedContent) {
+          updateChapter(bookSlug, chapterSlug, { content: loadedContent })
+        }
       } catch (err) {
         console.error('[ChapterEditorPanel] Failed to load chapter content:', err)
         setError(`Failed to load chapter: ${err instanceof Error ? err.message : 'Unknown error'}`)
-        setContent('') // Initialize with empty content if file doesn't exist
       } finally {
         setIsLoading(false)
       }
     }
 
     loadContent()
-  }, [workspacePath, bookSlug, chapterSlug, chapter])
+  }, [workspacePath, bookSlug, chapterSlug]) // Removed 'chapter' dependency
 
-  // Save content with debounce
+  // Handle content change - Store handles auto-save automatically
   const handleContentChange = (newContent: string | undefined): void => {
     if (newContent === undefined) return
 
-    setContent(newContent)
-    setHasUnsavedChanges(true)
-
     // Update chapter content in store
-    if (chapter) {
-      updateChapter(bookSlug, chapterSlug, { content: newContent })
-    }
-
-    // TODO: Implement debounced auto-save
+    // Store will automatically:
+    // 1. Set hasUnsavedChanges = true
+    // 2. Trigger debounced auto-save (if enabled in config)
+    // 3. Set hasUnsavedChanges = false after successful save
+    updateChapter(bookSlug, chapterSlug, { content: newContent })
   }
 
   if (isLoading) {
@@ -110,7 +108,11 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
 
   return (
     <div className="h-full w-full">
-      <MonacoEditor value={content} onChange={handleContentChange} language="markdown" />
+      <MonacoEditor
+        value={chapter?.content || ''}
+        onChange={handleContentChange}
+        language="markdown"
+      />
     </div>
   )
 }
