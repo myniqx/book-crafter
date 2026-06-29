@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: book-crafter
+appId: dev.myniqx.book-crafter
+productName: Book Crafter
 directories:
   buildResources: build
 files:

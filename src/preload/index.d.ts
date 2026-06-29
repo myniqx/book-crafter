@@ -28,10 +28,20 @@ interface FSAPI {
   watch(path: string, callback: (event: string, filename: string) => void): Promise<() => void>
 }
 
+interface WindowAPI {
+  minimize(): Promise<void>
+  maximize(): Promise<void>
+  close(): Promise<void>
+  isMaximized(): Promise<boolean>
+  devTools(open: boolean): Promise<void>
+  quit(): Promise<void>
+}
+
 interface AppAPI {
   http: HTTPAPI
   fetch: HTTPAPI  // Alias for http for compatibility
   fs: FSAPI
+  window: WindowAPI
 }
 
 declare global {

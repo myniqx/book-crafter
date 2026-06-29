@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { registerFileSystemHandlers, cleanupFileWatchers } from './ipc/fileHandlers'
 import { registerFetchHandlers } from './ipc/fetchHandlers'
 import { registerDialogHandlers } from './ipc/dialogHandlers'
+import { registerWindowHandlers } from './ipc/windowHandlers'
 
 function createWindow(): void {
   // Create the browser window.
@@ -13,7 +14,7 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -45,8 +46,8 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  app.setName('Book Crafter')
+  electronApp.setAppUserModelId('dev.myniqx.book-crafter')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -59,6 +60,7 @@ app.whenReady().then(() => {
   registerFileSystemHandlers()
   registerFetchHandlers()
   registerDialogHandlers()
+  registerWindowHandlers()
 
   createWindow()
 

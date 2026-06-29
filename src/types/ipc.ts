@@ -105,12 +105,22 @@ export interface AppAPI {
 }
 
 // Combined IPC API
+export interface WindowAPI {
+  minimize(): Promise<void>
+  maximize(): Promise<void>
+  close(): Promise<void>
+  isMaximized(): Promise<boolean>
+  devTools(open: boolean): Promise<void>
+  quit(): Promise<void>
+}
+
 export interface IPCBridge {
   fs: FileSystemAPI
   fetch: FetchAPI
   http: FetchAPI // Alias for compatibility
   dialog: DialogAPI
   app: AppAPI
+  window: WindowAPI
 }
 
 // Error types

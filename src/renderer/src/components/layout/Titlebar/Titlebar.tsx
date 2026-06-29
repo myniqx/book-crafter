@@ -1,6 +1,5 @@
 import React from 'react'
-import { Minimize2, Maximize2, X, BookOpen } from 'lucide-react'
-import { cn } from '@renderer/lib/utils'
+import { Minimize2, Maximize2, X, BookOpen, Terminal } from 'lucide-react'
 import { useCoreStore } from '@renderer/store'
 import { SettingsDialog } from '@renderer/components/settings/SettingsDialog'
 import { MenuBar } from './MenuBar'
@@ -10,18 +9,19 @@ export const Titlebar: React.FC = () => {
   const projectName = workspaceConfig?.projectName || 'Book Crafter'
 
   const handleMinimize = (): void => {
-    // TODO: Implement window minimize via IPC
-    console.log('Minimize window')
+    window.api.window.minimize()
   }
 
   const handleMaximize = (): void => {
-    // TODO: Implement window maximize via IPC
-    console.log('Maximize window')
+    window.api.window.maximize()
   }
 
   const handleClose = (): void => {
-    // TODO: Implement window close via IPC
-    console.log('Close window')
+    window.api.window.close()
+  }
+
+  const handleDevTools = (): void => {
+    window.api.window.devTools(true)
   }
 
   return (
@@ -43,6 +43,13 @@ export const Titlebar: React.FC = () => {
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         <SettingsDialog />
+        <button
+          onClick={handleDevTools}
+          className="h-6 w-6 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150"
+          title="DevTools"
+        >
+          <Terminal className="h-3 w-3" />
+        </button>
         <button
           onClick={handleMinimize}
           className="h-6 w-6 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-150"

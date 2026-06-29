@@ -141,6 +141,16 @@ const fetchAPI = {
   }
 }
 
+// Window controls API
+const windowAPI = {
+  minimize: () => ipcRenderer.invoke('window:minimize'),
+  maximize: () => ipcRenderer.invoke('window:maximize'),
+  close: () => ipcRenderer.invoke('window:close'),
+  isMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
+  devTools: (open: boolean) => ipcRenderer.invoke('window:devtools', open),
+  quit: () => ipcRenderer.invoke('window:quit')
+}
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -152,7 +162,8 @@ if (process.contextIsolated) {
       fetch: fetchAPI,
       http: fetchAPI,
       dialog: dialogAPI,
-      app: appAPI
+      app: appAPI,
+      window: windowAPI
     } as IPCBridge)
   } catch (error) {
     console.error(error)
@@ -166,6 +177,7 @@ if (process.contextIsolated) {
     fetch: fetchAPI,
     http: fetchAPI,
     dialog: dialogAPI,
-    app: appAPI
+    app: appAPI,
+    window: windowAPI
   } as IPCBridge
 }
