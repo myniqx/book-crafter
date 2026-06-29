@@ -74,7 +74,7 @@ export const AdvancedSettingsTab: React.FC = () => {
               Enable verbose logging
             </Label>
           </div>
-          <p className="text-xs text-muted-foreground ml-6">
+          <p className="text-xs text-on-surface-variant ml-6">
             Logs detailed information to the console (may impact performance)
           </p>
         </div>
@@ -119,14 +119,14 @@ export const AdvancedSettingsTab: React.FC = () => {
               Enable GPU acceleration
             </Label>
           </div>
-          <p className="text-xs text-muted-foreground ml-6">
+          <p className="text-xs text-on-surface-variant ml-6">
             Requires app restart. May cause issues on some systems.
           </p>
 
           <div className="space-y-2">
             <Label htmlFor="memory-limit">
               Memory Limit:{' '}
-              <span className="text-muted-foreground">
+              <span className="text-on-surface-variant">
                 {advancedSettings.maxMemoryUsage}MB
               </span>
             </Label>
@@ -138,7 +138,7 @@ export const AdvancedSettingsTab: React.FC = () => {
               value={[advancedSettings.maxMemoryUsage]}
               onValueChange={([value]) => updateAdvancedSettings({ maxMemoryUsage: value })}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-on-surface-variant">
               Maximum memory usage for the application (requires restart)
             </p>
           </div>
@@ -146,7 +146,7 @@ export const AdvancedSettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="cache-size">
               Cache Size:{' '}
-              <span className="text-muted-foreground">
+              <span className="text-on-surface-variant">
                 {advancedSettings.cacheSize}MB
               </span>
             </Label>
@@ -158,7 +158,7 @@ export const AdvancedSettingsTab: React.FC = () => {
               value={[advancedSettings.cacheSize]}
               onValueChange={([value]) => updateAdvancedSettings({ cacheSize: value })}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-on-surface-variant">
               Maximum disk space for cached data
             </p>
           </div>
@@ -183,7 +183,7 @@ export const AdvancedSettingsTab: React.FC = () => {
               Enable experimental features
             </Label>
           </div>
-          <p className="text-xs text-muted-foreground ml-6">
+          <p className="text-xs text-on-surface-variant ml-6">
             Enables beta features that may be unstable
           </p>
         </div>
@@ -193,12 +193,12 @@ export const AdvancedSettingsTab: React.FC = () => {
 
       {/* Danger Zone */}
       <div>
-        <h3 className="text-sm font-medium mb-4 text-red-400">Danger Zone</h3>
+        <h3 className="text-sm font-medium mb-4 text-error">Danger Zone</h3>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-lg border border-red-900/50 bg-red-950/20">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-error/50 bg-error-container/20">
             <div>
               <p className="text-sm font-medium">Clear Cache</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-variant">
                 Remove all cached data and reload the application
               </p>
             </div>
@@ -208,10 +208,10 @@ export const AdvancedSettingsTab: React.FC = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg border border-red-900/50 bg-red-950/20">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-error/50 bg-error-container/20">
             <div>
               <p className="text-sm font-medium">Reset All Settings</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-variant">
                 Reset all settings to their default values
               </p>
             </div>

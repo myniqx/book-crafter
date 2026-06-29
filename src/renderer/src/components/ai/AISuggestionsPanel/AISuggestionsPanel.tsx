@@ -47,24 +47,24 @@ export const AISuggestionsPanel: React.FC = () => {
 
   const getSuggestionTypeColor = (type: AISuggestion['type']): string => {
     const colors = {
-      grammar: 'bg-blue-900 text-blue-300',
-      expansion: 'bg-purple-900 text-purple-300',
-      dramatic: 'bg-red-900 text-red-300',
-      dialogue: 'bg-green-900 text-green-300',
-      improvement: 'bg-yellow-900 text-yellow-300',
-      custom: 'bg-slate-700 text-slate-300'
+      grammar: 'bg-secondary text-secondary-foreground',
+      expansion: 'bg-primary/20 text-primary',
+      dramatic: 'bg-error-container text-on-error-container',
+      dialogue: 'bg-tertiary/20 text-tertiary',
+      improvement: 'bg-tertiary-container/30 text-tertiary',
+      custom: 'bg-surface-container-high text-on-surface-variant'
     }
     return colors[type]
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-950">
+    <div className="flex h-full flex-col bg-surface-container-lowest">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-slate-900 px-4 py-3">
+      <div className="border-b border-outline-variant bg-surface-container-low px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="h-5 w-5 text-purple-500" />
-            <span className="text-sm font-medium text-slate-300">AI Suggestions History</span>
+            <History className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium text-on-surface">AI Suggestions History</span>
             <Badge variant="secondary" className="text-xs">
               {suggestions.length}
             </Badge>
@@ -84,7 +84,7 @@ export const AISuggestionsPanel: React.FC = () => {
 
       {/* Diff Viewer (if viewing) */}
       {viewingSuggestion && (
-        <div className="border-b border-slate-800 p-4">
+        <div className="border-b border-outline-variant p-4">
           <DiffViewer
             original={viewingSuggestion.original}
             suggested={viewingSuggestion.suggested}
@@ -100,9 +100,9 @@ export const AISuggestionsPanel: React.FC = () => {
         <div className="p-4 space-y-2">
           {suggestions.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <History className="h-12 w-12 text-slate-700 mb-4" />
-              <h3 className="text-sm font-medium text-slate-400 mb-2">No Suggestions Yet</h3>
-              <p className="text-xs text-slate-500 max-w-sm">
+              <History className="h-12 w-12 text-outline-variant mb-4" />
+              <h3 className="text-sm font-medium text-on-surface-variant mb-2">No Suggestions Yet</h3>
+              <p className="text-xs text-outline max-w-sm">
                 AI suggestions will appear here when you use AI actions in the editor.
               </p>
             </div>
@@ -112,8 +112,8 @@ export const AISuggestionsPanel: React.FC = () => {
             <Card
               key={suggestion.id}
               className={cn(
-                'p-3 border-slate-700 transition-colors cursor-pointer',
-                suggestion.applied ? 'bg-slate-800/50 opacity-75' : 'bg-slate-800 hover:bg-slate-750'
+                'p-3 border-outline-variant transition-colors cursor-pointer',
+                suggestion.applied ? 'bg-surface-container/50 opacity-75' : 'bg-surface-container hover:bg-surface-container-high'
               )}
               onClick={() => setViewingSuggestion(suggestion)}
             >
@@ -131,11 +131,11 @@ export const AISuggestionsPanel: React.FC = () => {
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-400 line-clamp-2 mb-1">
+                  <p className="text-xs text-on-surface-variant line-clamp-2 mb-1">
                     {suggestion.prompt}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="flex items-center gap-2 text-xs text-outline">
                     <span>{new Date(suggestion.timestamp).toLocaleString()}</span>
                     {suggestion.bookSlug && (
                       <>

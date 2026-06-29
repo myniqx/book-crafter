@@ -106,29 +106,29 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           'border-2 border-dashed rounded-lg p-8 cursor-pointer',
           'transition-colors duration-200',
           isDragActive
-            ? 'border-blue-500 bg-blue-500/10'
-            : 'border-slate-700 hover:border-slate-600 hover:bg-slate-800/50'
+            ? 'border-primary bg-primary/10'
+            : 'border-outline-variant hover:border-outline hover:bg-surface-container/50'
         )}
       >
         {uploadProgress !== null ? (
           <div className="flex flex-col items-center gap-3">
-            <FileImage className="h-12 w-12 text-blue-500 animate-pulse" />
-            <div className="w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
+            <FileImage className="h-12 w-12 text-primary animate-pulse" />
+            <div className="w-48 h-2 bg-surface-container rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 transition-all duration-300"
+                className="h-full bg-primary transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
-            <p className="text-sm text-slate-400">Uploading... {uploadProgress}%</p>
+            <p className="text-sm text-on-surface-variant">Uploading... {uploadProgress}%</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
-            <Upload className="h-12 w-12 text-slate-500" />
+            <Upload className="h-12 w-12 text-outline" />
             <div className="text-center">
-              <p className="text-sm font-medium text-slate-300">
+              <p className="text-sm font-medium text-on-surface">
                 Drop image here or click to browse
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-outline mt-1">
                 Supported: {SUPPORTED_IMAGE_EXTENSIONS.join(', ')} (Max 10MB)
               </p>
             </div>

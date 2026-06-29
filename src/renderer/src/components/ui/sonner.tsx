@@ -11,16 +11,16 @@ const Toaster = ({ ...props }: ToasterProps): React.JSX.Element => {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-slate-900 group-[.toaster]:text-slate-50 group-[.toaster]:border-slate-700 group-[.toaster]:shadow-lg',
-          description: 'group-[.toast]:text-slate-400',
+            'group toast group-[.toaster]:bg-surface-container-high group-[.toaster]:text-on-surface group-[.toaster]:border-outline-variant group-[.toaster]:shadow-lg',
+          description: 'group-[.toast]:text-on-surface-variant',
           actionButton:
-            'group-[.toast]:bg-blue-600 group-[.toast]:text-white',
+            'group-[.toast]:bg-primary group-[.toast]:text-on-primary',
           cancelButton:
-            'group-[.toast]:bg-slate-700 group-[.toast]:text-slate-300',
-          error: 'group-[.toast]:bg-red-950 group-[.toast]:border-red-800',
-          success: 'group-[.toast]:bg-green-950 group-[.toast]:border-green-800',
-          warning: 'group-[.toast]:bg-yellow-950 group-[.toast]:border-yellow-800',
-          info: 'group-[.toast]:bg-blue-950 group-[.toast]:border-blue-800'
+            'group-[.toast]:bg-surface-container-highest group-[.toast]:text-on-surface-variant',
+          error: 'group-[.toast]:bg-error-container group-[.toast]:border-error',
+          success: 'group-[.toast]:bg-tertiary-container/30 group-[.toast]:border-tertiary',
+          warning: 'group-[.toast]:bg-tertiary-container/20 group-[.toast]:border-tertiary',
+          info: 'group-[.toast]:bg-primary/10 group-[.toast]:border-primary'
         }
       }}
       {...props}

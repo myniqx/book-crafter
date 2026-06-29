@@ -26,44 +26,44 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
   const statusConfig = {
     pending: {
       icon: Clock,
-      color: 'text-yellow-500',
-      bg: 'bg-yellow-500/10',
-      border: 'border-yellow-500/30',
+      color: 'text-tertiary',
+      bg: 'bg-tertiary-container/20',
+      border: 'border-tertiary/30',
       label: 'Pending Approval'
     },
     approved: {
       icon: Loader2,
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/30',
+      color: 'text-primary',
+      bg: 'bg-primary-container/20',
+      border: 'border-primary/30',
       label: 'Approved'
     },
     running: {
       icon: Loader2,
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/30',
+      color: 'text-primary',
+      bg: 'bg-primary-container/20',
+      border: 'border-primary/30',
       label: 'Running'
     },
     completed: {
       icon: CheckCircle,
-      color: 'text-green-500',
-      bg: 'bg-green-500/10',
-      border: 'border-green-500/30',
+      color: 'text-tertiary',
+      bg: 'bg-surface-container',
+      border: 'border-outline-variant',
       label: 'Completed'
     },
     error: {
       icon: XCircle,
-      color: 'text-red-500',
-      bg: 'bg-red-500/10',
-      border: 'border-red-500/30',
+      color: 'text-error',
+      bg: 'bg-error-container/20',
+      border: 'border-error/30',
       label: 'Error'
     },
     rejected: {
       icon: XCircle,
-      color: 'text-red-500',
-      bg: 'bg-red-500/10',
-      border: 'border-red-500/30',
+      color: 'text-error',
+      bg: 'bg-error-container/20',
+      border: 'border-error/30',
       label: 'Rejected'
     }
   }
@@ -76,7 +76,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 select-text">
-          <Wrench className="h-4 w-4 text-muted-foreground" />
+          <Wrench className="h-4 w-4 text-on-surface-variant" />
           <span className="font-medium">{toolCall.name}</span>
           <StatusIcon
             className={cn('h-4 w-4', config.color, status === 'running' && 'animate-spin')}
@@ -85,7 +85,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
 
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-on-surface-variant hover:text-on-surface"
         >
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
@@ -96,8 +96,8 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
         <div className="mt-3 space-y-3 select-text">
           {/* Arguments */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">Arguments</p>
-            <pre className="text-xs bg-background/50 p-2 rounded overflow-x-auto">
+            <p className="text-xs font-medium text-on-surface-variant mb-1">Arguments</p>
+            <pre className="text-xs bg-surface-container-lowest/50 p-2 rounded overflow-x-auto">
               {JSON.stringify(toolCall.arguments, null, 2)}
             </pre>
           </div>
@@ -105,11 +105,11 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
           {/* Result */}
           {result && (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Result</p>
+              <p className="text-xs font-medium text-on-surface-variant mb-1">Result</p>
               <pre
                 className={cn(
                   'text-xs p-2 rounded overflow-x-auto max-h-48',
-                  result.isError ? 'bg-red-500/10' : 'bg-background/50'
+                  result.isError ? 'bg-error-container/20' : 'bg-surface-container'
                 )}
               >
                 {result.content}
@@ -126,7 +126,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
             size="sm"
             variant="outline"
             onClick={onApprove}
-            className="flex-1 bg-green-500/10 border-green-500/30 hover:bg-green-500/20 text-green-500"
+            className="flex-1 bg-primary-container/20 border-primary/30 hover:bg-primary-container/40 text-primary"
           >
             <CheckCircle className="h-3 w-3 mr-1" />
             Approve
@@ -135,7 +135,7 @@ export const ToolBubble: React.FC<ToolBubbleProps> = ({
             size="sm"
             variant="outline"
             onClick={onReject}
-            className="flex-1 bg-red-500/10 border-red-500/30 hover:bg-red-500/20 text-red-500"
+            className="flex-1 bg-error-container/20 border-error/30 hover:bg-error-container/40 text-error"
           >
             <XCircle className="h-3 w-3 mr-1" />
             Reject

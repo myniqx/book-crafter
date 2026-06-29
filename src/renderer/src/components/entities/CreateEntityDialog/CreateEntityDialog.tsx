@@ -87,12 +87,12 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm" {...triggerProps}>
+        <Button variant="ghost" size="sm" {...triggerProps}>
           <Plus className="h-4 w-4 mr-2" />
           New Entity
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Create New Entity</DialogTitle>
           <DialogDescription>

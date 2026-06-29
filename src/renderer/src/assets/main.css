@@ -1,72 +1,143 @@
 @import "tailwindcss";
+@import "./rc-dock.css";
 
-/* Load tailwind.config.js for backward compatibility */
-@config "../../../../tailwind.config.js";
+/* ============================================================
+   DESIGN TOKENS — single source of truth
+   All other mappings reference these variables.
+   ============================================================ */
+@theme {
+  /* Surface scale */
+  --color-surface:                   #131313;
+  --color-surface-dim:               #131313;
+  --color-surface-bright:            #393939;
+  --color-surface-container-lowest:  #0e0e0e;
+  --color-surface-container-low:     #1b1b1c;
+  --color-surface-container:         #202020;
+  --color-surface-container-high:    #2a2a2a;
+  --color-surface-container-highest: #353535;
+  --color-on-surface:                #e5e2e1;
+  --color-on-surface-variant:        #c7c4d7;
+  --color-inverse-surface:           #e5e2e1;
+  --color-inverse-on-surface:        #303030;
+  --color-outline:                   #908fa0;
+  --color-outline-variant:           #464554;
 
+  /* Primary (Indigo) */
+  --color-primary:                   #c0c1ff;
+  --color-on-primary:                #1000a9;
+  --color-primary-container:         #8083ff;
+  --color-on-primary-container:      #0d0096;
+  --color-inverse-primary:           #494bd6;
+  --color-primary-fixed:             #e1e0ff;
+  --color-primary-fixed-dim:         #c0c1ff;
+  --color-on-primary-fixed:          #07006c;
+  --color-on-primary-fixed-variant:  #2f2ebe;
+
+  /* Secondary (Slate) */
+  --color-secondary:                 #b9c8de;
+  --color-on-secondary:              #233143;
+  --color-secondary-container:       #39485a;
+  --color-on-secondary-container:    #a7b6cc;
+  --color-secondary-fixed:           #d4e4fa;
+  --color-secondary-fixed-dim:       #b9c8de;
+  --color-on-secondary-fixed:        #0d1c2d;
+  --color-on-secondary-fixed-variant:#39485a;
+
+  /* Tertiary (Amber) */
+  --color-tertiary:                  #ffb783;
+  --color-on-tertiary:               #4f2500;
+  --color-tertiary-container:        #d97721;
+  --color-on-tertiary-container:     #452000;
+  --color-tertiary-fixed:            #ffdcc5;
+  --color-tertiary-fixed-dim:        #ffb783;
+  --color-on-tertiary-fixed:         #301400;
+  --color-on-tertiary-fixed-variant: #703700;
+
+  /* Error */
+  --color-error:                     #ffb4ab;
+  --color-on-error:                  #690005;
+  --color-error-container:           #93000a;
+  --color-on-error-container:        #ffdad6;
+
+  /* Border Radius */
+  --radius-sm:   0.125rem;
+  --radius:      0.25rem;
+  --radius-md:   0.375rem;
+  --radius-lg:   0.5rem;
+  --radius-xl:   0.75rem;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --spacing-sidebar: 260px;
+  --spacing-panel:   320px;
+
+  /* Typography */
+  --font-sans:  Inter, system-ui, sans-serif;
+  --font-serif: Merriweather, Georgia, serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Shadcn semantic aliases — Tailwind 4 utility classes (bg-*, text-*, border-*) */
+  --color-background:         #131313;
+  --color-foreground:         #e5e2e1;
+  --color-card:               #202020;
+  --color-card-foreground:    #e5e2e1;
+  --color-popover:            #2a2a2a;
+  --color-popover-foreground: #e5e2e1;
+  --color-muted:              #2a2a2a;
+  --color-muted-foreground:   #908fa0;
+  --color-accent:             #474747;
+  --color-accent-foreground:  #f0efee;
+  --color-border:             #464554;
+  --color-input:              #1b1b1c;
+  --color-ring:               #c0c1ff;
+  --color-destructive:        #ffb4ab;
+  --color-destructive-foreground: #690005;
+}
+
+/* ============================================================
+   SHADCN WIRE — maps Shadcn's expected var names to tokens
+   Shadcn components use hsl(var(--x)); we supply raw hex so
+   we wrap with color-mix identity to skip hsl() parsing.
+   ============================================================ */
 @layer base {
   :root {
-    /* Dark theme (default) */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* HSL channels — Shadcn components consume these as hsl(var(--x)) */
+    --background:             0 0% 7.5%;      /* #131313 */
+    --foreground:             20 5% 89%;      /* #e5e2e1 */
+    --card:                   0 0% 12.5%;     /* #202020 */
+    --card-foreground:        20 5% 89%;
+    --popover:                0 0% 12.5%;
+    --popover-foreground:     20 5% 89%;
+    --primary:                240 100% 86%;   /* #c0c1ff */
+    --primary-foreground:     243 100% 33%;   /* #1000a9 */
+    --secondary:              211 22% 29%;    /* #39485a */
+    --secondary-foreground:   213 30% 80%;    /* #b9c8de */
+    --muted:                  0 0% 16.5%;     /* #2a2a2a */
+    --muted-foreground:       244 6% 60%;     /* #908fa0 */
+    --accent:                 0 0% 28%;       /* #474747 */
+    --accent-foreground:      20 5% 95%;
+    --destructive:            4 100% 84%;     /* #ffb4ab */
+    --destructive-foreground: 356 100% 21%;   /* #690005 */
+    --border:                 243 9% 30%;     /* #464554 */
+    --input:                  240 2% 11%;     /* #1b1b1c */
+    --ring:                   240 100% 86%;   /* #c0c1ff */
+    --radius:                 0.25rem;
   }
+}
 
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
-
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+@layer base {
   body {
     min-height: 100vh;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
     overflow: hidden;
     user-select: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 18px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -76,93 +147,20 @@
     height: 100vh;
   }
 
-  /* Modern scrollbar styling */
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) transparent;
+    scrollbar-color: var(--color-surface-container-high) transparent;
   }
 
-  *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  *::-webkit-scrollbar       { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-track { background: transparent; }
   *::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
+    background: var(--color-surface-container-high);
     border-radius: 4px;
   }
+  *::-webkit-scrollbar-thumb:hover { background: var(--color-outline); }
+  *::-webkit-scrollbar-corner      { background: transparent; }
 
-  *::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  *::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
-  //   rc-dock custom styling 
-  .dock-layout-container .dock-panel {
-    background: hsl(var(--background));
-    border: 1px solid hsl(var(--border));
-    color: hsl(var(--foreground));
-  }
-
-  .dock-layout-container .dock-tab {
-    background: hsl(var(--muted));
-    color: hsl(var(--muted-foreground));
-    border: 1px solid hsl(var(--border));
-  }
-
-  .dock-layout-container .dock-tab:hover {
-    background: hsl(var(--accent));
-  }
-
-  .dock-layout-container .dock-tab-active {
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-
-  .dock-layout-container .dock-bar {
-    background: hsl(var(--background));
-    border-bottom: 1px solid hsl(var(--border));
-  }
-
-  .dock-layout-container .dock-divider {
-    background: hsl(var(--border));
-  }
-
-  .dock-layout-container .dock-divider:hover {
-    background: hsl(var(--primary));
-  }
-
-  /* Fix z-index issues: Dialogs should be above dock panels */
-  .dock-layout-container .dock-float-panel {
-    z-index: 40 !important; /* Below dialogs (50) */
-  }
-
-  /* Ensure Radix Dialog components are above floating panels */
-  [data-radix-dialog-overlay] {
-    z-index: 9998 !important;
-  }
-
-  [data-radix-dialog-content] {
-    z-index: 9999 !important;
-  }
-
-  /* Ensure close buttons are visible */
-  .dock-layout-container .dock-tab-close-btn {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  /* Style close button */
-  .dock-layout-container .dock-tab-close-btn:hover {
-    background: hsl(var(--destructive));
-    color: hsl(var(--destructive-foreground));
-  }
+  [data-radix-dialog-overlay] { z-index: 9998 !important; }
+  [data-radix-dialog-content] { z-index: 9999 !important; }
 }

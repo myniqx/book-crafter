@@ -97,7 +97,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
   if (variant === 'grid') {
     return (
       <Card className={cn('group relative overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all', className)}>
-        <div className="aspect-square relative bg-slate-900">
+        <div className="aspect-square relative bg-surface-container-lowest">
           <img
             src={imageUrl}
             alt={image.description || image.slug}
@@ -126,14 +126,14 @@ export const ImageCard: React.FC<ImageCardProps> = ({
         </div>
 
         <CardContent className="p-3">
-          <p className="text-sm font-medium text-slate-300 truncate">
+          <p className="text-sm font-medium text-on-surface truncate">
             {image.slug}
           </p>
           <div className="flex items-center justify-between mt-1">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-outline">
               {image.width && image.height ? `${image.width}×${image.height}` : 'Unknown'}
             </p>
-            <p className="text-xs text-slate-500">{formatFileSize(image.size)}</p>
+            <p className="text-xs text-outline">{formatFileSize(image.size)}</p>
           </div>
           {image.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -184,7 +184,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
 
       <CardContent className="space-y-4">
         {/* Image Preview */}
-        <div className="relative bg-slate-900 rounded-lg overflow-hidden">
+        <div className="relative bg-surface-container-lowest rounded-lg overflow-hidden">
           <img
             src={imageUrl}
             alt={image.description || image.slug}
@@ -213,7 +213,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
           ) : (
             <div
               onClick={handleDescriptionEdit}
-              className="text-sm text-slate-400 cursor-pointer hover:text-slate-300 min-h-[2rem] p-2 border border-slate-800 rounded hover:border-slate-700"
+              className="text-sm text-on-surface-variant cursor-pointer hover:text-on-surface min-h-[2rem] p-2 border border-outline-variant rounded hover:border-outline"
             >
               {image.description || 'Click to add description...'}
             </div>
@@ -249,7 +249,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
         </div>
 
         {/* Metadata */}
-        <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+        <div className="grid grid-cols-2 gap-2 text-xs text-on-surface-variant">
           <div>
             <span className="font-medium">Size:</span> {formatFileSize(image.size)}
           </div>
@@ -274,7 +274,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
               <LinkIcon className="h-3 w-3" />
               Linked To
             </Label>
-            <div className="space-y-1 text-xs text-slate-400">
+            <div className="space-y-1 text-xs text-on-surface-variant">
               {image.linkedEntities.length > 0 && (
                 <div>Entities: {image.linkedEntities.join(', ')}</div>
               )}

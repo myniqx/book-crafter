@@ -149,7 +149,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-outline">
               {provider === 'ollama' && 'Run AI models locally with Ollama'}
               {provider === 'openai' && 'Use OpenAI\'s GPT models (requires API key)'}
               {provider === 'anthropic' && 'Use Anthropic\'s Claude models (requires API key)'}
@@ -166,7 +166,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 onChange={(e) => setEndpoint(e.target.value)}
                 placeholder="http://localhost:11434"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-outline">
                 Default: http://localhost:11434
               </p>
             </div>
@@ -183,7 +183,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder={provider === 'openai' ? 'sk-...' : 'sk-ant-...'}
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-outline">
                 {provider === 'openai' && 'Get your API key from platform.openai.com'}
                 {provider === 'anthropic' && 'Get your API key from console.anthropic.com'}
               </p>
@@ -242,7 +242,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
               />
             )}
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-outline">
               {provider === 'ollama' && 'Run "ollama list" to see available models'}
               {provider === 'openai' && 'e.g., gpt-4, gpt-4-turbo, gpt-3.5-turbo'}
               {provider === 'anthropic' && 'e.g., claude-3-5-sonnet-20241022, claude-3-opus-20240229'}
@@ -253,7 +253,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="temperature">Temperature</Label>
-              <span className="text-sm text-slate-400">{temperature}</span>
+              <span className="text-sm text-on-surface-variant">{temperature}</span>
             </div>
             <input
               id="temperature"
@@ -263,9 +263,9 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
               step="0.1"
               value={temperature}
               onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer"
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-outline">
               Lower = more focused, Higher = more creative
             </p>
           </div>
@@ -281,7 +281,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
               min={1}
               max={100000}
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-outline">
               Maximum length of generated response
             </p>
           </div>
@@ -296,7 +296,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 onChange={(e) => setKeepAlive(e.target.value)}
                 placeholder="5m"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-outline">
                 How long to keep model in memory (e.g., 5m, 1h, 30s)
               </p>
             </div>

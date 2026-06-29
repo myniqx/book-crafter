@@ -103,11 +103,11 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
   const totalBooks = booksList.length
 
   return (
-    <div className={cn('h-full flex flex-col bg-[hsl(var(--background))]', className)}>
+    <div className={cn('h-full flex flex-col', className)}>
       {/* Header */}
-      <div className="p-3 border-b border-[hsl(var(--border))]">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold">Books ({totalBooks})</h3>
+      <div className="px-3 py-2 border-b border-outline-variant">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Books ({totalBooks})</h3>
           <CreateBookDialog />
         </div>
       </div>
@@ -116,21 +116,19 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
       <div className="flex-1 overflow-y-auto">
         {booksList.map((book) => {
           const isExpanded = expandedBooks.has(book.slug)
-
-          // Check if any chapter from this book is open
           const hasOpenChapter = openTabs.some(
             (tab) => tab.type === 'editor' && (tab.data as TabEditorData)?.bookSlug === book.slug
           )
 
           return (
-            <div key={book.slug} className="border-b border-[hsl(var(--border))]">
+            <div key={book.slug} className="border-b border-outline-variant">
               {/* Book Header */}
               <div
                 className={cn(
                   'flex items-center gap-2 px-3 py-2',
-                  'hover:bg-[hsl(var(--accent))] transition-colors',
+                  'hover:bg-surface-container-high transition-colors duration-150',
                   'group',
-                  hasOpenChapter && 'bg-[hsl(var(--accent))]'
+                  hasOpenChapter && 'bg-surface-container'
                 )}
               >
                 <button
@@ -138,45 +136,38 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
                   className="flex items-center gap-2 flex-1 text-left"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                    <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-on-surface-variant" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                    <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-on-surface-variant" />
                   )}
-                  <BookOpen className="h-4 w-4 flex-shrink-0 text-[hsl(var(--primary))]" />
+                  <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{book.title}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="font-medium text-sm truncate text-on-surface">{book.title}</div>
+                    <div className="text-xs text-on-surface-variant">
                       {book.chapters.length} chapter{book.chapters.length !== 1 ? 's' : ''}
                     </div>
                   </div>
                 </button>
 
-                {/* Delete button */}
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteBook(book.slug, book.title)
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteBook(book.slug, book.title) }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error-container/20 rounded"
                   title="Delete book"
                 >
-                  <Trash2 className="h-3 w-3 text-destructive" />
+                  <Trash2 className="h-3 w-3 text-error" />
                 </button>
               </div>
 
               {/* Chapters */}
               {isExpanded && (
-                <div className="bg-muted/30">
-                  {/* Add Chapter Button */}
-                  <div className="px-3 py-2 border-b border-[hsl(var(--border))]">
+                <div className="bg-surface-container-lowest">
+                  <div className="px-3 py-1.5 border-b border-outline-variant">
                     <CreateChapterDialog bookSlug={book.slug} />
                   </div>
 
-                  {/* Chapter List */}
-                  {book.chapters
+                  {[...book.chapters]
                     .sort((a, b) => a.order - b.order)
                     .map((chapter) => {
-                      // Check if this chapter's tab is currently active
                       const chapterTabId = `editor-${book.slug}-${chapter.slug}`
                       const isActiveChapter = activeTabId === chapterTabId
 
@@ -184,44 +175,38 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
                         <div
                           key={chapter.slug}
                           className={cn(
-                            'flex items-center gap-2 px-3 py-2 pl-10',
-                            'hover:bg-[hsl(var(--accent))] transition-colors cursor-pointer',
+                            'flex items-center gap-2 px-3 py-2 pl-9',
+                            'hover:bg-surface-container transition-colors duration-150 cursor-pointer',
                             'group',
-                            isActiveChapter &&
-                              'bg-[hsl(var(--accent))] text-[hsl(var(--primary))] font-medium'
+                            isActiveChapter && 'bg-surface-container text-primary font-medium border-l-2 border-primary'
                           )}
                         >
                           <button
                             onClick={() => handleChapterClick(book.slug, chapter.slug)}
                             className="flex items-center gap-2 flex-1 text-left"
                           >
-                            <FileText className="h-4 w-4 flex-shrink-0" />
+                            <FileText className="h-3.5 w-3.5 flex-shrink-0 text-on-surface-variant" />
                             <div className="flex-1 min-w-0">
                               <div className="text-sm truncate">{chapter.title}</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-xs text-on-surface-variant">
                                 {chapter.wordCount} words
                               </div>
                             </div>
                           </button>
 
-                          {/* Delete button */}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteChapter(book.slug, chapter.slug, chapter.title)
-                            }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteChapter(book.slug, chapter.slug, chapter.title) }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error-container/20 rounded"
                             title="Delete chapter"
                           >
-                            <Trash2 className="h-3 w-3 text-destructive" />
+                            <Trash2 className="h-3 w-3 text-error" />
                           </button>
                         </div>
                       )
                     })}
 
-                  {/* Empty state */}
                   {book.chapters.length === 0 && (
-                    <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    <div className="px-3 py-6 text-center text-xs text-on-surface-variant">
                       No chapters yet. Create one to get started.
                     </div>
                   )}
@@ -234,9 +219,9 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
         {/* Empty State */}
         {totalBooks === 0 && (
           <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-3" />
-            <h4 className="text-sm font-medium mb-1">No books yet</h4>
-            <p className="text-xs text-muted-foreground mb-4">Create your first book to start writing</p>
+            <BookOpen className="h-10 w-10 text-on-surface-variant opacity-30 mb-3" />
+            <h4 className="text-sm font-medium text-on-surface mb-1">No books yet</h4>
+            <p className="text-xs text-on-surface-variant mb-4">Create your first book to start writing</p>
             <CreateBookDialog triggerProps={{ size: 'sm' }} />
           </div>
         )}

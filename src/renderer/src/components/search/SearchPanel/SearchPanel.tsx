@@ -86,167 +86,85 @@ export const SearchPanel: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-950">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-slate-800 bg-slate-900 px-4 py-3 space-y-3">
+      <div className="border-b border-outline-variant px-3 py-2 space-y-2">
         <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-slate-400" />
-          <span className="text-sm font-medium text-slate-300">Search</span>
+          <h3 className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Search</h3>
           {results.length > 0 && (
-            <Badge variant="secondary">
-              {results.length} results ({totalMatches} matches)
-            </Badge>
+            <Badge variant="secondary">{results.length} ({totalMatches})</Badge>
           )}
         </div>
 
-        {/* Search Input */}
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search..."
-          className="h-9"
-          autoFocus
-        />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search..." className="h-8 text-xs" autoFocus />
 
-        {/* Replace Input */}
         {showReplace && (
-          <div className="space-y-2">
-            <Input
-              value={replaceWith}
-              onChange={(e) => setReplaceWith(e.target.value)}
-              placeholder="Replace with..."
-              className="h-9"
-            />
-            <Button
-              size="sm"
-              onClick={handleReplaceAll}
-              disabled={!query.trim() || groupedResults.chapter.length === 0}
-              className="w-full"
-            >
-              <Replace className="h-3 w-3 mr-1" />
-              Replace All in Chapters
+          <div className="space-y-1.5">
+            <Input value={replaceWith} onChange={(e) => setReplaceWith(e.target.value)} placeholder="Replace with..." className="h-8 text-xs" />
+            <Button size="sm" onClick={handleReplaceAll} disabled={!query.trim() || groupedResults.chapter.length === 0} className="w-full h-7">
+              <Replace className="h-3 w-3 mr-1" />Replace All in Chapters
             </Button>
           </div>
         )}
 
-        {/* Options */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="case-sensitive"
-              checked={caseSensitive}
-              onCheckedChange={(checked) => setCaseSensitive(checked === true)}
-            />
-            <Label htmlFor="case-sensitive" className="text-xs cursor-pointer">
-              Case sensitive
-            </Label>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-1.5">
+            <Checkbox id="case-sensitive" checked={caseSensitive} onCheckedChange={(c) => setCaseSensitive(c === true)} />
+            <Label htmlFor="case-sensitive" className="text-xs cursor-pointer">Aa</Label>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="use-regex"
-              checked={useRegex}
-              onCheckedChange={(checked) => setUseRegex(checked === true)}
-            />
-            <Label htmlFor="use-regex" className="text-xs cursor-pointer">
-              Regex
-            </Label>
+          <div className="flex items-center gap-1.5">
+            <Checkbox id="use-regex" checked={useRegex} onCheckedChange={(c) => setUseRegex(c === true)} />
+            <Label htmlFor="use-regex" className="text-xs cursor-pointer">.*</Label>
           </div>
-
-          <Button
-            size="sm"
-            variant={showReplace ? 'default' : 'outline'}
-            onClick={() => setShowReplace(!showReplace)}
-            className="h-7"
-          >
-            <Replace className="h-3 w-3 mr-1" />
-            Replace
+          <Button size="sm" variant={showReplace ? 'default' : 'outline'} onClick={() => setShowReplace(!showReplace)} className="h-6 text-xs px-2">
+            <Replace className="h-3 w-3 mr-1" />Replace
           </Button>
         </div>
 
-        {/* Search In */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="search-chapters"
-              checked={searchInChapters}
-              onCheckedChange={(checked) => setSearchInChapters(checked === true)}
-            />
-            <Label htmlFor="search-chapters" className="text-xs cursor-pointer">
-              Chapters
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="search-entities"
-              checked={searchInEntities}
-              onCheckedChange={(checked) => setSearchInEntities(checked === true)}
-            />
-            <Label htmlFor="search-entities" className="text-xs cursor-pointer">
-              Entities
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="search-notes"
-              checked={searchInNotes}
-              onCheckedChange={(checked) => setSearchInNotes(checked === true)}
-            />
-            <Label htmlFor="search-notes" className="text-xs cursor-pointer">
-              Notes
-            </Label>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'search-chapters', checked: searchInChapters, onChange: setSearchInChapters, label: 'Chapters' },
+            { id: 'search-entities', checked: searchInEntities, onChange: setSearchInEntities, label: 'Entities' },
+            { id: 'search-notes', checked: searchInNotes, onChange: setSearchInNotes, label: 'Notes' },
+          ].map(({ id, checked, onChange, label }) => (
+            <div key={id} className="flex items-center gap-1.5">
+              <Checkbox id={id} checked={checked} onCheckedChange={(c) => onChange(c === true)} />
+              <Label htmlFor={id} className="text-xs cursor-pointer">{label}</Label>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {!query.trim() ? (
-          <div className="text-center py-8 text-sm text-slate-500">
-            Enter a search query to find text across your workspace
-          </div>
+          <div className="text-center py-8 text-xs text-on-surface-variant">Enter a search query to find text across your workspace</div>
         ) : results.length === 0 ? (
-          <div className="text-center py-8 text-sm text-slate-500">No results found</div>
+          <div className="text-center py-8 text-xs text-on-surface-variant">No results found</div>
         ) : (
           <>
-            {/* Chapters */}
             {groupedResults.chapter.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                  <FileText className="h-3 w-3" />
-                  Chapters ({groupedResults.chapter.length})
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
+                  <FileText className="h-3 w-3" />Chapters ({groupedResults.chapter.length})
                 </div>
-                {groupedResults.chapter.map((result) => (
-                  <ResultCard key={result.id} result={result} />
-                ))}
+                {groupedResults.chapter.map((result) => <ResultCard key={result.id} result={result} />)}
               </div>
             )}
-
-            {/* Entities */}
             {groupedResults.entity.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                  <Users className="h-3 w-3" />
-                  Entities ({groupedResults.entity.length})
+              <div className="space-y-1.5 mt-3">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
+                  <Users className="h-3 w-3" />Entities ({groupedResults.entity.length})
                 </div>
-                {groupedResults.entity.map((result) => (
-                  <ResultCard key={result.id} result={result} />
-                ))}
+                {groupedResults.entity.map((result) => <ResultCard key={result.id} result={result} />)}
               </div>
             )}
-
-            {/* Notes */}
             {groupedResults.note.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                  <StickyNote className="h-3 w-3" />
-                  Notes ({groupedResults.note.length})
+              <div className="space-y-1.5 mt-3">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
+                  <StickyNote className="h-3 w-3" />Notes ({groupedResults.note.length})
                 </div>
-                {groupedResults.note.map((result) => (
-                  <ResultCard key={result.id} result={result} />
-                ))}
+                {groupedResults.note.map((result) => <ResultCard key={result.id} result={result} />)}
               </div>
             )}
           </>
@@ -258,29 +176,27 @@ export const SearchPanel: React.FC = () => {
 
 const ResultCard: React.FC<{ result: SearchResult }> = ({ result }) => {
   return (
-    <Card className="p-3 hover:bg-slate-800 transition-colors cursor-pointer">
-      <div className="space-y-2">
+    <Card className="p-2.5 hover:bg-surface-container-high transition-colors duration-150 cursor-pointer bg-surface-container border-outline-variant">
+      <div className="space-y-1.5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm text-slate-200 truncate">{result.title}</h3>
-            <p className="text-xs text-slate-500">{result.subtitle}</p>
+            <h3 className="font-medium text-sm text-on-surface truncate">{result.title}</h3>
+            <p className="text-xs text-on-surface-variant">{result.subtitle}</p>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {result.matchCount}
-          </Badge>
+          <Badge variant="secondary" className="text-xs">{result.matchCount}</Badge>
         </div>
 
         {result.matches.length > 0 && (
-          <div className="text-xs text-slate-400 space-y-1">
+          <div className="text-xs text-on-surface-variant space-y-0.5">
             {result.matches.slice(0, 3).map((match, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="text-slate-600">L{match.line}</span>
-                <ArrowRight className="h-3 w-3 text-slate-600 mt-0.5" />
+                <span className="text-outline font-mono">L{match.line}</span>
+                <ArrowRight className="h-3 w-3 text-outline mt-0.5 shrink-0" />
                 <span className="flex-1 truncate">{match.text}</span>
               </div>
             ))}
             {result.matches.length > 3 && (
-              <p className="text-slate-600">+{result.matches.length - 3} more matches</p>
+              <p className="text-outline">+{result.matches.length - 3} more matches</p>
             )}
           </div>
         )}

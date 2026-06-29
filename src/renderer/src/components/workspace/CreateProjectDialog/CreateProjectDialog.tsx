@@ -139,7 +139,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-blue-500" />
+            <BookOpen className="h-5 w-5 text-primary" />
             Create New Project
           </DialogTitle>
           <DialogDescription>
@@ -198,7 +198,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                   <FolderOpen className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-on-surface-variant">
                 A new folder will be created at this location
               </p>
             </div>

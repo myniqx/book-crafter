@@ -43,37 +43,37 @@ export const SettingsDialog: React.FC = () => {
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
             <TabsTrigger
               value="general"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               General
             </TabsTrigger>
             <TabsTrigger
               value="editor"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Editor
             </TabsTrigger>
             <TabsTrigger
               value="ai"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               AI
             </TabsTrigger>
             <TabsTrigger
               value="workspace"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Workspace
             </TabsTrigger>
             <TabsTrigger
               value="keyboard"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Keyboard
             </TabsTrigger>
             <TabsTrigger
               value="advanced"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Advanced
             </TabsTrigger>

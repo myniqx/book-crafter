@@ -102,7 +102,7 @@ export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigge
 
           {/* Create/Edit Form */}
           {(showCreateForm || editingId) && (
-            <Card className="p-4 border-slate-700 bg-slate-900">
+            <Card className="p-4 border-outline-variant bg-surface-container-low">
               <div className="space-y-3">
                 <div>
                   <Label htmlFor="prompt-name">Name</Label>
@@ -141,7 +141,7 @@ export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigge
                     value={formData.prompt}
                     onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
                     placeholder="Enter your custom prompt here..."
-                    className="w-full h-32 px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-200 resize-none"
+                    className="w-full h-32 px-3 py-2 bg-surface-container border border-outline-variant rounded text-sm text-on-surface resize-none"
                   />
                 </div>
 
@@ -163,7 +163,7 @@ export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigge
           <ScrollArea className="h-96">
             <div className="space-y-2">
               {customPrompts.length === 0 && (
-                <div className="text-center py-12 text-slate-500">
+                <div className="text-center py-12 text-outline">
                   <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-sm">No custom prompts yet.</p>
                   <p className="text-xs mt-1">Create your first prompt to get started!</p>
@@ -173,18 +173,18 @@ export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigge
               {customPrompts.map((prompt) => (
                 <Card
                   key={prompt.id}
-                  className="p-3 border-slate-700 bg-slate-800 hover:bg-slate-750 transition-colors"
+                  className="p-3 border-outline-variant bg-surface-container hover:bg-surface-container-high transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-sm font-medium text-slate-200">{prompt.name}</h4>
-                        <span className="px-2 py-0.5 bg-slate-700 text-slate-400 text-xs rounded">
+                        <h4 className="text-sm font-medium text-on-surface">{prompt.name}</h4>
+                        <span className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-xs rounded">
                           {prompt.category}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 line-clamp-2">{prompt.prompt}</p>
-                      <p className="text-xs text-slate-600 mt-1">
+                      <p className="text-xs text-on-surface-variant line-clamp-2">{prompt.prompt}</p>
+                      <p className="text-xs text-outline mt-1">
                         Modified: {new Date(prompt.modified).toLocaleDateString()}
                       </p>
                     </div>

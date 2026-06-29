@@ -38,13 +38,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div
           className={cn(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            toolResult.isError ? 'bg-red-500' : 'bg-purple-500'
+            toolResult.isError ? 'bg-error-container' : 'bg-primary-container'
           )}
         >
           {toolResult.isError ? (
-            <XCircle className="h-4 w-4 text-white" />
+            <XCircle className="h-4 w-4 text-on-error-container" />
           ) : (
-            <CheckCircle className="h-4 w-4 text-white" />
+            <CheckCircle className="h-4 w-4 text-on-primary-container" />
           )}
         </div>
 
@@ -53,17 +53,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             className={cn(
               'inline-block max-w-4xl p-3 select-text',
               toolResult.isError
-                ? 'bg-red-500/10 border-red-500/30'
-                : 'bg-purple-500/10 border-purple-500/30'
+                ? 'bg-error-container/20 border-error/30'
+                : 'bg-primary-container/20 border-primary/30'
             )}
           >
-            <p className="text-xs font-medium text-muted-foreground mb-1">Tool Result</p>
+            <p className="text-xs font-medium text-on-surface-variant mb-1">Tool Result</p>
             <pre className="text-sm whitespace-pre-wrap wrap-break-word max-h-48 overflow-auto">
               {content}
             </pre>
           </Card>
 
-          <span className="text-xs text-muted-foreground select-text">
+          <span className="text-xs text-on-surface-variant select-text">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'
@@ -80,13 +80,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div
         className={cn(
           'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-          isUser ? 'bg-blue-500' : 'bg-green-500'
+          isUser ? 'bg-secondary-container' : 'bg-primary-container'
         )}
       >
         {isUser ? (
-          <span className="text-xs font-medium text-white select-text">You</span>
+          <span className="text-xs font-medium text-on-secondary-container select-text">You</span>
         ) : (
-          <Bot className="h-4 w-4 text-white" />
+          <Bot className="h-4 w-4 text-on-primary-container" />
         )}
       </div>
 
@@ -99,8 +99,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               className={cn(
                 'inline-block max-w-4xl p-3 select-text',
                 isUser
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-muted text-foreground border-border'
+                  ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
+                  : 'bg-surface-container text-on-surface border-outline-variant'
               )}
             >
               <p className="text-sm whitespace-pre-wrap wrap-break-word">{content}</p>
@@ -115,10 +115,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 size="sm"
                 variant="ghost"
                 onClick={handleCopy}
-                className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-muted hover:bg-accent"
+                className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container hover:bg-surface-container-high"
               >
                 {copied ? (
-                  <Check className="h-3 w-3 text-green-400" />
+                  <Check className="h-3 w-3 text-tertiary" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -143,13 +143,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-on-surface-variant">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'
             })}
           </span>
-          {copied && <span className="text-xs text-green-400">Copied!</span>}
+          {copied && <span className="text-xs text-tertiary">Copied!</span>}
         </div>
       </div>
     </div>

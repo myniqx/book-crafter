@@ -47,7 +47,7 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTriangle className="h-5 w-5 text-tertiary" />
             Unsaved Changes
           </DialogTitle>
           <DialogDescription>
@@ -56,8 +56,8 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
         </DialogHeader>
 
         <div className="py-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-            <p className="text-sm text-slate-300">
+          <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
+            <p className="text-sm text-on-surface">
               Your changes will be lost if you don't save them before continuing.
             </p>
           </div>

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react'
 import { DockLayout as RcDockLayout } from 'rc-dock'
-import 'rc-dock/dist/rc-dock.css'
+import 'rc-dock/dist/rc-dock-dark.css'
 import type { LayoutData, TabData, DropDirection } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
 import type { DockLayoutProps } from './types'

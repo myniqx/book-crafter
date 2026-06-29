@@ -45,7 +45,7 @@ export const EditorSettingsTab: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="font-size">
-              Font Size: <span className="text-muted-foreground">{editorSettings.fontSize}px</span>
+              Font Size: <span className="text-on-surface-variant">{editorSettings.fontSize}px</span>
             </Label>
             <Slider
               id="font-size"
@@ -60,7 +60,7 @@ export const EditorSettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="line-height">
               Line Height:{' '}
-              <span className="text-muted-foreground">{editorSettings.lineHeight.toFixed(1)}</span>
+              <span className="text-on-surface-variant">{editorSettings.lineHeight.toFixed(1)}</span>
             </Label>
             <Slider
               id="line-height"
@@ -74,7 +74,7 @@ export const EditorSettingsTab: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="tab-size">
-              Tab Size: <span className="text-muted-foreground">{editorSettings.tabSize}</span>
+              Tab Size: <span className="text-on-surface-variant">{editorSettings.tabSize}</span>
             </Label>
             <Slider
               id="tab-size"
@@ -308,7 +308,7 @@ export const EditorSettingsTab: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="auto-save-delay">
                 Auto-Save Delay:{' '}
-                <span className="text-muted-foreground">{editorSettings.autoSaveDelay}ms</span>
+                <span className="text-on-surface-variant">{editorSettings.autoSaveDelay}ms</span>
               </Label>
               <Slider
                 id="auto-save-delay"

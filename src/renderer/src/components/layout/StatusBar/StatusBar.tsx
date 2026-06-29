@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
-import { cn } from '@renderer/lib/utils'
 import { useContentStore, useCoreStore } from '@renderer/store'
 
 export const StatusBar: React.FC = () => {
@@ -47,13 +46,7 @@ export const StatusBar: React.FC = () => {
   }
 
   return (
-    <div
-      className={cn(
-        'h-6 bg-[hsl(var(--background))] border-t border-[hsl(var(--border))]',
-        'flex items-center justify-between px-3',
-        'text-xs text-[hsl(var(--muted-foreground))]'
-      )}
-    >
+    <div className="h-6 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between px-3 text-xs text-on-surface-variant">
       {/* Left: Save status */}
       <div className="flex items-center gap-2">
         {isSaving ? (
@@ -63,12 +56,12 @@ export const StatusBar: React.FC = () => {
           </div>
         ) : lastSaved ? (
           <div className="flex items-center gap-1.5">
-            <CheckCircle className="h-3 w-3 text-green-500" />
+            <CheckCircle className="h-3 w-3 text-tertiary" />
             <span>Saved {formatTime(lastSaved)}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
-            <AlertCircle className="h-3 w-3 text-yellow-500" />
+            <AlertCircle className="h-3 w-3 text-error" />
             <span>Unsaved changes</span>
           </div>
         )}
@@ -79,13 +72,13 @@ export const StatusBar: React.FC = () => {
         {activeTabData && (
           <>
             <span>{wordCount} words</span>
-            <span className="text-[hsl(var(--border))]">|</span>
+            <span className="text-outline-variant">|</span>
             <span>{activeTabData.chapter?.title || 'Untitled'}</span>
           </>
         )}
         {workspaceConfig && (
           <>
-            <span className="text-[hsl(var(--border))]">|</span>
+            <span className="text-outline-variant">|</span>
             <span>{workspaceConfig.projectName}</span>
           </>
         )}

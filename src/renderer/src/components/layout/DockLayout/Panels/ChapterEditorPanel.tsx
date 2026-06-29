@@ -76,10 +76,8 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   if (isLoading) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center gap-2">
-        <p className="text-slate-400">Loading chapter...</p>
-        <p className="text-xs text-slate-500">
-          Book: {bookSlug} / Chapter: {chapterSlug}
-        </p>
+        <p className="text-sm text-on-surface-variant">Loading chapter...</p>
+        <p className="text-xs text-outline">Book: {bookSlug} / Chapter: {chapterSlug}</p>
       </div>
     )
   }
@@ -87,10 +85,8 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   if (error) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center gap-2">
-        <p className="text-red-400">Error: {error}</p>
-        <p className="text-xs text-slate-500">
-          Book: {bookSlug} / Chapter: {chapterSlug}
-        </p>
+        <p className="text-sm text-error">Error: {error}</p>
+        <p className="text-xs text-outline">Book: {bookSlug} / Chapter: {chapterSlug}</p>
       </div>
     )
   }
@@ -98,10 +94,8 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   if (!chapter) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center gap-2">
-        <p className="text-slate-400">Chapter not found</p>
-        <p className="text-xs text-slate-500">
-          Book: {bookSlug} / Chapter: {chapterSlug}
-        </p>
+        <p className="text-sm text-on-surface-variant">Chapter not found</p>
+        <p className="text-xs text-outline">Book: {bookSlug} / Chapter: {chapterSlug}</p>
       </div>
     )
   }

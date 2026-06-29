@@ -152,7 +152,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
 
   return (
     <>
-      <div className="h-screen w-screen flex flex-col bg-[hsl(var(--background))]">
+      <div className="h-screen w-screen flex flex-col bg-surface">
         {/* Titlebar */}
         <Titlebar />
 

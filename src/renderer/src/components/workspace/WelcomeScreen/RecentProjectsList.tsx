@@ -88,8 +88,8 @@ export const RecentProjectsList: React.FC = () => {
 
   if (recentProjects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-slate-400">
-        <Clock className="h-12 w-12 mb-4 opacity-50" />
+      <div className="flex flex-col items-center justify-center h-full text-on-surface-variant">
+        <Clock className="h-10 w-10 mb-4 opacity-30" />
         <p className="text-sm">No recent projects</p>
       </div>
     )
@@ -104,38 +104,35 @@ export const RecentProjectsList: React.FC = () => {
             onClick={() => handleOpenProject(project)}
             disabled={!project.exists}
             className={cn(
-              'w-full text-left p-3 rounded-lg transition-colors group',
-              'hover:bg-slate-700 flex items-center justify-between',
-              !project.exists && 'opacity-50 cursor-not-allowed'
+              'w-full text-left p-3 rounded-lg transition-colors duration-150 group',
+              'hover:bg-surface-container-high flex items-center justify-between',
+              !project.exists && 'opacity-40 cursor-not-allowed'
             )}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <FolderOpen className="h-5 w-5 flex-shrink-0 text-blue-400" />
+              <FolderOpen className="h-4 w-4 flex-shrink-0 text-primary" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-200 truncate">{project.name}</p>
-                <p className="text-xs text-slate-400 truncate">{project.path}</p>
-                <p className="text-xs text-slate-500 mt-1">{formatDate(project.lastOpened)}</p>
+                <p className="text-sm font-medium text-on-surface truncate">{project.name}</p>
+                <p className="text-xs text-on-surface-variant truncate">{project.path}</p>
+                <p className="text-xs text-outline mt-0.5">{formatDate(project.lastOpened)}</p>
               </div>
             </div>
             <button
               onClick={(e) => handleRemoveProject(project.path, e)}
-              className={cn(
-                'opacity-0 group-hover:opacity-100 transition-opacity',
-                'p-1 hover:bg-slate-600 rounded'
-              )}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error-container/20 rounded"
               title="Remove from recent"
             >
-              <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-400" />
+              <Trash2 className="h-3.5 w-3.5 text-error" />
             </button>
           </button>
         ))}
       </div>
 
       {recentProjects.length > 0 && (
-        <div className="border-t border-slate-700 p-2">
+        <div className="border-t border-outline-variant p-2">
           <button
             onClick={handleClearAll}
-            className="w-full text-xs text-slate-400 hover:text-slate-200 py-2 rounded hover:bg-slate-700 transition-colors"
+            className="w-full text-xs text-on-surface-variant hover:text-on-surface py-2 rounded hover:bg-surface-container transition-colors duration-150"
           >
             Clear Recent List
           </button>

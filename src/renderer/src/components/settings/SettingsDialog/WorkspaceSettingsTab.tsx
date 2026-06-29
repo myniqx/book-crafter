@@ -49,7 +49,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="backup-interval">
                   Backup Interval:{' '}
-                  <span className="text-muted-foreground">
+                  <span className="text-on-surface-variant">
                     {workspacePreferences.backupInterval} minutes
                   </span>
                 </Label>
@@ -68,7 +68,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="max-backups">
                   Maximum Backups:{' '}
-                  <span className="text-muted-foreground">{workspacePreferences.maxBackups}</span>
+                  <span className="text-on-surface-variant">{workspacePreferences.maxBackups}</span>
                 </Label>
                 <Slider
                   id="max-backups"
@@ -78,7 +78,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
                   value={[workspacePreferences.maxBackups]}
                   onValueChange={([value]) => updateWorkspacePreferences({ maxBackups: value })}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-on-surface-variant">
                   Older backups will be automatically deleted
                 </p>
               </div>
@@ -102,7 +102,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
                     <FolderOpen className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-on-surface-variant">
                   Leave empty to use default workspace .backups/ folder
                 </p>
               </div>
@@ -148,7 +148,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
                   <SelectItem value="never">Never Reload</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-on-surface-variant">
                 How to handle files changed by external programs
               </p>
             </div>
@@ -174,14 +174,14 @@ export const WorkspaceSettingsTab: React.FC = () => {
               Enable workspace indexing
             </Label>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-on-surface-variant">
             Improves search performance but uses more memory
           </p>
 
           <div className="space-y-2">
             <Label htmlFor="max-file-size">
               Maximum File Size:{' '}
-              <span className="text-muted-foreground">
+              <span className="text-on-surface-variant">
                 {workspacePreferences.maxFileSize}MB
               </span>
             </Label>
@@ -195,7 +195,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
                 updateWorkspacePreferences({ maxFileSize: value })
               }
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-on-surface-variant">
               Files larger than this will not be opened in the editor
             </p>
           </div>

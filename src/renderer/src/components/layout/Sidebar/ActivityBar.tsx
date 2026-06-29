@@ -47,9 +47,8 @@ export const ActivityBar: React.FC = () => {
   }
 
   return (
-    <div className="h-full w-12 bg-slate-900 border-r border-slate-700 flex flex-col">
-      {/* Activity items */}
-      <div className="flex-1 flex flex-col gap-1 py-2">
+    <div className="h-full w-16 flex flex-col flex-shrink-0 bg-surface-container-lowest border-r border-outline-variant">
+      <div className="flex-1 flex flex-col py-2">
         {activityItems.map((item) => {
           const Icon = item.icon
           const isActive = activePanel === item.id && panelVisible
@@ -62,10 +61,10 @@ export const ActivityBar: React.FC = () => {
               disabled={isDisabled}
               className={cn(
                 'h-12 w-full flex items-center justify-center relative',
-                'hover:bg-slate-800 transition-colors',
-                'text-slate-400 hover:text-slate-200',
-                isActive && 'bg-slate-800 text-blue-500',
-                isDisabled && 'opacity-30 cursor-not-allowed hover:bg-transparent hover:text-slate-400'
+                'transition-colors duration-150',
+                'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+                isActive && 'bg-surface-container text-primary',
+                isDisabled && 'opacity-30 cursor-not-allowed hover:bg-transparent hover:text-on-surface-variant'
               )}
               title={isDisabled ? `${item.label} (requires workspace)` : item.label}
               aria-label={item.label}
@@ -75,7 +74,7 @@ export const ActivityBar: React.FC = () => {
               <Icon className="h-5 w-5" />
               {isActive && (
                 <div
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-primary rounded-r"
                   aria-hidden="true"
                 />
               )}

@@ -1,0 +1,307 @@
+/* ============================================================
+   RC-DOCK THEME — all values reference design tokens from main.css
+   ============================================================ */
+
+/* ---- Dragging layer ---- */
+body > .dragging-layer {
+  position: absolute !important;
+  z-index: 9999;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+  border: none;
+  pointer-events: none;
+  opacity: 0.6;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+body > .dragging-layer > *:first-child {
+  pointer-events: none !important;
+  overflow: hidden !important;
+  transform: translate(-50%, -50%) !important;
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--color-primary) 15%, transparent),
+    inset 0 0 8px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+body > .dragging-layer > .dragging {
+  opacity: 1 !important;
+}
+
+body > .dragging-layer > div:last-child {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+}
+
+/* ---- Drag initiation ---- */
+.drag-initiator {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.drag-accept-reject::after {
+  content: "🚫";
+}
+
+/* ---- Dock root ---- */
+.dock {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ---- Tab bar ---- */
+.dock-bar {
+  font-size: 13px;
+  line-height: 18px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  outline: none;
+  zoom: 1;
+}
+
+/* ---- Ink bar (active indicator) ---- */
+.dock-ink-bar {
+  position: absolute;
+  box-sizing: border-box;
+  margin-top: -3px;
+  background-color: var(--color-primary);
+  transform-origin: 0 0;
+  width: 0;
+  height: 0;
+}
+
+/* ---- Disabled tab button ---- */
+.dock-tab-btn-disabled {
+  cursor: default;
+  color: var(--color-outline);
+}
+
+/* ---- Animated nav ---- */
+.dock-nav-animated {
+  transition: transform 0.2s cubic-bezier(0.35, 0, 0.25, 1);
+}
+
+/* ---- Individual tab ---- */
+.dock-tab {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  min-width: 30px;
+  height: 30px;
+  text-align: center;
+  transition:
+    color 0.15s ease-in-out,
+    background 0.15s ease-in-out;
+  padding: 0;
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-outline-variant);
+  cursor: pointer;
+  float: left;
+  margin-right: 2px;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  outline: none;
+}
+
+.dock-tab.dragging {
+  opacity: 0.3;
+}
+
+.dock-tab > div {
+  padding: 4px 14px;
+  outline-color: var(--color-primary);
+}
+
+.dock-tab:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.dock-tab-active,
+.dock-tab-active:hover {
+  background: var(--color-surface-container-low);
+  color: var(--color-primary);
+  cursor: default;
+  transform: translateZ(0);
+}
+
+.dock-tab-disabled,
+.dock-tab-disabled:hover {
+  cursor: default;
+  color: var(--color-outline);
+}
+
+/* ---- Content animation ---- */
+.dock-content-animated {
+  transition: margin 0.2s ease-in-out;
+}
+
+.dock-bottom > .dock-nav .dock-ink-bar-animated,
+.dock-top > .dock-nav .dock-ink-bar-animated,
+.dock-bottom > div > .dock-nav .dock-ink-bar-animated,
+.dock-top > div > .dock-nav .dock-ink-bar-animated {
+  transition: width 0.2s, left 0.2s, right 0.2s;
+}
+
+.dock-content-animated .dock-tabpane {
+  flex-shrink: 0;
+}
+
+.no-flexbox .dock-content {
+  transform: none !important;
+  overflow: auto;
+}
+
+/* ---- Tab pane fade ---- */
+.dock-tabpane:not(.dock-tabpane-active) {
+  animation-name: dock-fadeOut;
+  animation-duration: 0.3s;
+}
+
+.dock-tabpane-hidden {
+  display: none;
+}
+
+@keyframes dock-fadeOut {
+  from { height: 100%; visibility: visible; }
+  to   { height: 100%; visibility: visible; }
+}
+
+/* ---- Top-docked layout ---- */
+.dock-top {
+  flex-direction: column;
+}
+
+.dock-top .dock-bar {
+  flex: 0 0 auto;
+  background: var(--color-surface-container-low);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-left: 8px;
+}
+
+.dock-top .dock-content-animated {
+  flex-direction: row;
+}
+
+.dock-top .dock-tab-next {
+  right: 2px;
+}
+
+.dock-top .dock-ink-bar {
+  height: 2px;
+  bottom: 0;
+  left: 0;
+}
+
+/* ---- Close button ---- */
+.dock-tab-close-btn {
+  position: absolute;
+  cursor: pointer;
+  color: var(--color-outline);
+  right: -3px;
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  top: 6px;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.dock-tab-close-btn::before {
+  content: "X";
+  font-family: var(--font-sans);
+}
+
+.dock-tab-close-btn:hover,
+.dock-tab-close-btn:focus {
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  transform: scale(1.1);
+  border-radius: var(--radius-sm);
+}
+
+.dock-tab:hover .dock-tab-close-btn,
+.dock-tab-close-btn:focus {
+  opacity: 1;
+  color: var(--color-on-surface-variant);
+}
+
+/* ---- Hit area ---- */
+.dock-tab-hit-area {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  bottom: 0;
+  left: -5px;
+  right: -5px;
+}
+
+/* ---- Pane cache / content ---- */
+.dock-pane-cache {
+  width: 100%;
+  height: 100%;
+}
+
+.dock-content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.dock-content-holder {
+  flex: auto;
+}
+
+/* ---- Panel ---- */
+.dock-panel {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+}
+
+/* ---- Float panel ---- */
+.dock-float-panel {
+  z-index: 40 !important;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-surface-container-lowest) 80%, transparent);
+}
+
+/* ---- Divider (resize handle) ---- */
+.dock-divider {
+  background: var(--color-outline-variant);
+  transition: background 0.15s ease-in-out;
+}
+
+.dock-divider:hover {
+  background: var(--color-primary);
+}
+
+/* ---- Card style panel extras ---- */
+.dock-top > .dock-cod .dock-panel-max-btn,
+.dock-panel.dock-style-card .dock-panel-min-btn {
+  margin-top: 4px;
+}
+
+.dock-panel.dock-style-card .dock-tab-close-btn {
+  right: 0;
+  font-size: 10px;
+  top: 8px;
+}
+
+.dock-panel.dock-style-card .dock-extra-content {
+  height: 35px;
+}

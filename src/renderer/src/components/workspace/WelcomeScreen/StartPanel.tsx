@@ -16,15 +16,12 @@ const StartAction: React.FC<StartActionProps> = ({ icon: Icon, label, descriptio
   return (
     <button
       onClick={onClick}
-      className={cn(
-        'w-full text-left p-3 rounded-lg transition-colors',
-        'hover:bg-slate-700 flex items-center gap-3'
-      )}
+      className="w-full text-left p-3 rounded-lg transition-colors duration-150 hover:bg-surface-container-high flex items-center gap-3"
     >
-      <Icon className="h-5 w-5 text-blue-400 flex-shrink-0" />
+      <Icon className="h-5 w-5 text-primary flex-shrink-0" />
       <div>
-        <p className="text-sm font-medium text-slate-200">{label}</p>
-        <p className="text-xs text-slate-400">{description}</p>
+        <p className="text-sm font-medium text-on-surface">{label}</p>
+        <p className="text-xs text-on-surface-variant">{description}</p>
       </div>
     </button>
   )
@@ -48,9 +45,7 @@ export const StartPanel: React.FC = () => {
       <div className="flex flex-col h-full p-6 space-y-6">
         {/* Start Section */}
         <div>
-          <h2 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">
-            Start
-          </h2>
+          <h2 className="text-xs font-semibold text-on-surface-variant mb-3 uppercase tracking-wide">Start</h2>
           <div className="space-y-1">
             <StartAction
               icon={FilePlus}
@@ -69,9 +64,7 @@ export const StartPanel: React.FC = () => {
 
         {/* Help Section */}
         <div>
-          <h2 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">
-            Help
-          </h2>
+          <h2 className="text-xs font-semibold text-on-surface-variant mb-3 uppercase tracking-wide">Help</h2>
           <div className="space-y-1">
             <StartAction
               icon={HelpCircle}
@@ -91,11 +84,9 @@ export const StartPanel: React.FC = () => {
         {/* Branding */}
         <div className="flex-1 flex items-end">
           <div className="text-center w-full">
-            <BookOpen className="h-16 w-16 mx-auto mb-4 text-blue-500 opacity-50" />
-            <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Book Crafter
-            </h1>
-            <p className="text-xs text-slate-400">Professional book writing tool</p>
+            <BookOpen className="h-16 w-16 mx-auto mb-4 text-primary opacity-40" />
+            <h1 className="text-2xl font-bold mb-2 text-on-surface">Book Crafter</h1>
+            <p className="text-xs text-on-surface-variant">Professional book writing tool</p>
           </div>
         </div>
       </div>

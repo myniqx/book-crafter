@@ -105,7 +105,7 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FolderOpen className="h-5 w-5 text-blue-500" />
+            <FolderOpen className="h-5 w-5 text-primary" />
             Open Workspace
           </DialogTitle>
           <DialogDescription>
@@ -129,9 +129,9 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
             </div>
 
             {selectedPath && (
-              <div className="p-3 bg-slate-800 rounded-lg">
-                <p className="text-xs text-slate-400 mb-1">Selected:</p>
-                <p className="text-sm text-slate-200 truncate">{selectedPath}</p>
+              <div className="p-3 bg-surface-container rounded-lg">
+                <p className="text-xs text-on-surface-variant mb-1">Selected:</p>
+                <p className="text-sm text-on-surface truncate">{selectedPath}</p>
               </div>
             )}
           </div>

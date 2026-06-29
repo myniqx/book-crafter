@@ -19,11 +19,7 @@ export const SidebarPanel: React.FC<SidebarPanelProps> = ({ children }) => {
   return (
     <div
       data-sidebar-panel
-      className={cn(
-        'h-full bg-slate-850 border-r border-slate-700',
-        'flex flex-col relative',
-        'transition-all duration-200 ease-out'
-      )}
+      className="h-full bg-surface-container-low border-r border-outline-variant flex flex-col relative transition-all duration-200 ease-out"
       style={{ width: `${sidebarWidth}px` }}
     >
       {/* Panel Content */}

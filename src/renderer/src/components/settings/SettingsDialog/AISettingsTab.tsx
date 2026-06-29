@@ -121,7 +121,7 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="keep-alive">
                   Keep Alive:{' '}
-                  <span className="text-muted-foreground">{ollamaConfig.keepAlive}</span>
+                  <span className="text-on-surface-variant">{ollamaConfig.keepAlive}</span>
                 </Label>
                 <Input
                   id="keep-alive"
@@ -134,7 +134,7 @@ export const AISettingsTab: React.FC = () => {
                   }
                   placeholder="5m"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-on-surface-variant">
                   How long to keep model loaded (e.g., 5m, 1h, -1 for indefinite)
                 </p>
               </div>
@@ -245,7 +245,7 @@ export const AISettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="temperature">
               Temperature:{' '}
-              <span className="text-muted-foreground">
+              <span className="text-on-surface-variant">
                 {(config.temperature ?? 0.7).toFixed(1)}
               </span>
             </Label>
@@ -257,7 +257,7 @@ export const AISettingsTab: React.FC = () => {
               value={[config.temperature ?? 0.7]}
               onValueChange={([value]) => updateConfig({ temperature: value })}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-on-surface-variant">
               Lower is more focused, higher is more creative
             </p>
           </div>
@@ -265,7 +265,7 @@ export const AISettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="max-tokens">
               Max Tokens:{' '}
-              <span className="text-muted-foreground">{config.maxTokens ?? 2000}</span>
+              <span className="text-on-surface-variant">{config.maxTokens ?? 2000}</span>
             </Label>
             <Slider
               id="max-tokens"
@@ -302,7 +302,7 @@ export const AISettingsTab: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="suggestions-delay">
                 Suggestions Delay:{' '}
-                <span className="text-muted-foreground">{aiPreferences.suggestionsDelay}ms</span>
+                <span className="text-on-surface-variant">{aiPreferences.suggestionsDelay}ms</span>
               </Label>
               <Slider
                 id="suggestions-delay"
@@ -318,7 +318,7 @@ export const AISettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="max-suggestions">
               Max Suggestions History:{' '}
-              <span className="text-muted-foreground">{aiPreferences.maxSuggestionsHistory}</span>
+              <span className="text-on-surface-variant">{aiPreferences.maxSuggestionsHistory}</span>
             </Label>
             <Slider
               id="max-suggestions"

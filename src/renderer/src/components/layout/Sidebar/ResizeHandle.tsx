@@ -65,10 +65,9 @@ export const ResizeHandle: React.FC = () => {
   return (
     <div
       className={cn(
-        'absolute right-0 top-0 bottom-0 w-1 cursor-col-resize',
-        'hover:bg-blue-500/50 transition-colors',
-        'group',
-        isDragging && 'bg-blue-500'
+        'absolute right-0 top-0 bottom-0 w-1 cursor-col-resize transition-colors duration-150',
+        'hover:bg-primary/50',
+        isDragging && 'bg-primary'
       )}
       onMouseDown={handleMouseDown}
       role="separator"

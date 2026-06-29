@@ -54,13 +54,13 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   }, [diff])
 
   return (
-    <Card className="border-slate-700 bg-slate-900">
+    <Card className="border-outline-variant bg-surface-container-low">
       {/* Header */}
-      <div className="border-b border-slate-700 px-4 py-3">
+      <div className="border-b border-outline-variant px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
-            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+            <h3 className="text-sm font-semibold text-on-surface">{title}</h3>
+            <div className="flex items-center gap-3 mt-1 text-xs text-on-surface-variant">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded bg-red-900"></span>
                 {stats.removed} removed
@@ -87,11 +87,11 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
       </div>
 
       {/* Side-by-side diff */}
-      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-700">
+      <div className="grid grid-cols-2 gap-0 divide-x divide-outline-variant">
         {/* Original */}
         <div className="flex flex-col">
-          <div className="bg-slate-800 px-4 py-2 border-b border-slate-700">
-            <h4 className="text-xs font-medium text-slate-400 flex items-center gap-2">
+          <div className="bg-surface-container px-4 py-2 border-b border-outline-variant">
+            <h4 className="text-xs font-medium text-on-surface-variant flex items-center gap-2">
               Original
             </h4>
           </div>
@@ -106,8 +106,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
 
         {/* Suggested */}
         <div className="flex flex-col">
-          <div className="bg-slate-800 px-4 py-2 border-b border-slate-700">
-            <h4 className="text-xs font-medium text-slate-400 flex items-center gap-2">
+          <div className="bg-surface-container px-4 py-2 border-b border-outline-variant">
+            <h4 className="text-xs font-medium text-on-surface-variant flex items-center gap-2">
               AI Suggestion
               <ArrowRight className="h-3 w-3" />
             </h4>
@@ -139,9 +139,9 @@ const DiffLineComponent: React.FC<{
   }[line.type]
 
   const textColor = {
-    unchanged: 'text-slate-300',
-    added: 'text-green-300',
-    removed: 'text-red-300'
+    unchanged: 'text-on-surface',
+    added: 'text-tertiary',
+    removed: 'text-error'
   }[line.type]
 
   const prefix = {
@@ -158,7 +158,7 @@ const DiffLineComponent: React.FC<{
         textColor
       )}
     >
-      <span className="w-8 text-right text-slate-600 select-none">{line.lineNumber}</span>
+      <span className="w-8 text-right text-outline select-none">{line.lineNumber}</span>
       <span className="w-4 select-none">{prefix}</span>
       <span className="flex-1 whitespace-pre-wrap break-all">{line.content || '\u00A0'}</span>
     </div>

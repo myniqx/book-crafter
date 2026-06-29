@@ -15,11 +15,11 @@ import type { IntegrityCheckDialogProps, IntegrityIssue } from './types'
 const getIssueIcon = (type: IntegrityIssue['type']) => {
   switch (type) {
     case 'missing_folder':
-      return <FolderX className="h-4 w-4 text-yellow-500" />
+      return <FolderX className="h-4 w-4 text-tertiary" />
     case 'missing_file':
-      return <FileX className="h-4 w-4 text-yellow-500" />
+      return <FileX className="h-4 w-4 text-tertiary" />
     case 'invalid_json':
-      return <AlertTriangle className="h-4 w-4 text-red-500" />
+      return <AlertTriangle className="h-4 w-4 text-error" />
   }
 }
 
@@ -54,7 +54,7 @@ export const IntegrityCheckDialog: React.FC<IntegrityCheckDialogProps> = ({
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-500" />
+            <AlertCircle className="h-5 w-5 text-tertiary" />
             Workspace Integrity Issues
           </DialogTitle>
           <DialogDescription>
@@ -70,21 +70,21 @@ export const IntegrityCheckDialog: React.FC<IntegrityCheckDialogProps> = ({
                 key={index}
                 className={cn(
                   'flex items-start gap-3 p-3 rounded-lg border',
-                  'bg-slate-800 border-slate-700'
+                  'bg-surface-container border-outline-variant'
                 )}
               >
                 {getIssueIcon(issue.type)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-200">{issue.description}</p>
-                  <p className="text-xs text-slate-400 mt-1 truncate">{issue.path}</p>
+                  <p className="text-sm font-medium text-on-surface">{issue.description}</p>
+                  <p className="text-xs text-on-surface-variant mt-1 truncate">{issue.path}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-3">
-          <p className="text-xs text-blue-300">
+        <div className="bg-primary-container/20 border border-primary/30 rounded-lg p-3">
+          <p className="text-xs text-primary">
             <strong>Repair</strong> will create missing folders and files automatically. This is
             safe and recommended.
           </p>

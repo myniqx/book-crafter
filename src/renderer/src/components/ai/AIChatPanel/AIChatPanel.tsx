@@ -194,14 +194,14 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border bg-card px-4 py-3">
+      <div className="border-b border-outline-variant px-3 py-2">
         <div className="flex flex-row items-center justify-between">
           <div className="flex flex-col gap-2 grow">
             <div className="flex flex-row gap-2">
-              <Bot className="h-5 w-5 text-purple-500" />
-              <span className="text-sm font-medium text-foreground line-clamp-1">AI Assistant</span>
+              <Bot className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium text-on-surface line-clamp-1">AI Assistant</span>
             </div>
             <ModelSelector />
           </div>
@@ -220,7 +220,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
         {showContext && context && (
           <div className="mt-3 space-y-2">
             {context.currentChapter && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                 <FileText className="h-3 w-3" />
                 <span>
                   {currentChapter?.book?.title} - {currentChapter?.chapter?.title}
@@ -230,15 +230,15 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 
             {context.selection && (
               <div className="flex items-start gap-2 text-xs">
-                <Sparkles className="h-3 w-3 text-muted-foreground mt-0.5" />
-                <div className="flex-1 rounded bg-muted px-2 py-1 text-muted-foreground">
+                <Sparkles className="h-3 w-3 text-on-surface-variant mt-0.5" />
+                <div className="flex-1 rounded bg-surface-container px-2 py-1 text-on-surface-variant">
                   <span className="line-clamp-2">{context.selection.text}</span>
                 </div>
               </div>
             )}
 
             {context.entities && context.entities.length > 0 && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                 <Users className="h-3 w-3" />
                 <span>
                   {context.entities.length} entities:{' '}
@@ -259,11 +259,9 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Bot className="h-12 w-12 text-muted mb-4" />
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                AI Writing Assistant
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-sm">
+              <Bot className="h-10 w-10 text-on-surface-variant opacity-30 mb-4" />
+              <h3 className="text-sm font-medium text-on-surface mb-2">AI Writing Assistant</h3>
+              <p className="text-xs text-on-surface-variant max-w-sm">
                 Ask me anything about your story, characters, or writing. I can help expand scenes,
                 check grammar, suggest improvements, and more.
               </p>
@@ -296,7 +294,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t border-border bg-card p-4 space-y-2">
+      <div className="border-t border-outline-variant p-3 space-y-2">
         {/* Preset Prompts */}
         <div className="flex items-center gap-2">
           <PresetPromptsSelector onSelectPrompt={setPrompt} />
@@ -326,7 +324,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 
         {/* Agent status */}
         {isAgentRunning && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-on-surface-variant">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Agent running (iteration {currentIteration})...</span>
           </div>

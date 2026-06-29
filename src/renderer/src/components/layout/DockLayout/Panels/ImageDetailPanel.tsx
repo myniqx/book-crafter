@@ -7,10 +7,10 @@ export const ImageDetailPanel: React.FC = () => {
 
   if (!selectedImageSlug) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+      <div className="h-full w-full flex items-center justify-center text-on-surface-variant">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">No Image Selected</h3>
-          <p className="text-sm">Select an image from the Image Gallery to view details</p>
+          <h3 className="text-sm font-semibold mb-2 text-on-surface">No Image Selected</h3>
+          <p className="text-xs">Select an image from the Image Gallery to view details</p>
         </div>
       </div>
     )

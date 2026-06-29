@@ -4,7 +4,6 @@ import type { ModelSelectorProps, ProviderModels } from './types'
 import type { AIProvider } from '@renderer/lib/ai/types'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
-import { Badge } from '@renderer/components/ui/badge'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
 
@@ -66,17 +65,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
   return (
     <Popover open={modelSelectorOpen} onOpenChange={setModelSelectorOpen}>
       <PopoverTrigger asChild>
-        <Badge
-          variant="secondary"
-          className={`cursor-pointer hover:bg-accent/80 transition-colors ${className || ''}`}
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-7 text-xs gap-1 ${className || ''}`}
         >
-          <div className="flex flex-row items-center gap-1">
-            <ChevronDown className="h-3 w-3 ml-1" />
-            <p className="text-xs line-clamp-1">
-              {config.provider} / {config.model}
-            </p>
-          </div>
-        </Badge>
+          <ChevronDown className="h-3 w-3" />
+          <span className="line-clamp-1">{config.provider} / {config.model}</span>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="start">
         <div className="p-2 border-b border-border">

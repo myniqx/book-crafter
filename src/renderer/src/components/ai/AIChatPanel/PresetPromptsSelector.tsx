@@ -16,7 +16,7 @@ export const PresetPromptsSelector: React.FC<PresetPromptsSelectorProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="outline" className={`h-7 ${className || ''}`}>
+        <Button size="sm" variant="ghost" className={`h-7 ${className || ''}`}>
           <Sparkles className="h-3 w-3 mr-1" />
           Presets
           <ChevronDown className="h-3 w-3 ml-1" />

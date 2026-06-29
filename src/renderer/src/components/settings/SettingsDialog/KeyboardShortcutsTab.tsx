@@ -105,10 +105,10 @@ export const KeyboardShortcutsTab: React.FC = () => {
 
   const getCategoryColor = (category: string): string => {
     const colors = {
-      editor: 'bg-blue-900 text-blue-300',
-      navigation: 'bg-purple-900 text-purple-300',
-      ai: 'bg-green-900 text-green-300',
-      general: 'bg-slate-700 text-slate-300'
+      editor: 'bg-primary-container/20 text-primary',
+      navigation: 'bg-secondary-container text-on-secondary-container',
+      ai: 'bg-tertiary-container/20 text-tertiary',
+      general: 'bg-surface-container-high text-on-surface-variant'
     }
     return colors[category as keyof typeof colors] || colors.general
   }
@@ -146,7 +146,7 @@ export const KeyboardShortcutsTab: React.FC = () => {
           </Button>
         </div>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-on-surface-variant">
           Click the edit button to change a shortcut. Click "Record" to capture key combinations.
         </p>
       </div>
@@ -157,7 +157,7 @@ export const KeyboardShortcutsTab: React.FC = () => {
       <ScrollArea className="flex-1 -mx-2 px-2">
         <div className="space-y-2">
           {filteredShortcuts.length === 0 && (
-            <div className="text-center py-8 text-sm text-muted-foreground">
+            <div className="text-center py-8 text-sm text-on-surface-variant">
               No shortcuts found matching your search.
             </div>
           )}
@@ -165,7 +165,7 @@ export const KeyboardShortcutsTab: React.FC = () => {
           {filteredShortcuts.map((shortcut) => (
             <div
               key={shortcut.id}
-              className="flex items-center justify-between gap-4 p-3 rounded-lg border border-slate-700 bg-slate-800/50"
+              className="flex items-center justify-between gap-4 p-3 rounded-lg border border-outline-variant bg-surface-container/50"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -200,7 +200,7 @@ export const KeyboardShortcutsTab: React.FC = () => {
                       onClick={handleSaveEdit}
                       className="h-8 w-8 p-0"
                     >
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-tertiary" />
                     </Button>
                     <Button
                       size="sm"
@@ -208,16 +208,16 @@ export const KeyboardShortcutsTab: React.FC = () => {
                       onClick={handleCancelEdit}
                       className="h-8 w-8 p-0"
                     >
-                      <X className="h-4 w-4 text-red-500" />
+                      <X className="h-4 w-4 text-error" />
                     </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <code className="text-xs bg-slate-900 px-2 py-1 rounded">
+                    <code className="text-xs bg-surface-container-lowest px-2 py-1 rounded">
                       {shortcut.currentBinding}
                     </code>
                     {shortcut.currentBinding !== shortcut.defaultBinding && (
-                      <Badge variant="outline" className="text-xs bg-yellow-900/20 text-yellow-400">
+                      <Badge variant="outline" className="text-xs bg-tertiary-container/20 text-tertiary">
                         Modified
                       </Badge>
                     )}

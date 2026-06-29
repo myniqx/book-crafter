@@ -70,7 +70,7 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm" {...triggerProps}>
+        <Button variant="ghost" size="sm" {...triggerProps}>
           <BookOpen className="h-4 w-4 mr-2" />
           New Book
         </Button>
