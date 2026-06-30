@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useToolsStore, useContentStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import type { AIChatPanelProps } from './types'
 import type { StoreAccess } from '@renderer/store/slices/aiSlice'
 import { Bot, Send, Sparkles, FileText, Users, Square, Loader2 } from 'lucide-react'
@@ -127,39 +128,17 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   useEffect(() => {
     if (messages.length === 0) return
 
-    console.group('📨 AI Messages Updated')
-    console.log('Total messages:', messages.length)
-    console.log('Is streaming:', isStreaming)
-    console.log('Agent running:', isAgentRunning)
-
-    if (messages.length > 0) {
-      console.log('\nLast 5 messages:')
-      messages.slice(-10).forEach((msg) => {
-        const emoji =
-          msg.role === 'user'
-            ? '👤'
-            : msg.role === 'assistant'
-              ? '🤖'
-              : msg.role === 'tool_result'
-                ? '🔧'
-                : '💬'
-
-        console.log(
-          `  ${emoji} [${msg.role}]:`,
-          msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : '')
-        )
-
-        if (msg.toolCalls) {
-          console.log('    🔨 Tool Calls:', msg.toolCalls.map((tc) => tc.name).join(', '))
-        }
-
-        if (msg.toolResult) {
-          console.log('    ✅ Tool Result:', msg.toolResult.isError ? '❌ Error' : '✔️ Success')
-        }
+    const summary = [
+      `Total: ${messages.length}, streaming: ${isStreaming}, agent: ${isAgentRunning}`,
+      ...messages.slice(-10).map((msg) => {
+        let line = `[${msg.role}]: ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`
+        if (msg.toolCalls) line += ` | tools: ${msg.toolCalls.map((tc) => tc.name).join(', ')}`
+        if (msg.toolResult) line += ` | result: ${msg.toolResult.isError ? 'error' : 'ok'}`
+        return line
       })
-    }
+    ].join('\n  ')
 
-    console.groupEnd()
+    logger.debug(`AI Messages Updated\n  ${summary}`, 'AIChatPanel')
   }, [messages, isStreaming, isAgentRunning])
 
   const handleSend = async (): Promise<void> => {
@@ -174,7 +153,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       }
       setPrompt('')
     } catch (error) {
-      console.error('Failed to send message:', error)
+      logger.error('Failed to send message:', 'AIChatPanel', error)
     }
   }
 

@@ -61,7 +61,7 @@ export const AdvancedSettingsTab: React.FC = () => {
         <h3 className="text-sm font-medium">File System</h3>
         <div className="flex items-center gap-2">
           <Checkbox id="show-hidden" checked={advancedSettings.showHiddenFiles} onCheckedChange={(checked) => update({ showHiddenFiles: checked as boolean })} />
-          <Label htmlFor="show-hidden" className="cursor-pointer">Show hidden files and folders</Label>
+          <Label htmlFor="show-hidden" className="cursor-pointer">Show hidden files and folders <span className="text-muted-foreground">[?]</span></Label>
         </div>
       </div>
 
@@ -71,15 +71,15 @@ export const AdvancedSettingsTab: React.FC = () => {
         <h3 className="text-sm font-medium">Performance</h3>
         <div className="flex items-center gap-2">
           <Checkbox id="gpu-acceleration" checked={advancedSettings.gpuAcceleration} onCheckedChange={(checked) => update({ gpuAcceleration: checked as boolean })} />
-          <Label htmlFor="gpu-acceleration" className="cursor-pointer">Enable GPU acceleration</Label>
+          <Label htmlFor="gpu-acceleration" className="cursor-pointer">Enable GPU acceleration <span className="text-muted-foreground">[?]</span></Label>
         </div>
         <p className="text-xs text-muted-foreground ml-6">Requires app restart. May cause issues on some systems.</p>
-        <FormField htmlFor="memory-limit" label={<>Memory Limit: <span className="font-normal text-muted-foreground">{advancedSettings.maxMemoryUsage}MB</span></>} hint="Maximum memory usage for the application (requires restart)">
+        <FormField htmlFor="memory-limit" label={<>Memory Limit: <span className="font-normal text-muted-foreground">{advancedSettings.maxMemoryUsage}MB</span> <span className="text-muted-foreground">[?]</span></>} hint="Maximum memory usage for the application (requires restart)">
           <div className="py-1">
             <Slider id="memory-limit" min={256} max={4096} step={256} value={[advancedSettings.maxMemoryUsage]} onValueChange={([v]) => update({ maxMemoryUsage: v })} />
           </div>
         </FormField>
-        <FormField htmlFor="cache-size" label={<>Cache Size: <span className="font-normal text-muted-foreground">{advancedSettings.cacheSize}MB</span></>} hint="Maximum disk space for cached data">
+        <FormField htmlFor="cache-size" label={<>Cache Size: <span className="font-normal text-muted-foreground">{advancedSettings.cacheSize}MB</span> <span className="text-muted-foreground">[?]</span></>} hint="Maximum disk space for cached data">
           <div className="py-1">
             <Slider id="cache-size" min={50} max={1024} step={50} value={[advancedSettings.cacheSize]} onValueChange={([v]) => update({ cacheSize: v })} />
           </div>
@@ -92,7 +92,7 @@ export const AdvancedSettingsTab: React.FC = () => {
         <h3 className="text-sm font-medium">Experimental Features</h3>
         <div className="flex items-center gap-2">
           <Checkbox id="experimental" checked={advancedSettings.experimentalFeatures} onCheckedChange={(checked) => update({ experimentalFeatures: checked as boolean })} />
-          <Label htmlFor="experimental" className="cursor-pointer">Enable experimental features</Label>
+          <Label htmlFor="experimental" className="cursor-pointer">Enable experimental features <span className="text-muted-foreground">[?]</span></Label>
         </div>
         <p className="text-xs text-muted-foreground ml-6">Enables beta features that may be unstable</p>
       </div>

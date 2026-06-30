@@ -1,4 +1,5 @@
 import React from 'react'
+import { logger } from '@renderer/lib/logger'
 import { useSettingsContext } from './SettingsContext'
 import { FormField } from '@renderer/components/ui/field'
 import { Input } from '@renderer/components/ui/input'
@@ -23,7 +24,7 @@ export const WorkspaceSettingsTab: React.FC = () => {
     updateDraft({ workspacePreferences: { ...workspacePreferences, ...updates } })
 
   const handleSelectBackupPath = async (): Promise<void> => {
-    console.log('Select backup path')
+    logger.debug('Select backup path', 'WorkspaceSettingsTab')
   }
 
   return (

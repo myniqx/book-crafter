@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { logger } from '@renderer/lib/logger'
 import {
   Dialog,
   DialogContent,
@@ -75,7 +76,7 @@ export const CommandPalette: React.FC = () => {
         action: () => {
           setOpen(false)
           // TODO: Open create chapter dialog
-          console.log('Create new chapter')
+          logger.debug('Create new chapter', 'CommandPalette')
         }
       },
       {
@@ -122,7 +123,7 @@ export const CommandPalette: React.FC = () => {
             if (book) {
               const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
               if (chapter) {
-                console.log('Save file:', tab.bookSlug, tab.chapterSlug)
+                logger.debug(`Save file: ${tab.bookSlug} / ${tab.chapterSlug}`, 'CommandPalette')
               }
             }
           }

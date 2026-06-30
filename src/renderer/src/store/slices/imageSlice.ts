@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
 import type { Image } from '@renderer/lib/image'
 import { generateImageSlug, createImageMetadata } from '@renderer/lib/image'
 import {
@@ -98,7 +99,7 @@ export const createImageSlice: StateCreator<
         state.images = images
       })
     } catch (error) {
-      console.error('Failed to load images:', error)
+      logger.error('Failed to load images:', 'imageSlice', error)
       throw error
     } finally {
       set((state) => {
@@ -186,7 +187,7 @@ export const createImageSlice: StateCreator<
       set((state) => {
         state.uploadProgress = null
       })
-      console.error('Failed to upload image:', error)
+      logger.error('Failed to upload image:', 'imageSlice', error)
       throw error
     }
   },
@@ -200,7 +201,7 @@ export const createImageSlice: StateCreator<
     try {
       await saveImageMetadata(workspacePath, image)
     } catch (error) {
-      console.error(`Failed to save image ${slug}:`, error)
+      logger.error(`Failed to save image ${slug}:`, 'imageSlice', error)
       throw error
     }
   },
@@ -215,7 +216,7 @@ export const createImageSlice: StateCreator<
       await deleteImageFile(workspacePath, image)
       get().deleteImage(slug)
     } catch (error) {
-      console.error(`Failed to delete image ${slug}:`, error)
+      logger.error(`Failed to delete image ${slug}:`, 'imageSlice', error)
       throw error
     }
   },

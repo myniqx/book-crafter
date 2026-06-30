@@ -1,6 +1,7 @@
 import type { Entity } from '@renderer/store/slices/entitySlice'
 import { validateEntity } from './entity'
 import ipcClient from './ipc'
+import { logger } from './logger'
 
 /**
  * Entity File Operations
@@ -98,7 +99,7 @@ export async function loadAllEntities(workspacePath: string): Promise<Record<str
       const entity = await loadEntity(workspacePath, slug)
       entities[entity.slug] = entity
     } catch (error) {
-      console.error(`Failed to load entity ${file}:`, error)
+      logger.error(`Failed to load entity ${file}:`, 'entities', error)
       // Continue loading other entities even if one fails
     }
   }

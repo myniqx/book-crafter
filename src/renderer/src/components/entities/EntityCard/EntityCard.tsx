@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Trash2, Save, Plus, Minus, Users, MapPin, Box } from 'lucide-react'
+import { logger } from '@renderer/lib/logger'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
@@ -66,7 +67,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entitySlug, className })
     try {
       await saveEntityToDisk(workspacePath, entitySlug)
     } catch (error) {
-      console.error('Failed to save entity:', error)
+      logger.error('Failed to save entity:', 'EntityCard', error)
       alert('Failed to save entity. Please try again.')
     } finally {
       setIsSaving(false)
@@ -83,7 +84,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entitySlug, className })
     try {
       await deleteEntityFromDisk(workspacePath, entitySlug)
     } catch (error) {
-      console.error('Failed to delete entity:', error)
+      logger.error('Failed to delete entity:', 'EntityCard', error)
       alert('Failed to delete entity. Please try again.')
     } finally {
       setIsDeleting(false)

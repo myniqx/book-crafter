@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
 import { fs } from '@renderer/lib/ipc'
+import { logger } from '@renderer/lib/logger'
 
 export interface WorkspaceConfig {
   projectName: string
@@ -122,16 +123,16 @@ export const createWorkspaceSlice: StateCreator<
         state.hasUnsavedChanges = false
       })
 
-      console.log('[WorkspaceSlice] Loaded workspace:', config.projectName)
+      logger.info(`Loaded workspace: ${config.projectName}`, 'workspaceSlice')
     } catch (error) {
-      console.error('[WorkspaceSlice] Failed to load workspace:', error)
+      logger.error('Failed to load workspace:', 'workspaceSlice', error)
       throw error
     }
   },
 
   saveWorkspace: async () => {
     // This will be implemented with IPC later
-    console.log('Saving workspace...', get().workspaceConfig)
+    logger.debug('Saving workspace...', 'workspaceSlice', get().workspaceConfig)
   },
 
   createNewWorkspace: (name: string, author: string) => {

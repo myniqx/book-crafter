@@ -3,6 +3,7 @@ import { DockLayout as RcDockLayout } from 'rc-dock'
 import 'rc-dock/dist/rc-dock-dark.css'
 import type { LayoutData, TabData, DropDirection } from 'rc-dock'
 import { cn } from '@renderer/lib/utils'
+import { logger } from '@renderer/lib/logger'
 import type { DockLayoutProps } from './types'
 import { createDefaultLayout, createTabDataFromMetadata, extractTabsFromLayout } from './utils'
 import { useCoreStore, type TabMetadata } from '@renderer/store'
@@ -119,7 +120,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
    */
   useEffect(() => {
     if (!dockRef.current) {
-      console.log('❌ [DockLayout] Ref not ready, skipping sync')
+      logger.debug('Ref not ready, skipping sync', 'DockLayout')
       return
     }
 

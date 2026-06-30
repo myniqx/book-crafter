@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand'
+import { logger } from '@renderer/lib/logger'
 
 export type Theme = 'light' | 'dark' | 'system'
 
@@ -334,7 +335,7 @@ export const createSettingsSlice: StateCreator<
 
       return true
     } catch (error) {
-      console.error('Failed to import settings:', error)
+      logger.error('Failed to import settings:', 'settingsSlice', error)
       return false
     }
   },

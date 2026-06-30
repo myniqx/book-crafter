@@ -4,6 +4,7 @@ import { cn } from '@renderer/lib/utils'
 import { useContentStore, useCoreStore } from '@renderer/store'
 import { CreateBookDialog } from '../CreateBookDialog'
 import { CreateChapterDialog } from '../CreateChapterDialog'
+import { logger } from '@renderer/lib/logger'
 import type { BookExplorerProps } from './types'
 import type { TabMetadata, TabEditorData } from '@renderer/components/layout/DockLayout/types'
 
@@ -46,7 +47,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
 
     if (!book || !chapter) {
-      console.error('[BookExplorer] Book or chapter not found:', bookSlug, chapterSlug)
+      logger.error(`Book or chapter not found: ${bookSlug} / ${chapterSlug}`, 'BookExplorer')
       return
     }
 
@@ -77,7 +78,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     try {
       await deleteBookFromDisk(workspacePath, bookSlug)
     } catch (error) {
-      console.error('Failed to delete book:', error)
+      logger.error('Failed to delete book:', 'BookExplorer', error)
       alert('Failed to delete book. Please try again.')
     }
   }
@@ -95,7 +96,7 @@ export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
     try {
       await deleteChapterFromDisk(workspacePath, bookSlug, chapterSlug)
     } catch (error) {
-      console.error('Failed to delete chapter:', error)
+      logger.error('Failed to delete chapter:', 'BookExplorer', error)
       alert('Failed to delete chapter. Please try again.')
     }
   }

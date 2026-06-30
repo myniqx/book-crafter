@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
 
 export type PanelId =
   | 'file-explorer'
@@ -239,12 +240,12 @@ export const createUISlice: StateCreator<
       if (existingIndex !== -1) {
         // Tab exists, just activate it
         state.activeTabId = metadata.id
-        console.log('[Store] Tab already open, activating:', metadata.id)
+        logger.debug(`Tab already open, activating: ${metadata.id}`, 'Store')
       } else {
         // Create new array reference to trigger React re-render (immer workaround)
         state.openTabs = [...state.openTabs, metadata]
         state.activeTabId = metadata.id
-        console.log('[Store] Opening new tab:', metadata.id)
+        logger.debug(`Opening new tab: ${metadata.id}`, 'Store')
       }
     }),
 
@@ -254,7 +255,7 @@ export const createUISlice: StateCreator<
    */
   closeTab: (tabId) =>
     set((state) => {
-      console.log('[Store] Closing tab:', tabId)
+      logger.debug(`Closing tab: ${tabId}`, 'Store')
 
       // Create new array reference (immer workaround)
       state.openTabs = state.openTabs.filter((t) => t.id !== tabId)
@@ -262,7 +263,7 @@ export const createUISlice: StateCreator<
       // If active tab was closed, set active to last tab or null
       if (state.activeTabId === tabId) {
         state.activeTabId = state.openTabs.length > 0 ? state.openTabs[state.openTabs.length - 1].id : null
-        console.log('[Store] Active tab closed, new active:', state.activeTabId)
+        logger.debug(`Active tab closed, new active: ${state.activeTabId}`, 'Store')
       }
     }),
 
@@ -274,10 +275,10 @@ export const createUISlice: StateCreator<
     set((state) => {
       if (tabId && state.openTabs.some((t) => t.id === tabId)) {
         state.activeTabId = tabId
-        console.log('[Store] Setting active tab:', tabId)
+        logger.debug(`Setting active tab: ${tabId}`, 'Store')
       } else if (tabId === null) {
         state.activeTabId = null
-        console.log('[Store] Clearing active tab')
+        logger.debug('Clearing active tab', 'Store')
       }
     }),
 
@@ -291,7 +292,7 @@ export const createUISlice: StateCreator<
    */
   syncTabsFromDockLayout: (tabs, activeTabId) =>
     set((state) => {
-      console.log('[Store] Syncing from DockLayout:', tabs.length, 'tabs, active:', activeTabId)
+      logger.debug(`Syncing from DockLayout: ${tabs.length} tabs, active: ${activeTabId}`, 'Store')
 
       // Create new array reference (immer workaround)
       state.openTabs = [...tabs]

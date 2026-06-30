@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useToolsStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import type { AIProvider, AIConfig } from '@renderer/lib/ai/types'
 import {
   Dialog,
@@ -94,7 +95,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
       const result = await testConnection()
       setTestResult(result ? 'success' : 'error')
     } catch (error) {
-      console.error('Connection test failed:', error)
+      logger.error('Connection test failed:', 'AISettingsDialog', error)
       setTestResult('error')
     } finally {
       setTesting(false)
@@ -117,7 +118,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
       const models = await listModels()
       setAvailableModels(models)
     } catch (error) {
-      console.error('Failed to list models:', error)
+      logger.error('Failed to list models:', 'AISettingsDialog', error)
       setAvailableModels([])
     } finally {
       setLoadingModels(false)

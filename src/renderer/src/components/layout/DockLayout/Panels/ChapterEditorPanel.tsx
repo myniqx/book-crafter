@@ -3,6 +3,7 @@ import { MonacoEditor } from '@renderer/components/editor/MonacoEditor'
 import { useContentStore, useCoreStore } from '@renderer/store'
 import { fs } from '@renderer/lib/ipc'
 import { getChapterContentPath } from '@renderer/lib/books'
+import { logger } from '@renderer/lib/logger'
 
 export interface ChapterEditorPanelProps {
   bookSlug: string
@@ -25,14 +26,14 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   useEffect(() => {
     const loadContent = async (): Promise<void> => {
       if (!workspacePath) {
-        console.error('[ChapterEditorPanel] No workspace path')
+        logger.error('No workspace path', 'ChapterEditorPanel')
         setError('No workspace selected')
         setIsLoading(false)
         return
       }
 
       if (!chapter) {
-        console.error('[ChapterEditorPanel] Chapter not found')
+        logger.error('Chapter not found', 'ChapterEditorPanel')
         setError('Chapter not found')
         setIsLoading(false)
         return
@@ -42,16 +43,16 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
         setIsLoading(true)
         setError(null)
         const contentPath = getChapterContentPath(workspacePath, bookSlug, chapterSlug)
-        console.log('[ChapterEditorPanel] Loading content from:', contentPath)
+        logger.debug(`Loading content from: ${contentPath}`, 'ChapterEditorPanel')
         const loadedContent = await fs.readFile(contentPath, 'utf-8')
-        console.log('[ChapterEditorPanel] Content loaded, length:', loadedContent.length)
+        logger.debug(`Content loaded, length: ${loadedContent.length}`, 'ChapterEditorPanel')
 
         // Update store with loaded content (if different)
         if (chapter.content !== loadedContent) {
           updateChapter(bookSlug, chapterSlug, { content: loadedContent })
         }
       } catch (err) {
-        console.error('[ChapterEditorPanel] Failed to load chapter content:', err)
+        logger.error('Failed to load chapter content:', 'ChapterEditorPanel', err)
         setError(`Failed to load chapter: ${err instanceof Error ? err.message : 'Unknown error'}`)
       } finally {
         setIsLoading(false)

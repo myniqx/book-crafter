@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
 import { useToolsStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import type {
   GeneralSettings,
   ExtendedEditorSettings,
@@ -158,7 +159,7 @@ export const SettingsPersistence: React.FC = () => {
   // Load settings from disk to store on initial mount
   useEffect(() => {
     if (!loading && !isInitializedRef.current) {
-      console.log('[SettingsPersistence] Loading settings from disk')
+      logger.debug('Loading settings from disk', 'SettingsPersistence')
 
       // Update store with persisted values
       updateGeneralSettings(persistedSettings.generalSettings)
@@ -177,7 +178,7 @@ export const SettingsPersistence: React.FC = () => {
       })
 
       isInitializedRef.current = true
-      console.log('[SettingsPersistence] Settings loaded successfully')
+      logger.info('Settings loaded successfully', 'SettingsPersistence')
     }
   }, [loading, persistedSettings])
 
@@ -203,7 +204,7 @@ export const SettingsPersistence: React.FC = () => {
     const newJson = JSON.stringify(newSettings)
 
     if (currentJson !== newJson) {
-      console.log('[SettingsPersistence] Saving settings to disk')
+      logger.debug('Saving settings to disk', 'SettingsPersistence')
       setPersistedSettings(newSettings)
     }
   }, [

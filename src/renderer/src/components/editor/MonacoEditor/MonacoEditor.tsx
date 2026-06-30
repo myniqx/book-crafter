@@ -3,6 +3,7 @@ import Editor, { OnMount, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
 import { useCoreStore, useToolsStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import type { MonacoEditorProps } from './types'
 import { cn } from '@renderer/lib/utils'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
@@ -139,9 +140,9 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
           // Send to AI
           try {
             await sendMessage(prompt, context)
-            console.log('AI action executed:', label)
+            logger.debug(`AI action executed: ${label}`, 'MonacoEditor')
           } catch (error) {
-            console.error('AI action failed:', error)
+            logger.error('AI action failed:', 'MonacoEditor', error)
           }
         }
       })

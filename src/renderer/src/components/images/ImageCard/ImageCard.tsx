@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useContentStore, useCoreStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import { formatFileSize } from '@renderer/lib/image'
 import { getImageUrl } from '@renderer/lib/images'
 import { cn } from '@renderer/lib/utils'
@@ -52,7 +53,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
     try {
       await deleteImageFromDisk(workspacePath, imageSlug)
     } catch (error) {
-      console.error('Failed to delete image:', error)
+      logger.error('Failed to delete image:', 'ImageCard', error)
       alert('Failed to delete image')
     }
   }

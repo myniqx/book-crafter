@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
 
 export interface EntityField {
   name: string
@@ -155,7 +156,7 @@ export const createEntitySlice: StateCreator<
         state.isLoadingEntities = false
       })
     } catch (error) {
-      console.error('Failed to load entities:', error)
+      logger.error('Failed to load entities:', 'entitySlice', error)
       set((state) => {
         state.isLoadingEntities = false
       })

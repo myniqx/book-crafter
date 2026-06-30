@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { fs } from '@renderer/lib/ipc'
+import { logger } from '@renderer/lib/logger'
 
 /**
  * IPC-based localStorage replacement
@@ -41,7 +42,7 @@ async function getUserDataPath(): Promise<string> {
             : `${process.env.HOME}/.config/book-crafter`
       }
     } catch (error) {
-      console.error('Failed to get user data path:', error)
+      logger.error('Failed to get user data path:', 'usePersistedStore', error)
       // Final fallback
       userDataPath = process.platform === 'win32'
         ? `${process.env.APPDATA}/book-crafter`
@@ -94,7 +95,7 @@ async function readFromDisk<T>(key: string, defaultValue: T, storagePath?: strin
 
     return parsed
   } catch (error) {
-    console.error(`[usePersistedStore] Failed to read ${key}:`, error)
+    logger.error(`Failed to read ${key}:`, 'usePersistedStore', error)
     return defaultValue
   }
 }
@@ -134,7 +135,7 @@ async function writeToDisk<T>(
 
       pendingWrites.delete(key)
     } catch (error) {
-      console.error(`[usePersistedStore] Failed to write ${key}:`, error)
+      logger.error(`Failed to write ${key}:`, 'usePersistedStore', error)
       throw error
     }
   }
@@ -210,7 +211,7 @@ export function usePersistedStore<T>(
 
         // Write to disk (debounced)
         writeToDisk(key, resolvedValue, options?.storagePath, false).catch((err) => {
-          console.error(`[usePersistedStore] Failed to persist ${key}:`, err)
+          logger.error(`Failed to persist ${key}:`, 'usePersistedStore', err)
           setError(err instanceof Error ? err : new Error(String(err)))
         })
 
@@ -243,7 +244,7 @@ export async function removePersistedKey(key: string, storagePath?: string): Pro
       pendingWrites.delete(key)
     }
   } catch (error) {
-    console.error(`[usePersistedStore] Failed to remove ${key}:`, error)
+    logger.error(`Failed to remove ${key}:`, 'usePersistedStore', error)
     throw error
   }
 }
@@ -264,7 +265,7 @@ export async function clearPersistedStore(storagePath?: string): Promise<void> {
     pendingWrites.forEach((timeout) => clearTimeout(timeout))
     pendingWrites.clear()
   } catch (error) {
-    console.error('[usePersistedStore] Failed to clear storage:', error)
+    logger.error('Failed to clear storage:', 'usePersistedStore', error)
     throw error
   }
 }

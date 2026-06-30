@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { logger } from '@renderer/lib/logger'
 import { Titlebar } from '../Titlebar'
 import { Sidebar } from '../Sidebar'
 import { StatusBar } from '../StatusBar'
@@ -46,7 +47,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
             setIntegrityDialogOpen(true)
           }
         } catch (error) {
-          console.error('Integrity check failed:', error)
+          logger.error('Integrity check failed:', 'MainLayout', error)
         }
       }
 
@@ -54,22 +55,22 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
 
       // Load entities
       loadAllEntities(workspacePath).catch((error) => {
-        console.error('Failed to load entities:', error)
+        logger.error('Failed to load entities:', 'MainLayout', error)
       })
 
       // Load books
       loadAllBooks(workspacePath).catch((error) => {
-        console.error('Failed to load books:', error)
+        logger.error('Failed to load books:', 'MainLayout', error)
       })
 
       // Load images
       loadAllImages(workspacePath).catch((error) => {
-        console.error('Failed to load images:', error)
+        logger.error('Failed to load images:', 'MainLayout', error)
       })
 
       // Load notes
       loadAllNotes(workspacePath).catch((error) => {
-        console.error('Failed to load notes:', error)
+        logger.error('Failed to load notes:', 'MainLayout', error)
       })
     }
   }, [workspacePath, loadAllEntities, loadAllBooks, loadAllImages, loadAllNotes])
@@ -84,7 +85,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
         if (chapter) {
           // TODO: Implement actual save via IPC
           toast.success('File saved', `${chapter.title} has been saved`)
-          console.log('Save file:', tab.bookSlug, tab.chapterSlug)
+          logger.debug(`Save file: ${tab.bookSlug} / ${tab.chapterSlug}`, 'MainLayout')
         }
       }
     } else {
@@ -97,7 +98,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
     if (openEditorTabs.length > 0) {
       // TODO: Implement actual save all via IPC
       toast.success('All files saved', `${openEditorTabs.length} file(s) saved`)
-      console.log('Save all files')
+      logger.debug('Save all files', 'MainLayout')
     } else {
       toast.info('No files to save', 'No files are currently open')
     }
@@ -122,7 +123,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
 
   const handleIgnoreIntegrityIssues = () => {
     // User chose to ignore issues
-    console.log('User ignored integrity issues')
+    logger.info('User ignored integrity issues', 'MainLayout')
   }
 
   // Global keyboard shortcuts

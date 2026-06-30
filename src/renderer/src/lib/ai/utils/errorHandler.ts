@@ -1,6 +1,7 @@
 /**
  * Common error handling utilities for AI providers
  */
+import { logger } from '@renderer/lib/logger'
 
 /**
  * Handle API errors with consistent formatting
@@ -11,10 +12,10 @@ export function handleAPIError(
   context: string
 ): Error {
   if (error instanceof Error) {
-    console.error(`${provider} ${context} error:`, error)
+    logger.error(`${provider} ${context} error:`, 'errorHandler', error)
     return new Error(`${provider} request failed: ${error.message}`)
   }
-  console.error(`${provider} ${context} error:`, error)
+  logger.error(`${provider} ${context} error:`, 'errorHandler', error)
   return new Error(`${provider} request failed: Unknown error`)
 }
 

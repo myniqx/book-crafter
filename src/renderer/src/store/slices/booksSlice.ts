@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { toast } from 'sonner'
 import { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
 
 export interface Chapter {
   slug: string
@@ -164,9 +165,9 @@ export const createBooksSlice: StateCreator<
           state._saveTimers.delete(timerKey)
         })
 
-        console.log(`[Auto-save] Successfully saved ${bookSlug}/${chapterSlug}`)
+        logger.info(`Successfully saved ${bookSlug}/${chapterSlug}`, 'Auto-save')
       } catch (error) {
-        console.error('[Auto-save] Failed to save chapter:', error)
+        logger.error('Failed to save chapter:', 'Auto-save', error)
 
         // Show error toast
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -245,7 +246,7 @@ export const createBooksSlice: StateCreator<
         state.isLoadingBooks = false
       })
     } catch (error) {
-      console.error('Failed to load books:', error)
+      logger.error('Failed to load books:', 'booksSlice', error)
       set((state) => {
         state.isLoadingBooks = false
       })
@@ -320,6 +321,6 @@ export const createBooksSlice: StateCreator<
     set((state) => {
       state._saveTimers.clear()
     })
-    console.log('[Auto-save] Cleaned up all pending timers')
+    logger.debug('Cleaned up all pending timers', 'Auto-save')
   }
 })

@@ -3,6 +3,7 @@
  */
 
 import type { StreamCallbackExtended, ToolCall } from '../types'
+import { logger } from '@renderer/lib/logger'
 
 /**
  * Parsed stream event from provider response
@@ -42,7 +43,7 @@ export function createStreamHandler(
           callback(event as Parameters<StreamCallbackExtended>[0])
         })
       } catch (error) {
-        console.error('Failed to parse stream chunk:', error)
+        logger.error('Failed to parse stream chunk:', 'streamHandler', error)
         callback({
           type: 'error',
           error: error instanceof Error ? error.message : 'Parse error'
@@ -50,7 +51,7 @@ export function createStreamHandler(
       }
     },
     onError: (error: Error) => {
-      console.error('Stream error:', error)
+      logger.error('Stream error:', 'streamHandler', error)
       callback({ type: 'error', error: error.message })
     },
     onComplete: () => {
@@ -104,7 +105,7 @@ export function parseOllamaStream(chunk: string, hasTools: boolean = false): Par
         }
       }
     } catch (error) {
-      console.error('Failed to parse Ollama chunk:', error)
+      logger.error('Failed to parse Ollama chunk:', 'streamHandler', error)
     }
   }
 
@@ -202,7 +203,7 @@ export function parseOpenAIStream(
         })
       }
     } catch (error) {
-      console.error('Failed to parse OpenAI chunk:', error)
+      logger.error('Failed to parse OpenAI chunk:', 'streamHandler', error)
     }
   })
 
@@ -256,7 +257,7 @@ export function parseGeminiStream(chunk: string): ParsedStreamEvent[] {
         })
       }
     } catch (error) {
-      console.error('Failed to parse Gemini chunk:', error)
+      logger.error('Failed to parse Gemini chunk:', 'streamHandler', error)
     }
   }
 
@@ -344,7 +345,7 @@ export function parseAnthropicStream(
           })
         }
       } catch (error) {
-        console.error('Failed to parse Anthropic chunk:', error)
+        logger.error('Failed to parse Anthropic chunk:', 'streamHandler', error)
       }
     }
   })

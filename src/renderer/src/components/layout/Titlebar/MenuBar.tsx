@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { logger } from '@renderer/lib/logger'
 import { cn } from '@renderer/lib/utils'
 import {
   DropdownMenu,
@@ -199,7 +200,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
         break
 
       default:
-        console.warn('Unknown menu action:', action)
+        logger.warn(`Unknown menu action: ${action}`, 'MenuBar')
     }
   }
 

@@ -605,4 +605,27 @@ try {
 
 ---
 
+## Logging
+
+**RULE: Never use `console.*` directly in renderer code. Always use the centralized logger.**
+
+```tsx
+import { logger } from '@renderer/lib/logger'
+
+// Levels: debug, info, warn, error
+// Second arg is context (component/module name), third+ are extra data
+logger.debug('Tab opened', 'DockLayout')
+logger.info('Settings loaded', 'SettingsPersistence')
+logger.warn('Unknown action', 'MenuBar', actionData)
+logger.error('Failed to save', 'EntityCard', error)
+```
+
+**How it works:**
+- When `advancedSettings.verboseLogging` is `false` (default): only `warn` and `error` pass through
+- When `verboseLogging` is `true`: `debug`, `info`, `warn`, `error` all pass through
+- Output format: `[book-crafter][Context] message`
+- Logger lives at `src/renderer/src/lib/logger.ts`
+
+---
+
 _This file is for Claude to reference during development. Update as architecture evolves._

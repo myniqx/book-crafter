@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import type { MessageBubbleProps } from './types'
 import { cn } from '@renderer/lib/utils'
+import { logger } from '@renderer/lib/logger'
 import { Bot, Copy, Check, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { Card } from '@renderer/components/ui/card'
@@ -27,7 +28,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
-      console.error('Failed to copy:', error)
+      logger.error('Failed to copy:', 'MessageBubble', error)
     }
   }
 

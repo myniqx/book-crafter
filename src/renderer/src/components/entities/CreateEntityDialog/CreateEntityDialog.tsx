@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { Plus } from 'lucide-react'
+import { logger } from '@renderer/lib/logger'
 import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
@@ -71,7 +72,7 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
       // Close dialog after success
       setOpen(false)
     } catch (error) {
-      console.error('Failed to create entity:', error)
+      logger.error('Failed to create entity:', 'CreateEntityDialog', error)
       alert('Failed to create entity. Please try again.')
     } finally {
       setIsCreating(false)

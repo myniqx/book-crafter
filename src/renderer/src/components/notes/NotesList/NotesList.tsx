@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useContentStore, useCoreStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import {
   searchNotes,
   sortNotes,
@@ -69,7 +70,7 @@ export const NotesList: React.FC<NotesListProps> = ({ className }) => {
     try {
       await deleteNoteFromDisk(workspacePath, slug)
     } catch (error) {
-      console.error('Failed to delete note:', error)
+      logger.error('Failed to delete note:', 'NotesList', error)
     }
   }
 
@@ -81,7 +82,7 @@ export const NotesList: React.FC<NotesListProps> = ({ className }) => {
     try {
       await saveNoteToDisk(workspacePath, slug)
     } catch (error) {
-      console.error('Failed to save note:', error)
+      logger.error('Failed to save note:', 'NotesList', error)
     }
   }
 

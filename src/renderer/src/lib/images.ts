@@ -1,6 +1,7 @@
 import type { Image } from './image'
 import { getFileExtension } from './image'
 import ipcClient from './ipc'
+import { logger } from './logger'
 
 /**
  * Get images directory path
@@ -49,7 +50,7 @@ export async function loadImageMetadata(
     const image = JSON.parse(content) as Image
     return image
   } catch (error) {
-    console.error(`Failed to load image metadata for ${slug}:`, error)
+    logger.error(`Failed to load image metadata for ${slug}:`, 'images', error)
     return null
   }
 }
@@ -80,7 +81,7 @@ export async function loadAllImages(workspacePath: string): Promise<Record<strin
       }
     }
   } catch (error) {
-    console.error('Failed to load images:', error)
+    logger.error('Failed to load images:', 'images', error)
   }
 
   return images

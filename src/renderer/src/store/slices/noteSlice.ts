@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 import { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
 import type { Note, NoteType, ChecklistItem, LinkedItem } from '@renderer/lib/note'
 import {
   createNote,
@@ -105,7 +106,7 @@ export const createNoteSlice: StateCreator<
         state.notes = notes
       })
     } catch (error) {
-      console.error('Failed to load notes:', error)
+      logger.error('Failed to load notes:', 'noteSlice', error)
       throw error
     } finally {
       set((state) => {
@@ -123,7 +124,7 @@ export const createNoteSlice: StateCreator<
     try {
       await saveNote(workspacePath, note)
     } catch (error) {
-      console.error(`Failed to save note ${slug}:`, error)
+      logger.error(`Failed to save note ${slug}:`, 'noteSlice', error)
       throw error
     }
   },
@@ -138,7 +139,7 @@ export const createNoteSlice: StateCreator<
       await deleteNoteFile(workspacePath, slug)
       get().deleteNote(slug)
     } catch (error) {
-      console.error(`Failed to delete note ${slug}:`, error)
+      logger.error(`Failed to delete note ${slug}:`, 'noteSlice', error)
       throw error
     }
   },

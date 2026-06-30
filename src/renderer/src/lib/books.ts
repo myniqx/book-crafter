@@ -1,6 +1,7 @@
 import type { Book, Chapter } from '@renderer/store/slices/booksSlice'
 import { slugify } from './slugify'
 import ipcClient from './ipc'
+import { logger } from './logger'
 
 /**
  * Book & Chapter File Operations
@@ -253,7 +254,7 @@ export async function loadAllBooks(workspacePath: string): Promise<Record<string
           const chapter = await loadChapter(workspacePath, book.slug, chapterRef.slug)
           chapters.push(chapter)
         } catch (error) {
-          console.error(`Failed to load chapter ${chapterRef.slug}:`, error)
+          logger.error(`Failed to load chapter ${chapterRef.slug}:`, 'books', error)
         }
       }
 
@@ -261,7 +262,7 @@ export async function loadAllBooks(workspacePath: string): Promise<Record<string
       book.chapters = chapters
       books[book.slug] = book
     } catch (error) {
-      console.error(`Failed to load book ${dir}:`, error)
+      logger.error(`Failed to load book ${dir}:`, 'books', error)
     }
   }
 

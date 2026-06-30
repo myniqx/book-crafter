@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { BookOpen } from 'lucide-react'
+import { logger } from '@renderer/lib/logger'
 import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
@@ -60,7 +61,7 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
       // Close dialog after success
       setOpen(false)
     } catch (error) {
-      console.error('Failed to create book:', error)
+      logger.error('Failed to create book:', 'CreateBookDialog', error)
       alert('Failed to create book. Please try again.')
     } finally {
       setIsCreating(false)

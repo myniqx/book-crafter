@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react'
 import { useContentStore, useCoreStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import { createNote, type NoteType, getNoteTypeLabel, getNoteTypeIcon } from '@renderer/lib/note'
 import type { CreateNoteDialogProps } from './types'
 import { Button } from '@renderer/components/ui/button'
@@ -68,7 +69,7 @@ export const CreateNoteDialog: React.FC<CreateNoteDialogProps> = ({ triggerProps
     try {
       await saveNoteToDisk(workspacePath, note.slug)
     } catch (error) {
-      console.error('Failed to save note:', error)
+      logger.error('Failed to save note:', 'CreateNoteDialog', error)
       setErrors(['Failed to save note'])
       return
     }

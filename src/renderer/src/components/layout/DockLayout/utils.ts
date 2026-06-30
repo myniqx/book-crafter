@@ -3,6 +3,7 @@ import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig, TabMetadata, TabEditorData, TabPanelData } from './types'
 import { AISuggestionsPanel } from '@renderer/components/ai/AISuggestionsPanel'
 import { useContentStore } from '@renderer/store'
+import { logger } from '@renderer/lib/logger'
 import { ChapterEditorPanel } from './Panels/ChapterEditorPanel'
 import { EntityDetailPanel } from './Panels/EntityDetailPanel'
 import { ImageDetailPanel } from './Panels/ImageDetailPanel'
@@ -110,11 +111,11 @@ export function createDefaultLayout(): LayoutData {
  * Used when syncing FROM Store TO DockLayout
  */
 export function createTabDataFromMetadata(metadata: TabMetadata): TabData {
-  console.log('[createTabDataFromMetadata] Creating tab for:', metadata)
+  logger.debug(`Creating tab for: ${JSON.stringify(metadata)}`, 'DockLayout')
 
   if (metadata.type === 'editor' && metadata.data) {
     const editorData = metadata.data as TabEditorData
-    console.log('[createTabDataFromMetadata] Editor tab:', editorData)
+    logger.debug(`Editor tab: ${JSON.stringify(editorData)}`, 'DockLayout')
 
     const tabData: TabData = {
       id: metadata.id,
@@ -126,7 +127,7 @@ export function createTabDataFromMetadata(metadata: TabMetadata): TabData {
       closable: metadata.closable
     }
 
-    console.log('[createTabDataFromMetadata] Created editor TabData:', tabData)
+    logger.debug(`Created editor TabData: ${tabData.id}`, 'DockLayout')
     return tabData
   }
 
@@ -144,7 +145,7 @@ export function createTabDataFromMetadata(metadata: TabMetadata): TabData {
   }
 
   // Fallback
-  console.warn('[createTabDataFromMetadata] Unknown tab type, using fallback:', metadata)
+  logger.warn(`Unknown tab type, using fallback: ${metadata.type}`, 'DockLayout')
   return {
     id: metadata.id,
     title: metadata.title,
@@ -173,15 +174,15 @@ export function extractTabsFromLayout(layout: LayoutData): TabMetadata[] {
         // Skip welcome tab
         if (tabObj.id === 'editor-welcome') return
 
-        console.log('[extractTabsFromLayout] Found tab in layout:', tab)
+        logger.debug(`Found tab in layout: ${tabObj.id}`, 'DockLayout')
 
         // Try to reconstruct TabMetadata from tab.id
         const metadata = reconstructTabMetadata(tabObj)
         if (metadata) {
-          console.log('[extractTabsFromLayout] Reconstructed metadata:', metadata)
+          logger.debug(`Reconstructed metadata: ${metadata.id}`, 'DockLayout')
           tabs.push(metadata)
         } else {
-          console.warn('[extractTabsFromLayout] Failed to reconstruct metadata for tab:', tab)
+          logger.warn(`Failed to reconstruct metadata for tab: ${tabObj.id}`, 'DockLayout')
         }
       })
     }
@@ -202,7 +203,7 @@ export function extractTabsFromLayout(layout: LayoutData): TabMetadata[] {
   }
 
   collectTabs(layout)
-  console.log('[extractTabsFromLayout] Total tabs extracted:', tabs.length)
+  logger.debug(`Total tabs extracted: ${tabs.length}`, 'DockLayout')
   return tabs
 }
 
@@ -219,12 +220,12 @@ function reconstructTabMetadata(tab: {
 
   if (!id) return null
 
-  console.log('[reconstructTabMetadata] Reconstructing from:', { id, title, closable })
+  logger.debug(`Reconstructing tab from id: ${id}`, 'DockLayout')
 
   // Editor tab: format is "editor-{bookSlug}-{chapterSlug}"
   if (id.startsWith('editor-')) {
     const parts = id.split('-')
-    console.log('[reconstructTabMetadata] Editor tab, parts:', parts)
+    logger.debug(`Editor tab parts: ${parts.join(' / ')}`, 'DockLayout')
 
     if (parts.length >= 3) {
       const bookSlug = parts[1]
@@ -233,14 +234,14 @@ function reconstructTabMetadata(tab: {
       // If title is undefined, try to get it from store
       let finalTitle = title
       if (!finalTitle || finalTitle === 'undefined') {
-        console.warn('[reconstructTabMetadata] Title is undefined, fetching from store')
+        logger.warn('Title is undefined, fetching from store', 'DockLayout')
         const books = useContentStore.getState().books
         const book = books[bookSlug]
         const chapter = book?.chapters.find(
           (c: { slug: string; title: string }) => c.slug === chapterSlug
         )
         finalTitle = chapter?.title || chapterSlug
-        console.log('[reconstructTabMetadata] Fetched title from store:', finalTitle)
+        logger.debug(`Fetched title from store: ${finalTitle}`, 'DockLayout')
       }
 
       const metadata: TabMetadata = {
@@ -251,7 +252,7 @@ function reconstructTabMetadata(tab: {
         data: { bookSlug, chapterSlug } as TabEditorData
       }
 
-      console.log('[reconstructTabMetadata] Created editor metadata:', metadata)
+      logger.debug(`Created editor metadata: ${metadata.id}`, 'DockLayout')
       return metadata
     }
   }
@@ -267,6 +268,6 @@ function reconstructTabMetadata(tab: {
     }
   }
 
-  console.warn('[reconstructTabMetadata] Could not reconstruct metadata for:', tab)
+  logger.warn(`Could not reconstruct metadata for tab: ${id}`, 'DockLayout')
   return null
 }

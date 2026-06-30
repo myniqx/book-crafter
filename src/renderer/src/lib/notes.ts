@@ -1,5 +1,6 @@
 import type { Note } from './note'
 import ipcClient from './ipc'
+import { logger } from './logger'
 
 /**
  * Get notes directory path
@@ -35,7 +36,7 @@ export async function loadNote(workspacePath: string, slug: string): Promise<Not
     const note = JSON.parse(content) as Note
     return note
   } catch (error) {
-    console.error(`Failed to load note ${slug}:`, error)
+    logger.error(`Failed to load note ${slug}:`, 'notes', error)
     return null
   }
 }
@@ -67,7 +68,7 @@ export async function loadAllNotes(workspacePath: string): Promise<Record<string
       }
     }
   } catch (error) {
-    console.error('Failed to load notes:', error)
+    logger.error('Failed to load notes:', 'notes', error)
   }
 
   return notes

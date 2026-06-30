@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FileText } from 'lucide-react'
+import { logger } from '@renderer/lib/logger'
 import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
@@ -58,7 +59,7 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({
       // Close dialog after success
       setOpen(false)
     } catch (error) {
-      console.error('Failed to create chapter:', error)
+      logger.error('Failed to create chapter:', 'CreateChapterDialog', error)
       alert('Failed to create chapter. Please try again.')
     } finally {
       setIsCreating(false)
