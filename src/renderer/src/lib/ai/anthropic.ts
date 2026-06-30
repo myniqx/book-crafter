@@ -232,7 +232,16 @@ export class AnthropicProvider extends BaseAIProvider {
   }
 
   protected async fetchModels(): Promise<string[]> {
-    // Anthropic does not expose a public models list endpoint
-    return []
+    // Anthropic does not expose a public models list endpoint — fall back to a static list
+    return [
+      'claude-opus-4-8',
+      'claude-sonnet-4-6',
+      'claude-haiku-4-5-20251001',
+      'claude-opus-4-1-20250805',
+      'claude-opus-4-20250514',
+      'claude-sonnet-4-20250514',
+      'claude-3-7-sonnet-20250219',
+      'claude-3-5-haiku-20241022'
+    ]
   }
 }

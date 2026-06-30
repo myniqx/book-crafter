@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { devtools } from 'zustand/middleware'
+import { devtools, persist, createJSONStorage } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { createAISlice, AISlice } from './slices/aiSlice'
@@ -10,11 +10,21 @@ export type ToolsStore = AISlice & SettingsSlice & ProviderConfigSlice
 
 export const useToolsStore = create<ToolsStore>()(
   devtools(
-    immer((set, get, api) => ({
-      ...createProviderConfigSlice(set as never, get as never, api as never),
-      ...createAISlice(set as never, get as never, api as never),
-      ...createSettingsSlice(set as never, get as never, api as never)
-    })),
+    persist(
+      immer((set, get, api) => ({
+        ...createProviderConfigSlice(set as never, get as never, api as never),
+        ...createAISlice(set as never, get as never, api as never),
+        ...createSettingsSlice(set as never, get as never, api as never)
+      })),
+      {
+        name: 'book-crafter-tools',
+        storage: createJSONStorage(() => localStorage),
+        partialize: (state) => ({
+          providerConfigs: state.providerConfigs,
+          activeProvider: state.activeProvider
+        })
+      }
+    ),
     { name: 'ToolsStore' }
   )
 )

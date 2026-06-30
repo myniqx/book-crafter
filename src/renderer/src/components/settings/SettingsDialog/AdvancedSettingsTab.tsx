@@ -1,5 +1,6 @@
 import React from 'react'
-import { useToolsStore, useCoreStore } from '@renderer/store'
+import { useToolsStore } from '@renderer/store'
+import { FormField } from '@renderer/components/ui/field'
 import { Label } from '@renderer/components/ui/label'
 import { Checkbox } from '@renderer/components/ui/checkbox'
 import { Slider } from '@renderer/components/ui/slider'
@@ -123,45 +124,35 @@ export const AdvancedSettingsTab: React.FC = () => {
             Requires app restart. May cause issues on some systems.
           </p>
 
-          <div className="space-y-2">
-            <Label htmlFor="memory-limit">
-              Memory Limit:{' '}
-              <span className="text-on-surface-variant">
-                {advancedSettings.maxMemoryUsage}MB
-              </span>
-            </Label>
-            <Slider
-              id="memory-limit"
-              min={256}
-              max={4096}
-              step={256}
-              value={[advancedSettings.maxMemoryUsage]}
-              onValueChange={([value]) => updateAdvancedSettings({ maxMemoryUsage: value })}
-            />
-            <p className="text-xs text-on-surface-variant">
-              Maximum memory usage for the application (requires restart)
-            </p>
-          </div>
+          <FormField
+            htmlFor="memory-limit"
+            label={<>Memory Limit: <span className="font-normal text-muted-foreground">{advancedSettings.maxMemoryUsage}MB</span></>}
+            hint="Maximum memory usage for the application (requires restart)"
+          >
+            <div className="py-1">
+              <Slider
+                id="memory-limit"
+                min={256} max={4096} step={256}
+                value={[advancedSettings.maxMemoryUsage]}
+                onValueChange={([value]) => updateAdvancedSettings({ maxMemoryUsage: value })}
+              />
+            </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="cache-size">
-              Cache Size:{' '}
-              <span className="text-on-surface-variant">
-                {advancedSettings.cacheSize}MB
-              </span>
-            </Label>
-            <Slider
-              id="cache-size"
-              min={50}
-              max={1024}
-              step={50}
-              value={[advancedSettings.cacheSize]}
-              onValueChange={([value]) => updateAdvancedSettings({ cacheSize: value })}
-            />
-            <p className="text-xs text-on-surface-variant">
-              Maximum disk space for cached data
-            </p>
-          </div>
+          <FormField
+            htmlFor="cache-size"
+            label={<>Cache Size: <span className="font-normal text-muted-foreground">{advancedSettings.cacheSize}MB</span></>}
+            hint="Maximum disk space for cached data"
+          >
+            <div className="py-1">
+              <Slider
+                id="cache-size"
+                min={50} max={1024} step={50}
+                value={[advancedSettings.cacheSize]}
+                onValueChange={([value]) => updateAdvancedSettings({ cacheSize: value })}
+              />
+            </div>
+          </FormField>
         </div>
       </div>
 
