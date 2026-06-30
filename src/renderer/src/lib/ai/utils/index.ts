@@ -14,6 +14,7 @@ export {
   parseOllamaStream,
   parseOpenAIStream,
   parseAnthropicStream,
+  parseGeminiStream,
   type ParsedStreamEvent,
   type StreamChunkParser
 } from './streamHandler'
@@ -33,3 +34,10 @@ export {
   buildContextPrompt,
   getProviderSpecificPrompt
 } from './promptBuilder'
+
+export {
+  buildNormalizedHistory,
+  toOpenAITools,
+  type NormalizedMessage,
+  type OpenAITool
+} from './messageBuilder'

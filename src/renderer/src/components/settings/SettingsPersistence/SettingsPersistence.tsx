@@ -9,13 +9,9 @@ import type {
   KeyboardShortcut,
   AdvancedSettings
 } from '@renderer/store/slices/settingsSlice'
-import type {
-  AIConfig,
-  OllamaConfig,
-  OpenAIConfig,
-  AnthropicConfig,
-  CustomPrompt
-} from '@renderer/store/slices/aiSlice'
+import type { CustomPrompt } from '@renderer/store/slices/aiSlice'
+import type { AIConfig, AIProvider } from '@renderer/lib/ai/types'
+import { DEFAULT_AI_CONFIGS } from '@renderer/lib/ai/types'
 
 /**
  * Persisted app settings structure
@@ -30,10 +26,8 @@ interface PersistedSettings {
   advancedSettings: AdvancedSettings
 
   // AI configurations
-  config: AIConfig
-  ollamaConfig: OllamaConfig
-  openaiConfig: OpenAIConfig
-  anthropicConfig: AnthropicConfig
+  providerConfigs: Record<AIProvider, AIConfig>
+  activeProvider: AIProvider
   customPrompts: CustomPrompt[]
 }
 
@@ -116,23 +110,8 @@ const DEFAULT_PERSISTED_SETTINGS: PersistedSettings = {
     cacheSize: 100,
     experimentalFeatures: false
   },
-  config: {
-    provider: 'ollama',
-    model: 'llama3.2'
-  },
-  ollamaConfig: {
-    baseUrl: 'http://localhost:11434',
-    model: 'llama3.2'
-  },
-  openaiConfig: {
-    apiKey: '',
-    model: 'gpt-4o-mini',
-    baseUrl: 'https://api.openai.com/v1'
-  },
-  anthropicConfig: {
-    apiKey: '',
-    model: 'claude-sonnet-4-20250514'
-  },
+  providerConfigs: { ...DEFAULT_AI_CONFIGS },
+  activeProvider: 'ollama',
   customPrompts: []
 }
 
@@ -162,10 +141,8 @@ export const SettingsPersistence: React.FC = () => {
   const workspacePreferences = useToolsStore((state) => state.workspacePreferences)
   const keyboardShortcuts = useToolsStore((state) => state.keyboardShortcuts)
   const advancedSettings = useToolsStore((state) => state.advancedSettings)
-  const config = useToolsStore((state) => state.config)
-  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
-  const openaiConfig = useToolsStore((state) => state.openaiConfig)
-  const anthropicConfig = useToolsStore((state) => state.anthropicConfig)
+  const providerConfigs = useToolsStore((state) => state.providerConfigs)
+  const activeProvider = useToolsStore((state) => state.activeProvider)
   const customPrompts = useToolsStore((state) => state.customPrompts)
 
   // Get store actions
@@ -174,10 +151,8 @@ export const SettingsPersistence: React.FC = () => {
   const updateAIPreferences = useToolsStore((state) => state.updateAIPreferences)
   const updateWorkspacePreferences = useToolsStore((state) => state.updateWorkspacePreferences)
   const updateAdvancedSettings = useToolsStore((state) => state.updateAdvancedSettings)
-  const setConfig = useToolsStore((state) => state.setConfig)
-  const setOllamaConfig = useToolsStore((state) => state.setOllamaConfig)
-  const setOpenAIConfig = useToolsStore((state) => state.setOpenAIConfig)
-  const setAnthropicConfig = useToolsStore((state) => state.setAnthropicConfig)
+  const setAllProviderConfigs = useToolsStore((state) => state.setAllProviderConfigs)
+  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
   const setCustomPrompts = useToolsStore((state) => state.setCustomPrompts)
 
   // Load settings from disk to store on initial mount
@@ -191,10 +166,8 @@ export const SettingsPersistence: React.FC = () => {
       updateAIPreferences(persistedSettings.aiPreferences)
       updateWorkspacePreferences(persistedSettings.workspacePreferences)
       updateAdvancedSettings(persistedSettings.advancedSettings)
-      setConfig(persistedSettings.config)
-      setOllamaConfig(persistedSettings.ollamaConfig)
-      setOpenAIConfig(persistedSettings.openaiConfig)
-      setAnthropicConfig(persistedSettings.anthropicConfig)
+      setAllProviderConfigs(persistedSettings.providerConfigs)
+      setActiveProvider(persistedSettings.activeProvider)
       setCustomPrompts(persistedSettings.customPrompts)
 
       // Handle keyboard shortcuts separately (need to update each one)
@@ -220,10 +193,8 @@ export const SettingsPersistence: React.FC = () => {
       workspacePreferences,
       keyboardShortcuts,
       advancedSettings,
-      config,
-      ollamaConfig,
-      openaiConfig,
-      anthropicConfig,
+      providerConfigs,
+      activeProvider,
       customPrompts
     }
 
@@ -242,10 +213,8 @@ export const SettingsPersistence: React.FC = () => {
     workspacePreferences,
     keyboardShortcuts,
     advancedSettings,
-    config,
-    ollamaConfig,
-    openaiConfig,
-    anthropicConfig,
+    providerConfigs,
+    activeProvider,
     customPrompts
   ])
 

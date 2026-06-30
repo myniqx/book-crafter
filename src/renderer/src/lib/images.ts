@@ -62,6 +62,9 @@ export async function loadAllImages(workspacePath: string): Promise<Record<strin
   const images: Record<string, Image> = {}
 
   try {
+    const dirExists = await ipcClient.fs.exists(imagesDir)
+    if (!dirExists) return images
+
     // Read all files in .assets/images/
     const files = await ipcClient.fs.readDir(imagesDir, false)
 

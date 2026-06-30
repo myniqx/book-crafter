@@ -210,6 +210,60 @@ export function parseOpenAIStream(
 }
 
 /**
+ * Parse Gemini stream chunks (Server-Sent Events)
+ */
+export function parseGeminiStream(chunk: string): ParsedStreamEvent[] {
+  const events: ParsedStreamEvent[] = []
+  const lines = chunk.split('\n').filter((line) => line.trim().startsWith('data:'))
+
+  for (const line of lines) {
+    const data = line.replace(/^data:\s*/, '').trim()
+    if (!data || data === '[DONE]') continue
+
+    try {
+      const parsed = JSON.parse(data)
+      const candidate = parsed.candidates?.[0]
+      if (!candidate) continue
+
+      const parts = candidate.content?.parts as Array<Record<string, unknown>> | undefined
+      if (parts) {
+        for (const part of parts) {
+          if (typeof part.text === 'string') {
+            events.push({ type: 'text', content: part.text, done: false })
+          } else if (part.functionCall) {
+            const fc = part.functionCall as { name: string; args: Record<string, unknown> }
+            const toolCall: ToolCall = {
+              id: `gemini-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+              name: fc.name,
+              arguments: fc.args
+            }
+            events.push({ type: 'tool_call_start', toolCall: { id: toolCall.id, name: fc.name } })
+            events.push({ type: 'tool_call_end', toolCall })
+          }
+        }
+      }
+
+      if (candidate.finishReason) {
+        const hasToolCalls = parts?.some((p) => p.functionCall)
+        events.push({
+          type: 'done',
+          finishReason:
+            candidate.finishReason === 'MAX_TOKENS'
+              ? 'length'
+              : hasToolCalls
+                ? 'tool_use'
+                : 'stop'
+        })
+      }
+    } catch (error) {
+      console.error('Failed to parse Gemini chunk:', error)
+    }
+  }
+
+  return events
+}
+
+/**
  * Parse Anthropic stream chunks (Server-Sent Events)
  */
 export function parseAnthropicStream(

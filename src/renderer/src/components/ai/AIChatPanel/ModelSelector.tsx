@@ -11,7 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui
 const PROVIDER_MODELS: ProviderModels = {
   ollama: [], // Will be fetched dynamically
   openai: ['gpt-4-turbo', 'gpt-4', 'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'],
-  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229']
+  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229'],
+  gemini: ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-2.0-flash-exp']
 }
 
 export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
@@ -19,16 +20,19 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
 
   // Tools store state
-  const config = useToolsStore((state) => state.config)
-  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
-  const updateConfig = useToolsStore((state) => state.updateConfig)
+  const activeProvider = useToolsStore((state) => state.activeProvider)
+  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
+  const providerConfigs = useToolsStore((state) => state.providerConfigs)
+  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
+
+  const config = providerConfigs[activeProvider]
 
   // Fetch Ollama models when provider is ollama
   useEffect(() => {
     const fetchOllamaModels = async (): Promise<void> => {
-      if (config.provider === 'ollama') {
+      if (activeProvider === 'ollama') {
         try {
-          const endpoint = ollamaConfig.endpoint || 'http://localhost:11434'
+          const endpoint = config.endpoint || 'http://localhost:11434'
           const response = await fetch(`${endpoint}/api/tags`)
           if (response.ok) {
             const data = await response.json()
@@ -42,23 +46,23 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
       }
     }
     fetchOllamaModels()
-  }, [config.provider, ollamaConfig.endpoint])
+  }, [activeProvider, config.endpoint])
 
   // Get available models for current provider
   const getAvailableModels = (): string[] => {
-    if (config.provider === 'ollama') {
+    if (activeProvider === 'ollama') {
       return ollamaModels
     }
-    return PROVIDER_MODELS[config.provider] || []
+    return PROVIDER_MODELS[activeProvider] || []
   }
 
   const handleProviderChange = (provider: AIProvider): void => {
-    updateConfig({ provider })
+    setActiveProvider(provider)
     setModelSelectorOpen(false)
   }
 
   const handleModelChange = (model: string): void => {
-    updateConfig({ model })
+    setProviderConfig(activeProvider, { model })
     setModelSelectorOpen(false)
   }
 
@@ -71,18 +75,18 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
           className={`h-7 text-xs gap-1 ${className || ''}`}
         >
           <ChevronDown className="h-3 w-3" />
-          <span className="line-clamp-1">{config.provider} / {config.model}</span>
+          <span className="line-clamp-1">{activeProvider} / {config.model}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="start">
         <div className="p-2 border-b border-border">
           <p className="text-xs font-medium text-muted-foreground">Provider</p>
           <div className="flex gap-1 mt-1">
-            {(['ollama', 'openai', 'anthropic'] as AIProvider[]).map((provider) => (
+            {(['ollama', 'openai', 'anthropic', 'gemini'] as AIProvider[]).map((provider) => (
               <Button
                 key={provider}
                 size="sm"
-                variant={config.provider === provider ? 'default' : 'outline'}
+                variant={activeProvider === provider ? 'default' : 'outline'}
                 className="h-6 text-xs capitalize"
                 onClick={() => handleProviderChange(provider)}
               >
@@ -96,7 +100,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
             <p className="text-xs font-medium text-muted-foreground mb-2">Models</p>
             {getAvailableModels().length === 0 ? (
               <p className="text-xs text-muted-foreground italic">
-                {config.provider === 'ollama'
+                {activeProvider === 'ollama'
                   ? 'No models found. Is Ollama running?'
                   : 'No models available'}
               </p>

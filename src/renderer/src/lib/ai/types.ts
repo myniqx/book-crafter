@@ -1,7 +1,7 @@
 /**
  * AI Provider types
  */
-export type AIProvider = 'ollama' | 'openai' | 'anthropic'
+export type AIProvider = 'ollama' | 'openai' | 'anthropic' | 'gemini'
 
 /**
  * AI Message role
@@ -287,6 +287,12 @@ export const DEFAULT_AI_CONFIGS: Record<AIProvider, AIConfig> = {
     model: 'claude-3-5-sonnet-20241022',
     temperature: 0.7,
     maxTokens: 2000
+  },
+  gemini: {
+    provider: 'gemini',
+    model: 'gemini-1.5-flash',
+    temperature: 0.7,
+    maxTokens: 2000
   }
 }
 
@@ -309,6 +315,17 @@ export const OLLAMA_MODELS = [
  * Available OpenAI models
  */
 export const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']
+
+/**
+ * Available Gemini models
+ */
+export const GEMINI_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-pro',
+  'gemini-2.0-flash-exp',
+  'gemini-exp-1206'
+]
 
 /**
  * Available Anthropic models

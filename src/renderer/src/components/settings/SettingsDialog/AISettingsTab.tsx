@@ -17,13 +17,16 @@ import { Badge } from '@renderer/components/ui/badge'
 import type { AIProvider } from '@renderer/lib/ai/types'
 
 export const AISettingsTab: React.FC = () => {
-  const config = useToolsStore((state) => state.config)
-  const updateConfig = useToolsStore((state) => state.updateConfig)
-  const ollamaConfig = useToolsStore((state) => state.ollamaConfig)
-  const openaiConfig = useToolsStore((state) => state.openaiConfig)
-  const anthropicConfig = useToolsStore((state) => state.anthropicConfig)
+  const activeProvider = useToolsStore((state) => state.activeProvider)
+  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
+  const providerConfigs = useToolsStore((state) => state.providerConfigs)
+  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
   const aiPreferences = useToolsStore((state) => state.aiPreferences)
   const updateAIPreferences = useToolsStore((state) => state.updateAIPreferences)
+
+  const config = providerConfigs[activeProvider]
+  const updateConfig = (updates: Partial<typeof config>): void =>
+    setProviderConfig(activeProvider, updates)
 
   const [testing, setTesting] = React.useState(false)
   const [testResult, setTestResult] = React.useState<'success' | 'error' | null>(null)
@@ -34,18 +37,15 @@ export const AISettingsTab: React.FC = () => {
 
     try {
       // Simple test based on provider
-      if (config.provider === 'ollama') {
-        const response = await fetch(`${ollamaConfig.endpoint || 'http://localhost:11434'}/api/tags`)
+      if (activeProvider === 'ollama') {
+        const response = await fetch(`${config.endpoint || 'http://localhost:11434'}/api/tags`)
         if (response.ok) {
           setTestResult('success')
         } else {
           setTestResult('error')
         }
-      } else if (config.provider === 'openai') {
-        // OpenAI test would require API call
-        setTestResult('success') // Mock for now
-      } else if (config.provider === 'anthropic') {
-        // Anthropic test would require API call
+      } else {
+        // OpenAI/Anthropic/Gemini test would require API call
         setTestResult('success') // Mock for now
       }
     } catch (error) {
@@ -64,8 +64,8 @@ export const AISettingsTab: React.FC = () => {
           <div className="space-y-2">
             <Label htmlFor="provider">Provider</Label>
             <Select
-              value={config.provider}
-              onValueChange={(value: AIProvider) => updateConfig({ provider: value })}
+              value={activeProvider}
+              onValueChange={(value: AIProvider) => setActiveProvider(value)}
             >
               <SelectTrigger id="provider">
                 <SelectValue />
@@ -74,6 +74,7 @@ export const AISettingsTab: React.FC = () => {
                 <SelectItem value="ollama">Ollama (Local)</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
                 <SelectItem value="anthropic">Anthropic</SelectItem>
+                <SelectItem value="gemini">Google Gemini</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -83,7 +84,7 @@ export const AISettingsTab: React.FC = () => {
       <Separator />
 
       {/* Ollama Configuration */}
-      {config.provider === 'ollama' && (
+      {activeProvider === 'ollama' && (
         <>
           <div>
             <h3 className="text-sm font-medium mb-4">Ollama Configuration</h3>
@@ -93,7 +94,7 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="ollama-url"
                   type="text"
-                  value={ollamaConfig.endpoint || ''}
+                  value={config.endpoint || ''}
                   onChange={(e) =>
                     updateConfig({
                       endpoint: e.target.value
@@ -108,7 +109,7 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="ollama-model"
                   type="text"
-                  value={ollamaConfig.model}
+                  value={config.model}
                   onChange={(e) =>
                     updateConfig({
                       model: e.target.value
@@ -121,12 +122,12 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="keep-alive">
                   Keep Alive:{' '}
-                  <span className="text-on-surface-variant">{ollamaConfig.keepAlive}</span>
+                  <span className="text-on-surface-variant">{config.keepAlive}</span>
                 </Label>
                 <Input
                   id="keep-alive"
                   type="text"
-                  value={ollamaConfig.keepAlive}
+                  value={config.keepAlive}
                   onChange={(e) =>
                     updateConfig({
                       keepAlive: e.target.value
@@ -145,7 +146,7 @@ export const AISettingsTab: React.FC = () => {
       )}
 
       {/* OpenAI Configuration */}
-      {config.provider === 'openai' && (
+      {activeProvider === 'openai' && (
         <>
           <div>
             <h3 className="text-sm font-medium mb-4">OpenAI Configuration</h3>
@@ -155,7 +156,7 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="openai-key"
                   type="password"
-                  value={openaiConfig.apiKey}
+                  value={config.apiKey || ''}
                   onChange={(e) =>
                     updateConfig({
                       apiKey: e.target.value
@@ -168,7 +169,7 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="openai-model">Model</Label>
                 <Select
-                  value={openaiConfig.model}
+                  value={config.model}
                   onValueChange={(value) =>
                     updateConfig({
                       model: value
@@ -191,8 +192,51 @@ export const AISettingsTab: React.FC = () => {
         </>
       )}
 
+      {/* Gemini Configuration */}
+      {activeProvider === 'gemini' && (
+        <>
+          <div>
+            <h3 className="text-sm font-medium mb-4">Google Gemini Configuration</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="gemini-key">API Key</Label>
+                <Input
+                  id="gemini-key"
+                  type="password"
+                  value={config.apiKey || ''}
+                  onChange={(e) => updateConfig({ apiKey: e.target.value })}
+                  placeholder="AIza..."
+                />
+                <p className="text-xs text-on-surface-variant">
+                  Get your API key from aistudio.google.com
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gemini-model">Model</Label>
+                <Select
+                  value={config.model}
+                  onValueChange={(value) => updateConfig({ model: value })}
+                >
+                  <SelectTrigger id="gemini-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
+                    <SelectItem value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B</SelectItem>
+                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                    <SelectItem value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Exp)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <Separator />
+        </>
+      )}
+
       {/* Anthropic Configuration */}
-      {config.provider === 'anthropic' && (
+      {activeProvider === 'anthropic' && (
         <>
           <div>
             <h3 className="text-sm font-medium mb-4">Anthropic Configuration</h3>
@@ -202,7 +246,7 @@ export const AISettingsTab: React.FC = () => {
                 <Input
                   id="anthropic-key"
                   type="password"
-                  value={anthropicConfig.apiKey}
+                  value={config.apiKey || ''}
                   onChange={(e) =>
                     updateConfig({
                       apiKey: e.target.value
@@ -215,7 +259,7 @@ export const AISettingsTab: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="anthropic-model">Model</Label>
                 <Select
-                  value={anthropicConfig.model}
+                  value={config.model}
                   onValueChange={(value) =>
                     updateConfig({
                       model: value

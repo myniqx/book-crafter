@@ -22,13 +22,17 @@ interface AISettingsDialogProps {
 }
 
 export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) => {
-  const config = useToolsStore((state) => state.config)
-  const updateConfig = useToolsStore((state) => state.updateConfig)
+  const activeProvider = useToolsStore((state) => state.activeProvider)
+  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
+  const providerConfigs = useToolsStore((state) => state.providerConfigs)
+  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
   const testConnection = useToolsStore((state) => state.testConnection)
   const listModels = useToolsStore((state) => state.listModels)
 
+  const config = providerConfigs[activeProvider]
+
   // Local state for form
-  const [provider, setProvider] = useState<AIProvider>(config.provider)
+  const [provider, setProvider] = useState<AIProvider>(activeProvider)
   const [model, setModel] = useState(config.model)
   const [endpoint, setEndpoint] = useState(config.endpoint || '')
   const [apiKey, setApiKey] = useState(config.apiKey || '')
@@ -46,18 +50,17 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
 
   // Reset form when config changes
   useEffect(() => {
-    setProvider(config.provider)
+    setProvider(activeProvider)
     setModel(config.model)
     setEndpoint(config.endpoint || '')
     setApiKey(config.apiKey || '')
     setTemperature(config.temperature)
     setMaxTokens(config.maxTokens)
     setKeepAlive(config.keepAlive || '5m')
-  }, [config])
+  }, [config, activeProvider])
 
   const handleSave = (): void => {
     const newConfig: Partial<AIConfig> = {
-      provider,
       model,
       endpoint: endpoint || undefined,
       apiKey: apiKey || undefined,
@@ -66,7 +69,8 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
       keepAlive: provider === 'ollama' ? keepAlive : undefined
     }
 
-    updateConfig(newConfig)
+    setActiveProvider(provider)
+    setProviderConfig(provider, newConfig)
   }
 
   const handleTestConnection = async (): Promise<void> => {
@@ -75,7 +79,6 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
 
     // Temporarily update config for testing
     const tempConfig: Partial<AIConfig> = {
-      provider,
       model,
       endpoint: endpoint || undefined,
       apiKey: apiKey || undefined,
@@ -84,7 +87,8 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
       keepAlive: provider === 'ollama' ? keepAlive : undefined
     }
 
-    updateConfig(tempConfig)
+    setActiveProvider(provider)
+    setProviderConfig(provider, tempConfig)
 
     try {
       const result = await testConnection()
@@ -102,12 +106,12 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
 
     // Temporarily update config for listing models
     const tempConfig: Partial<AIConfig> = {
-      provider,
       endpoint: endpoint || undefined,
       apiKey: apiKey || undefined
     }
 
-    updateConfig(tempConfig)
+    setActiveProvider(provider)
+    setProviderConfig(provider, tempConfig)
 
     try {
       const models = await listModels()
@@ -147,12 +151,14 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 <SelectItem value="ollama">Ollama (Local)</SelectItem>
                 <SelectItem value="openai">OpenAI (GPT)</SelectItem>
                 <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
+                <SelectItem value="gemini">Google Gemini</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-outline">
               {provider === 'ollama' && 'Run AI models locally with Ollama'}
-              {provider === 'openai' && 'Use OpenAI\'s GPT models (requires API key)'}
-              {provider === 'anthropic' && 'Use Anthropic\'s Claude models (requires API key)'}
+              {provider === 'openai' && "Use OpenAI's GPT models (requires API key)"}
+              {provider === 'anthropic' && "Use Anthropic's Claude models (requires API key)"}
+              {provider === 'gemini' && "Use Google's Gemini models (requires API key)"}
             </p>
           </div>
 
@@ -172,8 +178,8 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
             </div>
           )}
 
-          {/* API Key (for OpenAI and Anthropic) */}
-          {(provider === 'openai' || provider === 'anthropic') && (
+          {/* API Key (for OpenAI, Anthropic, and Gemini) */}
+          {(provider === 'openai' || provider === 'anthropic' || provider === 'gemini') && (
             <div className="space-y-2">
               <Label htmlFor="apiKey">API Key</Label>
               <Input
@@ -181,11 +187,14 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder={provider === 'openai' ? 'sk-...' : 'sk-ant-...'}
+                placeholder={
+                  provider === 'openai' ? 'sk-...' : provider === 'anthropic' ? 'sk-ant-...' : 'AIza...'
+                }
               />
               <p className="text-xs text-outline">
                 {provider === 'openai' && 'Get your API key from platform.openai.com'}
                 {provider === 'anthropic' && 'Get your API key from console.anthropic.com'}
+                {provider === 'gemini' && 'Get your API key from aistudio.google.com'}
               </p>
             </div>
           )}
@@ -246,6 +255,7 @@ export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) =
               {provider === 'ollama' && 'Run "ollama list" to see available models'}
               {provider === 'openai' && 'e.g., gpt-4, gpt-4-turbo, gpt-3.5-turbo'}
               {provider === 'anthropic' && 'e.g., claude-3-5-sonnet-20241022, claude-3-opus-20240229'}
+              {provider === 'gemini' && 'e.g., gemini-1.5-flash, gemini-1.5-pro'}
             </p>
           </div>
 
