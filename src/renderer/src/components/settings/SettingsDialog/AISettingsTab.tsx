@@ -1,7 +1,7 @@
 import React from 'react'
 import { useToolsStore } from '@renderer/store'
+import { useSettingsContext } from './SettingsContext'
 import { FormField } from '@renderer/components/ui/field'
-import { Input } from '@renderer/components/ui/input'
 import { PasswordInput } from '@renderer/components/ui/password-input'
 import {
   Select,
@@ -14,42 +14,22 @@ import { Checkbox } from '@renderer/components/ui/checkbox'
 import { Slider } from '@renderer/components/ui/slider'
 import { Separator } from '@renderer/components/ui/separator'
 import { Button } from '@renderer/components/ui/button'
-import { Badge } from '@renderer/components/ui/badge'
 import { Label } from '@renderer/components/ui/label'
 import { Loader2 } from 'lucide-react'
-import type { AIProvider, AIConfig } from '@renderer/lib/ai/types'
+import type { AIProvider } from '@renderer/lib/ai/types'
 
 export const AISettingsTab: React.FC = () => {
-  const activeProvider = useToolsStore((state) => state.activeProvider)
-  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
-  const providerConfigs = useToolsStore((state) => state.providerConfigs)
-  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
+  const { draft, updateDraft } = useSettingsContext()
   const listModels = useToolsStore((state) => state.listModels)
-  const aiPreferences = useToolsStore((state) => state.aiPreferences)
-  const updateAIPreferences = useToolsStore((state) => state.updateAIPreferences)
 
-  const [draft, setDraft] = React.useState<AIConfig>(() => providerConfigs[activeProvider])
-  const [isDirty, setIsDirty] = React.useState(false)
+  const { activeProvider, providerConfigs, aiPreferences } = draft
+  const config = providerConfigs[activeProvider]
 
-  const updateDraft = (updates: Partial<AIConfig>): void => {
-    setDraft((prev) => ({ ...prev, ...updates }))
-    setIsDirty(true)
-  }
+  const updateConfig = (updates: Partial<typeof config>): void =>
+    updateDraft({ providerConfigs: { ...providerConfigs, [activeProvider]: { ...config, ...updates } } })
 
-  React.useEffect(() => {
-    setDraft(providerConfigs[activeProvider])
-    setIsDirty(false)
-  }, [activeProvider, providerConfigs])
-
-  const handleSave = (): void => {
-    setProviderConfig(activeProvider, draft)
-    setIsDirty(false)
-  }
-
-  const handleCancel = (): void => {
-    setDraft(providerConfigs[activeProvider])
-    setIsDirty(false)
-  }
+  const updatePrefs = (updates: Partial<typeof aiPreferences>): void =>
+    updateDraft({ aiPreferences: { ...aiPreferences, ...updates } })
 
   const [availableModels, setAvailableModels] = React.useState<string[]>([])
   const [loadingModels, setLoadingModels] = React.useState(false)
@@ -76,58 +56,25 @@ export const AISettingsTab: React.FC = () => {
     fetchModels()
   }, [activeProvider, fetchModels])
 
-  const [testing, setTesting] = React.useState(false)
-  const [testResult, setTestResult] = React.useState<'success' | 'error' | null>(null)
-
-  const handleTestConnection = async (): Promise<void> => {
-    setTesting(true)
-    setTestResult(null)
-    try {
-      if (activeProvider === 'ollama') {
-        const response = await fetch(`${draft.endpoint || 'http://localhost:11434'}/api/tags`)
-        setTestResult(response.ok ? 'success' : 'error')
-      } else {
-        setTestResult('success')
-      }
-    } catch {
-      setTestResult('error')
-    } finally {
-      setTesting(false)
-    }
-  }
-
   const requiresApiKey = activeProvider !== 'ollama'
-  const hasApiKey = !requiresApiKey || !!draft.apiKey?.trim()
+  const hasApiKey = !requiresApiKey || !!config.apiKey?.trim()
 
-  const modelFormField = (
+  const modelField = (
     <FormField
       htmlFor="model"
       label={
         <div className="flex items-center justify-between">
           <span>Model</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={fetchModels}
-            disabled={!hasApiKey || loadingModels}
-            className="h-7"
-          >
-            {loadingModels ? (
-              <>
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              'Refresh'
-            )}
+          <Button size="sm" variant="outline" onClick={fetchModels} disabled={!hasApiKey || loadingModels} className="h-7">
+            {loadingModels ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Loading...</> : 'Refresh'}
           </Button>
         </div>
       }
       error={modelsError ?? undefined}
     >
       <Select
-        value={draft.model}
-        onValueChange={(value) => updateDraft({ model: value })}
+        value={config.model}
+        onValueChange={(value) => updateConfig({ model: value })}
         disabled={!hasApiKey || availableModels.length === 0}
       >
         <SelectTrigger id="model">
@@ -135,9 +82,7 @@ export const AISettingsTab: React.FC = () => {
         </SelectTrigger>
         <SelectContent>
           {availableModels.map((m) => (
-            <SelectItem key={m} value={m}>
-              {m}
-            </SelectItem>
+            <SelectItem key={m} value={m}>{m}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -146,16 +91,12 @@ export const AISettingsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
-      {/* Provider Selection */}
       <FormField htmlFor="provider" label="AI Provider">
         <Select
           value={activeProvider}
-          onValueChange={(value: AIProvider) => setActiveProvider(value)}
+          onValueChange={(value: AIProvider) => updateDraft({ activeProvider: value })}
         >
-          <SelectTrigger id="provider">
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger id="provider"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="ollama">Ollama (Local)</SelectItem>
             <SelectItem value="openai">OpenAI</SelectItem>
@@ -167,221 +108,102 @@ export const AISettingsTab: React.FC = () => {
 
       <Separator />
 
-      {/* Ollama */}
       {activeProvider === 'ollama' && (
         <>
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Ollama Configuration</h3>
             <FormField htmlFor="ollama-url" label="Endpoint URL">
-              <Input
-                id="ollama-url"
-                value={draft.endpoint || ''}
-                onChange={(e) => updateDraft({ endpoint: e.target.value })}
-                placeholder="http://localhost:11434"
-              />
+              <PasswordInput id="ollama-url" value={config.endpoint || ''} onChange={(e) => updateConfig({ endpoint: e.target.value })} placeholder="http://localhost:11434" />
             </FormField>
-            {modelFormField}
-            <FormField
-              htmlFor="keep-alive"
-              label={<>Keep Alive: <span className="font-normal text-muted-foreground">{draft.keepAlive}</span></>}
-              hint="How long to keep model loaded (e.g., 5m, 1h, -1 for indefinite)"
-            >
-              <Input
-                id="keep-alive"
-                value={draft.keepAlive || ''}
-                onChange={(e) => updateDraft({ keepAlive: e.target.value })}
-                placeholder="5m"
-              />
+            {modelField}
+            <FormField htmlFor="keep-alive" label={<>Keep Alive: <span className="font-normal text-muted-foreground">{config.keepAlive}</span></>} hint="How long to keep model loaded (e.g., 5m, 1h, -1 for indefinite)">
+              <PasswordInput id="keep-alive" value={config.keepAlive || ''} onChange={(e) => updateConfig({ keepAlive: e.target.value })} placeholder="5m" />
             </FormField>
           </div>
           <Separator />
         </>
       )}
 
-      {/* OpenAI */}
       {activeProvider === 'openai' && (
         <>
           <div className="space-y-4">
             <h3 className="text-sm font-medium">OpenAI Configuration</h3>
             <FormField htmlFor="openai-key" label="API Key">
-              <PasswordInput
-                id="openai-key"
-                value={draft.apiKey || ''}
-                onChange={(e) => updateDraft({ apiKey: e.target.value })}
-                placeholder="sk-..."
-              />
+              <PasswordInput id="openai-key" value={config.apiKey || ''} onChange={(e) => updateConfig({ apiKey: e.target.value })} placeholder="sk-..." />
             </FormField>
-            <fieldset disabled={!hasApiKey} className="space-y-4 disabled:opacity-50">
-              {modelFormField}
-            </fieldset>
+            <fieldset disabled={!hasApiKey} className="space-y-4 disabled:opacity-50">{modelField}</fieldset>
           </div>
           <Separator />
         </>
       )}
 
-      {/* Gemini */}
       {activeProvider === 'gemini' && (
         <>
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Google Gemini Configuration</h3>
             <FormField htmlFor="gemini-key" label="API Key" hint="Get your API key from aistudio.google.com">
-              <PasswordInput
-                id="gemini-key"
-                value={draft.apiKey || ''}
-                onChange={(e) => updateDraft({ apiKey: e.target.value })}
-                placeholder="AIza..."
-              />
+              <PasswordInput id="gemini-key" value={config.apiKey || ''} onChange={(e) => updateConfig({ apiKey: e.target.value })} placeholder="AIza..." />
             </FormField>
-            <fieldset disabled={!hasApiKey} className="space-y-4 disabled:opacity-50">
-              {modelFormField}
-            </fieldset>
+            <fieldset disabled={!hasApiKey} className="space-y-4 disabled:opacity-50">{modelField}</fieldset>
           </div>
           <Separator />
         </>
       )}
 
-      {/* Anthropic */}
       {activeProvider === 'anthropic' && (
         <>
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Anthropic Configuration</h3>
             <FormField htmlFor="anthropic-key" label="API Key">
-              <PasswordInput
-                id="anthropic-key"
-                value={draft.apiKey || ''}
-                onChange={(e) => updateDraft({ apiKey: e.target.value })}
-                placeholder="sk-ant-..."
-              />
+              <PasswordInput id="anthropic-key" value={config.apiKey || ''} onChange={(e) => updateConfig({ apiKey: e.target.value })} placeholder="sk-ant-..." />
             </FormField>
             <fieldset disabled={!hasApiKey} className="space-y-4 disabled:opacity-50">
-              {modelFormField}
-              <p className="text-xs text-muted-foreground">
-                Anthropic has no public models list endpoint — showing a static list of known models
-              </p>
+              {modelField}
+              <p className="text-xs text-muted-foreground">Anthropic has no public models list endpoint — showing a static list of known models</p>
             </fieldset>
           </div>
           <Separator />
         </>
       )}
 
-      {/* Generation Settings */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Generation Settings</h3>
-        <FormField
-          htmlFor="temperature"
-          label={<>Temperature: <span className="font-normal text-muted-foreground">{(draft.temperature ?? 0.7).toFixed(1)}</span></>}
-          hint="Lower is more focused, higher is more creative"
-        >
+        <FormField htmlFor="temperature" label={<>Temperature: <span className="font-normal text-muted-foreground">{(config.temperature ?? 0.7).toFixed(1)}</span></>} hint="Lower is more focused, higher is more creative">
           <div className="py-1">
-            <Slider
-              id="temperature"
-              min={0}
-              max={2}
-              step={0.1}
-              value={[draft.temperature ?? 0.7]}
-              onValueChange={([value]) => updateDraft({ temperature: value })}
-            />
+            <Slider id="temperature" min={0} max={2} step={0.1} value={[config.temperature ?? 0.7]} onValueChange={([v]) => updateConfig({ temperature: v })} />
           </div>
         </FormField>
-        <FormField
-          htmlFor="max-tokens"
-          label={<>Max Tokens: <span className="font-normal text-muted-foreground">{draft.maxTokens ?? 2000}</span></>}
-        >
+        <FormField htmlFor="max-tokens" label={<>Max Tokens: <span className="font-normal text-muted-foreground">{config.maxTokens ?? 2000}</span></>}>
           <div className="py-1">
-            <Slider
-              id="max-tokens"
-              min={100}
-              max={4000}
-              step={100}
-              value={[draft.maxTokens ?? 2000]}
-              onValueChange={([value]) => updateDraft({ maxTokens: value })}
-            />
+            <Slider id="max-tokens" min={100} max={4000} step={100} value={[config.maxTokens ?? 2000]} onValueChange={([v]) => updateConfig({ maxTokens: v })} />
           </div>
         </FormField>
       </div>
 
       <Separator />
 
-      {/* AI Preferences */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">AI Preferences</h3>
         <div className="flex items-center gap-2">
-          <Checkbox
-            id="auto-suggest"
-            checked={aiPreferences.autoSuggest}
-            onCheckedChange={(checked) => updateAIPreferences({ autoSuggest: checked as boolean })}
-          />
+          <Checkbox id="auto-suggest" checked={aiPreferences.autoSuggest} onCheckedChange={(checked) => updatePrefs({ autoSuggest: checked as boolean })} />
           <Label htmlFor="auto-suggest" className="cursor-pointer">Enable auto-suggestions</Label>
         </div>
-
         {aiPreferences.autoSuggest && (
-          <FormField
-            htmlFor="suggestions-delay"
-            label={<>Suggestions Delay: <span className="font-normal text-muted-foreground">{aiPreferences.suggestionsDelay}ms</span></>}
-          >
+          <FormField htmlFor="suggestions-delay" label={<>Suggestions Delay: <span className="font-normal text-muted-foreground">{aiPreferences.suggestionsDelay}ms</span></>}>
             <div className="py-1">
-              <Slider
-                id="suggestions-delay"
-                min={500}
-                max={3000}
-                step={100}
-                value={[aiPreferences.suggestionsDelay]}
-                onValueChange={([value]) => updateAIPreferences({ suggestionsDelay: value })}
-              />
+              <Slider id="suggestions-delay" min={500} max={3000} step={100} value={[aiPreferences.suggestionsDelay]} onValueChange={([v]) => updatePrefs({ suggestionsDelay: v })} />
             </div>
           </FormField>
         )}
-
-        <FormField
-          htmlFor="max-suggestions"
-          label={<>Max Suggestions History: <span className="font-normal text-muted-foreground">{aiPreferences.maxSuggestionsHistory}</span></>}
-        >
+        <FormField htmlFor="max-suggestions" label={<>Max Suggestions History: <span className="font-normal text-muted-foreground">{aiPreferences.maxSuggestionsHistory}</span></>}>
           <div className="py-1">
-            <Slider
-              id="max-suggestions"
-              min={10}
-              max={200}
-              step={10}
-              value={[aiPreferences.maxSuggestionsHistory]}
-              onValueChange={([value]) => updateAIPreferences({ maxSuggestionsHistory: value })}
-            />
+            <Slider id="max-suggestions" min={10} max={200} step={10} value={[aiPreferences.maxSuggestionsHistory]} onValueChange={([v]) => updatePrefs({ maxSuggestionsHistory: v })} />
           </div>
         </FormField>
-
         <div className="flex items-center gap-2">
-          <Checkbox
-            id="show-context"
-            checked={aiPreferences.showContextInPrompt}
-            onCheckedChange={(checked) => updateAIPreferences({ showContextInPrompt: checked as boolean })}
-          />
+          <Checkbox id="show-context" checked={aiPreferences.showContextInPrompt} onCheckedChange={(checked) => updatePrefs({ showContextInPrompt: checked as boolean })} />
           <Label htmlFor="show-context" className="cursor-pointer">Show context in prompt input</Label>
         </div>
-      </div>
-
-      <Separator />
-
-      {/* Connection Test */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-medium">Connection Test</h3>
-        <div className="flex items-center gap-3">
-          <Button onClick={handleTestConnection} disabled={testing || !hasApiKey} size="sm">
-            {testing ? 'Testing...' : 'Test Connection'}
-          </Button>
-          {testResult === 'success' && <Badge variant="outline">Connected ✓</Badge>}
-          {testResult === 'error' && <Badge variant="destructive" className="text-xs">Connection Failed</Badge>}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Save / Cancel */}
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={handleCancel} disabled={!isDirty}>
-          Cancel
-        </Button>
-        <Button size="sm" onClick={handleSave} disabled={!isDirty}>
-          Save
-        </Button>
       </div>
     </div>
   )
