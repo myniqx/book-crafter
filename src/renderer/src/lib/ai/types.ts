@@ -297,48 +297,6 @@ export const DEFAULT_AI_CONFIGS: Record<AIProvider, AIConfig> = {
 }
 
 /**
- * Available Ollama models
- */
-export const OLLAMA_MODELS = [
-  'llama3.2',
-  'llama3.2:1b',
-  'llama3.1',
-  'llama3.1:70b',
-  'mistral',
-  'mistral-nemo',
-  'phi3',
-  'qwen2.5',
-  'gemma2'
-]
-
-/**
- * Available OpenAI models
- */
-export const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']
-
-/**
- * Available Gemini models
- */
-export const GEMINI_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro',
-  'gemini-2.0-flash-exp',
-  'gemini-exp-1206'
-]
-
-/**
- * Available Anthropic models
- */
-export const ANTHROPIC_MODELS = [
-  'claude-3-5-sonnet-20241022',
-  'claude-3-5-haiku-20241022',
-  'claude-3-opus-20240229',
-  'claude-3-sonnet-20240229',
-  'claude-3-haiku-20240307'
-]
-
-/**
  * Build context prompt
  */
 export function buildContextPrompt(context: AIContext): string {

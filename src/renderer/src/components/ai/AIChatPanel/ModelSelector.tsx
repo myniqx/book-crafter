@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useToolsStore } from '@renderer/store'
-import type { ModelSelectorProps, ProviderModels } from './types'
+import type { ModelSelectorProps } from './types'
 import type { AIProvider } from '@renderer/lib/ai/types'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Loader2 } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
 
-// Predefined models for each provider
-const PROVIDER_MODELS: ProviderModels = {
-  ollama: [], // Will be fetched dynamically
-  openai: ['gpt-4-turbo', 'gpt-4', 'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'],
-  anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229'],
-  gemini: ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-2.0-flash-exp']
-}
-
 export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
-  const [ollamaModels, setOllamaModels] = useState<string[]>([])
+  const [availableModels, setAvailableModels] = useState<string[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
 
   // Tools store state
@@ -24,41 +17,33 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
   const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
   const providerConfigs = useToolsStore((state) => state.providerConfigs)
   const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
+  const listModels = useToolsStore((state) => state.listModels)
 
   const config = providerConfigs[activeProvider]
 
-  // Fetch Ollama models when provider is ollama
+  // Fetch models from the provider whenever provider/popover changes
   useEffect(() => {
-    const fetchOllamaModels = async (): Promise<void> => {
-      if (activeProvider === 'ollama') {
-        try {
-          const endpoint = config.endpoint || 'http://localhost:11434'
-          const response = await fetch(`${endpoint}/api/tags`)
-          if (response.ok) {
-            const data = await response.json()
-            if (data.models && Array.isArray(data.models)) {
-              setOllamaModels(data.models.map((m: { name: string }) => m.name))
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch Ollama models:', error)
-        }
+    if (!modelSelectorOpen) return
+
+    let cancelled = false
+    const fetchModels = async (): Promise<void> => {
+      setLoadingModels(true)
+      try {
+        const models = await listModels()
+        if (!cancelled) setAvailableModels(models)
+      } finally {
+        if (!cancelled) setLoadingModels(false)
       }
     }
-    fetchOllamaModels()
-  }, [activeProvider, config.endpoint])
+    fetchModels()
 
-  // Get available models for current provider
-  const getAvailableModels = (): string[] => {
-    if (activeProvider === 'ollama') {
-      return ollamaModels
+    return () => {
+      cancelled = true
     }
-    return PROVIDER_MODELS[activeProvider] || []
-  }
+  }, [activeProvider, modelSelectorOpen, listModels])
 
   const handleProviderChange = (provider: AIProvider): void => {
     setActiveProvider(provider)
-    setModelSelectorOpen(false)
   }
 
   const handleModelChange = (model: string): void => {
@@ -98,15 +83,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
         <ScrollArea className="h-48">
           <div className="p-2">
             <p className="text-xs font-medium text-muted-foreground mb-2">Models</p>
-            {getAvailableModels().length === 0 ? (
-              <p className="text-xs text-muted-foreground italic">
-                {activeProvider === 'ollama'
-                  ? 'No models found. Is Ollama running?'
-                  : 'No models available'}
-              </p>
+            {loadingModels ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Loading models...
+              </div>
+            ) : availableModels.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">No models available</p>
             ) : (
               <div className="space-y-1">
-                {getAvailableModels().map((model) => (
+                {availableModels.map((model) => (
                   <Button
                     key={model}
                     size="sm"

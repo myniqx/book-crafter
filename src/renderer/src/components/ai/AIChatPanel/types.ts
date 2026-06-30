@@ -1,6 +1,5 @@
 import type {
   MessageRole,
-  AIProvider,
   ToolCall,
   ToolResult,
   ToolExecutionStatus
@@ -9,8 +8,6 @@ import type {
 export interface ModelSelectorProps {
   className?: string
 }
-
-export type ProviderModels = Record<AIProvider, string[]>
 
 export interface AIChatPanelProps {
   // Optional props for pre-set context

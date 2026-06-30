@@ -233,6 +233,8 @@ export const createAISlice: StateCreator<
 
   listModels: async () => {
     try {
+      // Reset provider so it picks up the latest config
+      set((state) => { state._provider = null })
       const provider = get().getProvider()
       return provider.listModels ? await provider.listModels() : []
     } catch {
