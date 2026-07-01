@@ -73,7 +73,8 @@ export class OpenAIProvider extends BaseAIProvider {
       const fetchResponse = await window.api.fetch.request(this.apiUrl, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        requestId: options.requestId
       })
 
       if (!fetchResponse.ok) {
@@ -146,6 +147,7 @@ export class OpenAIProvider extends BaseAIProvider {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(body),
+        requestId: options.requestId,
         ...streamHandler
       })
     } catch (error) {

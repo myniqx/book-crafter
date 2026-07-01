@@ -2,7 +2,7 @@ import type { ToolCategory, ToolDefinition } from '../../types'
 import { fileTools } from './file-tools'
 import { analysisTools } from './analysis-tools'
 import { generationTools } from './generation-tools'
-import { editingTools } from './editing-tools'
+import { appTools } from './app-tools'
 
 /**
  * All available tools
@@ -11,7 +11,7 @@ export const allTools: ToolDefinition[] = [
   ...fileTools,
   ...analysisTools,
   ...generationTools,
-  ...editingTools
+  ...appTools
 ]
 
 /**
@@ -21,7 +21,8 @@ export const toolsByCategory: Record<ToolCategory, ToolDefinition[]> = {
   file: fileTools,
   analysis: analysisTools,
   generation: generationTools,
-  editing: editingTools
+  app: appTools.filter((t) => t.category === 'app'),
+  interaction: appTools.filter((t) => t.category === 'interaction')
 }
 
 /**
@@ -67,12 +68,13 @@ export function filterEnabledTools(enabledToolNames: string[]): ToolDefinition[]
  */
 export function getToolNamesGrouped(): Record<ToolCategory, string[]> {
   return {
-    file: fileTools.map((t) => t.name),
-    analysis: analysisTools.map((t) => t.name),
-    generation: generationTools.map((t) => t.name),
-    editing: editingTools.map((t) => t.name)
+    file: toolsByCategory.file.map((t) => t.name),
+    analysis: toolsByCategory.analysis.map((t) => t.name),
+    generation: toolsByCategory.generation.map((t) => t.name),
+    app: toolsByCategory.app.map((t) => t.name),
+    interaction: toolsByCategory.interaction.map((t) => t.name)
   }
 }
 
 // Re-export individual tool arrays
-export { fileTools, analysisTools, generationTools, editingTools }
+export { fileTools, analysisTools, generationTools, appTools }

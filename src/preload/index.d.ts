@@ -4,6 +4,7 @@ import type { FetchResponse, FetchOptions, StreamOptions } from '../types/ipc'
 interface HTTPAPI {
   request: <T = unknown>(url: string, options?: FetchOptions) => Promise<FetchResponse<T>>
   stream: (url: string, options: StreamOptions) => Promise<void>
+  abort: (requestId: string) => Promise<boolean>
 }
 
 interface FSAPI {

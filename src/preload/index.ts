@@ -86,6 +86,8 @@ const fetchAPI = {
   request: <T = unknown>(url: string, options?: FetchOptions) =>
     ipcRenderer.invoke('fetch:request', url, options).then((response) => response as T),
 
+  abort: (requestId: string): Promise<boolean> => ipcRenderer.invoke('fetch:abort', requestId),
+
   stream: async (url: string, options: StreamOptions): Promise<void> => {
     // Setup stream listeners
     const chunkListener = (
@@ -133,7 +135,8 @@ const fetchAPI = {
         method: options.method,
         headers: options.headers,
         body: options.body,
-        timeout: options.timeout
+        timeout: options.timeout,
+        requestId: options.requestId
       })
     } catch (error) {
       // Cleanup on error

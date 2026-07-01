@@ -36,7 +36,8 @@ export const fileTools: ToolDefinition[] = [
   },
   {
     name: 'write_chapter',
-    description: 'Write or update the content of a chapter',
+    description:
+      'Replace the ENTIRE content of a chapter. For small, targeted changes prefer edit_chapter — it is safer and cheaper.',
     category: 'file',
     requiresApproval: true,
     parameters: {
@@ -56,6 +57,36 @@ export const fileTools: ToolDefinition[] = [
         }
       },
       required: ['bookSlug', 'chapterSlug', 'content']
+    }
+  },
+  {
+    name: 'edit_chapter',
+    description:
+      'Make a targeted edit in a chapter by replacing an exact text snippet. oldText must appear exactly once in the chapter — include enough surrounding context to make it unique. Preferred over write_chapter for small changes like fixing grammar in a paragraph.',
+    category: 'file',
+    requiresApproval: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        bookSlug: {
+          type: 'string',
+          description: 'The slug identifier of the book'
+        },
+        chapterSlug: {
+          type: 'string',
+          description: 'The slug identifier of the chapter'
+        },
+        oldText: {
+          type: 'string',
+          description:
+            'The exact text to replace. Must match the chapter content exactly (including whitespace) and appear exactly once.'
+        },
+        newText: {
+          type: 'string',
+          description: 'The replacement text'
+        }
+      },
+      required: ['bookSlug', 'chapterSlug', 'oldText', 'newText']
     }
   },
   {
@@ -146,7 +177,8 @@ export const fileTools: ToolDefinition[] = [
   },
   {
     name: 'get_entity',
-    description: 'Get details of a specific entity (character, location, etc.)',
+    description:
+      'Get full details of an entity (character, location, etc.): fields, notes with checklist progress, relations, and usage statistics',
     category: 'file',
     requiresApproval: false,
     parameters: {
@@ -158,6 +190,53 @@ export const fileTools: ToolDefinition[] = [
         }
       },
       required: ['entitySlug']
+    }
+  },
+  {
+    name: 'manage_entity_notes',
+    description:
+      'Add, update, or delete notes on an entity, or toggle checklist items. Notes track plans for an entity (e.g., character development steps); checklist notes track whether each planned step has been written into the story yet. Use get_entity first to see existing notes and their ids.',
+    category: 'file',
+    requiresApproval: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        entitySlug: {
+          type: 'string',
+          description: 'The slug identifier of the entity'
+        },
+        action: {
+          type: 'string',
+          description: 'The operation to perform',
+          enum: ['add', 'update', 'delete', 'toggle_item']
+        },
+        noteId: {
+          type: 'string',
+          description: 'Id of the note (required for update, delete, toggle_item)'
+        },
+        itemId: {
+          type: 'string',
+          description: 'Id of the checklist item (required for toggle_item)'
+        },
+        content: {
+          type: 'string',
+          description: 'Note text (required for add, optional for update)'
+        },
+        noteType: {
+          type: 'string',
+          description: 'Type of note when adding (default: general)',
+          enum: ['general', 'checklist']
+        },
+        checklistItems: {
+          type: 'array',
+          description: 'Checklist item texts when adding a checklist note',
+          items: {
+            type: 'string',
+            description: 'A checklist item text'
+          }
+        }
+      },
+      required: ['entitySlug', 'action']
     }
   },
   {

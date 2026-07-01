@@ -11,7 +11,7 @@ export type MessageRole = 'user' | 'assistant' | 'system' | 'tool_result'
 /**
  * Tool categories
  */
-export type ToolCategory = 'file' | 'analysis' | 'generation' | 'editing'
+export type ToolCategory = 'file' | 'analysis' | 'generation' | 'app' | 'interaction'
 
 /**
  * Approval mode for tool execution
@@ -51,14 +51,23 @@ export interface ToolCall {
   id: string
   name: string
   arguments: Record<string, unknown>
+  // Gemini 2.5+ returns a thought signature with each functionCall part and
+  // requires it to be echoed back verbatim when the history is resent.
+  // Opaque passthrough — other providers ignore it.
+  thoughtSignature?: string
 }
 
 /**
  * Tool execution result
+ *
+ * `content` is what the AI sees (full detail, including raw error messages).
+ * `displayContent` is a short, human-friendly summary shown in the chat UI.
+ * When absent, the UI falls back to `content`.
  */
 export interface ToolResult {
   toolCallId: string
   content: string
+  displayContent?: string
   isError?: boolean
 }
 
@@ -141,6 +150,15 @@ export interface AIConfig {
  * AI Context (what's included in the prompt)
  */
 export interface AIContext {
+  // Lightweight map of the whole workspace (titles + slugs only, no content).
+  // Lets the agent resolve "chapter 1" style references without tool calls.
+  workspace?: {
+    books: Array<{
+      slug: string
+      title: string
+      chapters: Array<{ slug: string; title: string }>
+    }>
+  }
   currentChapter?: {
     bookSlug: string
     chapterSlug: string
@@ -171,6 +189,8 @@ export interface AIRequestOptions {
   conversationHistory?: AIMessage[]
   tools?: ToolDefinition[]
   toolChoice?: 'auto' | 'none' | 'required' | { type: 'tool'; name: string }
+  // Id used to cancel the underlying HTTP request via fetch.abort(requestId)
+  requestId?: string
 }
 
 /**
@@ -400,5 +420,51 @@ export const PRESET_PROMPTS: Record<string, PresetPrompt> = {
     prompt:
       'Check if the character behavior is consistent with their defined personality and background.',
     category: 'analysis'
+  },
+  adaptStyle: {
+    label: 'Adapt Style',
+    prompt:
+      'Adapt the writing style of the selected text (tell me the target style: formal, casual, literary, journalistic, academic, or poetic). Preserve @mentions.',
+    category: 'writing'
+  },
+  changePOV: {
+    label: 'Change Point of View',
+    prompt:
+      'Change the point of view of the selected text (tell me the target POV: first person, second person, third person limited, or omniscient). Preserve @mentions.',
+    category: 'writing'
+  },
+  simplifyText: {
+    label: 'Simplify Text',
+    prompt: 'Simplify the selected text to make it easier to read while preserving @mentions.',
+    category: 'writing'
+  },
+  translateText: {
+    label: 'Translate',
+    prompt:
+      'Translate the selected text (tell me the target language). Keep character and place names untranslated and preserve @mentions.',
+    category: 'writing'
+  },
+  addSensoryDetails: {
+    label: 'Add Sensory Details',
+    prompt:
+      'Enhance the selected text with sensory descriptions (sight, sound, smell, touch, taste) while preserving @mentions.',
+    category: 'writing'
+  },
+  removeFilterWords: {
+    label: 'Remove Filter Words',
+    prompt:
+      'Remove filter words (e.g., "seemed", "felt", "appeared") from the selected text and strengthen the prose while preserving @mentions.',
+    category: 'writing'
+  },
+  brainstormIdeas: {
+    label: 'Brainstorm Ideas',
+    prompt:
+      'Brainstorm creative ideas for my story (tell me the focus: plot twist, conflict, backstory, subplot, ending, or opening).',
+    category: 'writing'
+  },
+  generateOutline: {
+    label: 'Generate Outline',
+    prompt: 'Generate an outline for this chapter or story based on the premise I describe.',
+    category: 'writing'
   }
 }

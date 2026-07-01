@@ -49,7 +49,9 @@ export interface FetchOptions {
   headers?: Record<string, string>
   body?: string | Record<string, unknown>
   timeout?: number
-  signal?: AbortSignal
+  // Assign an id to make the request cancellable via fetch.abort(requestId).
+  // AbortSignal cannot cross the IPC boundary, so cancellation is id-based.
+  requestId?: string
 }
 
 export interface FetchResponse<T = unknown> {
@@ -60,7 +62,7 @@ export interface FetchResponse<T = unknown> {
   data: T
 }
 
-export interface StreamOptions extends Omit<FetchOptions, 'signal'> {
+export interface StreamOptions extends FetchOptions {
   onChunk: (chunk: string) => void
   onError: (error: Error) => void
   onComplete: () => void
@@ -69,6 +71,7 @@ export interface StreamOptions extends Omit<FetchOptions, 'signal'> {
 export interface FetchAPI {
   request: <T = unknown>(url: string, options?: FetchOptions) => Promise<FetchResponse<T>>
   stream: (url: string, options: StreamOptions) => Promise<void>
+  abort: (requestId: string) => Promise<boolean>
 }
 
 // Dialog Types
@@ -147,4 +150,5 @@ export type IPCErrorCode =
   | 'DIRECTORY_NOT_EMPTY'
   | 'NETWORK_ERROR'
   | 'TIMEOUT'
+  | 'ABORTED'
   | 'UNKNOWN'

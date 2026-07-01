@@ -1,4 +1,4 @@
-import type { AIRequestOptions, ToolDefinition } from '../types'
+import type { AIRequestOptions, ToolCall, ToolDefinition } from '../types'
 
 /**
  * Normalized message format — provider-agnostic internal representation
@@ -6,7 +6,7 @@ import type { AIRequestOptions, ToolDefinition } from '../types'
 export interface NormalizedMessage {
   role: 'system' | 'user' | 'assistant' | 'tool_result'
   content: string
-  toolCalls?: Array<{ id: string; name: string; arguments: Record<string, unknown> }>
+  toolCalls?: ToolCall[]
   toolResult?: { toolCallId: string; content: string; isError?: boolean }
 }
 
@@ -41,9 +41,31 @@ export function buildNormalizedHistory(options: AIRequestOptions): NormalizedMes
     }
   }
 
-  messages.push({ role: 'user', content: options.prompt })
+  // In agentic follow-up iterations the prompt is empty — the model continues
+  // from tool results already in the history. An empty trailing user message
+  // is malformed for Anthropic and noise for other providers.
+  if (options.prompt) {
+    messages.push({ role: 'user', content: options.prompt })
+  }
 
   return messages
+}
+
+/**
+ * Take the most recent `count` messages without splitting a tool_use/tool_result
+ * pair. A truncation window that starts with a tool_result would reference a
+ * tool_use the model can no longer see — a hard API error on Anthropic.
+ * The window start is extended backwards until it no longer lands on a tool_result.
+ */
+export function takeRecentMessages<T extends { role: string }>(messages: T[], count: number): T[] {
+  if (messages.length <= count) return messages
+
+  let start = messages.length - count
+  while (start > 0 && messages[start].role === 'tool_result') {
+    start--
+  }
+
+  return messages.slice(start)
 }
 
 /**

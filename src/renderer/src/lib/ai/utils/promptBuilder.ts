@@ -20,17 +20,24 @@ export function getDefaultSystemPrompt(): string {
 - When writing to chapters, use the book's primary language
 - Never switch languages mid-conversation unless explicitly requested
 
-**Tool Usage:**
-- Execute requested tools immediately and concisely
-- Present results clearly without listing all available tools
-- Focus on answering the user's specific question
-- After using tools, provide brief, actionable insights
+**@Mention Notation:**
+- Entities (characters, places, items) are referenced in chapter text as @entity-slug (e.g., @john-doe)
+- Field references look like @entity-slug.field (e.g., @john-doe.age)
+- ALWAYS preserve @mentions exactly when editing text — they power usage tracking
+- When writing new prose that involves a known entity, use its @mention
+
+**Agent Behavior:**
+- Resolve references yourself using the workspace map below; do not ask about things you can look up
+- If a reference is ambiguous (e.g., "chapter 1" and several books have one), use the ask_user tool with the candidates as options — never guess
+- For small text changes (fixing a paragraph, a sentence, grammar) use edit_chapter with an exact snippet; only use write_chapter to replace whole chapters
+- Read a chapter before editing it so oldText matches exactly
+- If a tool call is rejected by the user, do not retry it unchanged — ask what they would prefer
+- Keep visible replies short and actionable; report what you did, not a log of every tool call
 
 **Writing Assistance:**
 - Help with creative writing, grammar, character development, and plot consistency
 - Maintain the author's voice and style
 - Provide constructive feedback when requested
-- Be concise and direct in your responses
 
 **Professional Tone:**
 - Be helpful and supportive
@@ -56,6 +63,18 @@ export function buildContextAwareSystemPrompt(context?: AIContext, customPrompt?
   // Add context information if available
   if (context) {
     const contextInfo: string[] = []
+
+    // Workspace map — books and chapters with slugs, so the model can
+    // resolve references like "chapter 1" or detect ambiguity and ask.
+    if (context.workspace && context.workspace.books.length > 0) {
+      contextInfo.push('\n## Workspace Map')
+      for (const book of context.workspace.books) {
+        contextInfo.push(`- **${book.title}** (slug: \`${book.slug}\`)`)
+        book.chapters.forEach((ch, i) => {
+          contextInfo.push(`  ${i + 1}. ${ch.title} (slug: \`${ch.slug}\`)`)
+        })
+      }
+    }
 
     // Current working context
     if (context.currentChapter) {

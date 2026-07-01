@@ -10,7 +10,10 @@ import type {
 import { parseResponseData, createStreamHandler, parseGeminiStream, buildNormalizedHistory } from './utils'
 
 interface GeminiTextPart { text: string }
-interface GeminiFunctionCallPart { functionCall: { name: string; args: Record<string, unknown> } }
+interface GeminiFunctionCallPart {
+  functionCall: { name: string; args: Record<string, unknown> }
+  thoughtSignature?: string
+}
 interface GeminiFunctionResponsePart {
   functionResponse: { name: string; response: { content: string; isError?: boolean } }
 }
@@ -53,20 +56,29 @@ export class GeminiProvider extends BaseAIProvider {
     const history = buildNormalizedHistory(options)
     const contents: GeminiContent[] = []
 
+    // Gemini has no tool-call ids: functionResponse.name must be the function
+    // NAME, so map our synthetic ids back to names while walking the history.
+    const toolCallNames = new Map<string, string>()
+
     for (const msg of history) {
       if (msg.role === 'assistant' && msg.toolCalls && msg.toolCalls.length > 0) {
         const parts: GeminiPart[] = []
         if (msg.content) parts.push({ text: msg.content })
-        msg.toolCalls.forEach((tc) =>
-          parts.push({ functionCall: { name: tc.name, args: tc.arguments } })
-        )
+        msg.toolCalls.forEach((tc) => {
+          toolCallNames.set(tc.id, tc.name)
+          parts.push({
+            functionCall: { name: tc.name, args: tc.arguments },
+            // Required by Gemini 2.5+ when echoing functionCall parts back
+            ...(tc.thoughtSignature ? { thoughtSignature: tc.thoughtSignature } : {})
+          })
+        })
         contents.push({ role: 'model', parts })
       } else if (msg.role === 'tool_result' && msg.toolResult) {
         contents.push({
           role: 'user',
           parts: [{
             functionResponse: {
-              name: msg.toolResult.toolCallId,
+              name: toolCallNames.get(msg.toolResult.toolCallId) || msg.toolResult.toolCallId,
               response: { content: msg.toolResult.content, isError: msg.toolResult.isError }
             }
           }]
@@ -105,7 +117,8 @@ export class GeminiProvider extends BaseAIProvider {
       .map((p) => ({
         id: `gemini-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         name: p.functionCall.name,
-        arguments: p.functionCall.args
+        arguments: p.functionCall.args,
+        thoughtSignature: p.thoughtSignature
       }))
   }
 
@@ -130,7 +143,8 @@ export class GeminiProvider extends BaseAIProvider {
       const fetchResponse = await window.api.fetch.request(this.getApiUrl(), {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify(this.buildRequestBody(options))
+        body: JSON.stringify(this.buildRequestBody(options)),
+        requestId: options.requestId
       })
 
       if (!fetchResponse.ok) {
@@ -197,6 +211,7 @@ export class GeminiProvider extends BaseAIProvider {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(this.buildRequestBody(options)),
+        requestId: options.requestId,
         ...streamHandler
       })
     } catch (error) {

@@ -12,6 +12,8 @@ import { PresetPromptsSelector } from './PresetPromptsSelector'
 import { MessageBubble } from './MessageBubble'
 import { HeaderMenu } from './HeaderMenu'
 import { ApprovalDialog } from '../ApprovalDialog'
+import { AskUserPrompt } from '../AskUserPrompt'
+import { createWorkspaceBackup } from '@renderer/lib/backup'
 
 export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   initialPrompt,
@@ -53,6 +55,16 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const addEntity = useStore((state) => state.addEntity)
   const updateEntity = useStore((state) => state.updateEntity)
   const deleteEntity = useStore((state) => state.deleteEntity)
+  const addEntityNote = useStore((state) => state.addEntityNote)
+  const updateEntityNote = useStore((state) => state.updateEntityNote)
+  const deleteEntityNote = useStore((state) => state.deleteEntityNote)
+  const toggleChecklistItem = useStore((state) => state.toggleChecklistItem)
+
+  // App-level state/actions for app_command
+  const workspacePath = useStore((state) => state.workspacePath)
+  const backupSettings = useStore((state) => state.backupSettings)
+  const extendedEditorSettings = useStore((state) => state.extendedEditorSettings)
+  const updateExtendedEditorSettings = useStore((state) => state.updateExtendedEditorSettings)
 
   // Create store access for tool execution
   const storeAccess: StoreAccess = useMemo(
@@ -82,6 +94,32 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       },
       deleteEntity: (slug: string) => {
         deleteEntity(slug)
+      },
+      addEntityNote: (slug: string, note: unknown) => {
+        addEntityNote(slug, note as Parameters<typeof addEntityNote>[1])
+      },
+      updateEntityNote: (slug: string, noteId: string, updates: unknown) => {
+        updateEntityNote(slug, noteId, updates as Parameters<typeof updateEntityNote>[2])
+      },
+      deleteEntityNote: (slug: string, noteId: string) => {
+        deleteEntityNote(slug, noteId)
+      },
+      toggleChecklistItem: (slug: string, noteId: string, itemId: string) => {
+        toggleChecklistItem(slug, noteId, itemId)
+      },
+      createBackup: async (label?: string) => {
+        if (!workspacePath) {
+          throw new Error('No workspace is open')
+        }
+        return createWorkspaceBackup(workspacePath, {
+          maxBackups: backupSettings.maxBackups,
+          backupPath: backupSettings.backupPath,
+          label
+        })
+      },
+      getEditorSettings: () => ({ ...extendedEditorSettings }),
+      updateEditorSettings: (updates: Record<string, unknown>) => {
+        updateExtendedEditorSettings(updates as Parameters<typeof updateExtendedEditorSettings>[0])
       }
     }),
     [
@@ -92,7 +130,15 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
       deleteChapter,
       addEntity,
       updateEntity,
-      deleteEntity
+      deleteEntity,
+      addEntityNote,
+      updateEntityNote,
+      deleteEntityNote,
+      toggleChecklistItem,
+      workspacePath,
+      backupSettings,
+      extendedEditorSettings,
+      updateExtendedEditorSettings
     ]
   )
 
@@ -274,6 +320,9 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
 
       {/* Input Area */}
       <div className="border-t border-outline-variant p-3 space-y-2">
+        {/* Agent question (ask_user) */}
+        <AskUserPrompt />
+
         {/* Preset Prompts */}
         <div className="flex items-center gap-2">
           <PresetPromptsSelector onSelectPrompt={setPrompt} />

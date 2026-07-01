@@ -236,7 +236,8 @@ export function parseGeminiStream(chunk: string): ParsedStreamEvent[] {
             const toolCall: ToolCall = {
               id: `gemini-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
               name: fc.name,
-              arguments: fc.args
+              arguments: fc.args,
+              thoughtSignature: part.thoughtSignature as string | undefined
             }
             events.push({ type: 'tool_call_start', toolCall: { id: toolCall.id, name: fc.name } })
             events.push({ type: 'tool_call_end', toolCall })

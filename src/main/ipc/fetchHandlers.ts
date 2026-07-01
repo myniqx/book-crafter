@@ -8,7 +8,37 @@ function createIPCError(message: string, code: string, details?: unknown): IPCEr
   return error
 }
 
+// Active requests that can be cancelled via fetch:abort.
+// userAborted distinguishes user cancellation from timeout — both fire AbortError.
+const activeRequests = new Map<string, { controller: AbortController; userAborted: boolean }>()
+
+function registerAbortable(requestId: string | undefined, controller: AbortController): void {
+  if (requestId) {
+    activeRequests.set(requestId, { controller, userAborted: false })
+  }
+}
+
+function unregisterAbortable(requestId: string | undefined): void {
+  if (requestId) {
+    activeRequests.delete(requestId)
+  }
+}
+
+function wasUserAborted(requestId: string | undefined): boolean {
+  if (!requestId) return false
+  return activeRequests.get(requestId)?.userAborted === true
+}
+
 export function registerFetchHandlers(): void {
+  // Abort an in-flight request by id
+  ipcMain.handle('fetch:abort', async (_event: IpcMainInvokeEvent, requestId: string) => {
+    const entry = activeRequests.get(requestId)
+    if (!entry) return false
+    entry.userAborted = true
+    entry.controller.abort()
+    return true
+  })
+
   // HTTP Request
   ipcMain.handle(
     'fetch:request',
@@ -18,9 +48,10 @@ export function registerFetchHandlers(): void {
         const headers = options?.headers || {}
         const timeout = options?.timeout || 30000 // 30s default
 
-        // Create abort controller for timeout
+        // Create abort controller for timeout and user cancellation
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout)
+        registerAbortable(options?.requestId, controller)
 
         // Prepare body
         let body: string | undefined
@@ -34,14 +65,17 @@ export function registerFetchHandlers(): void {
         }
 
         // Make request
-        const response = await fetch(url, {
-          method,
-          headers,
-          body,
-          signal: controller.signal
-        })
-
-        clearTimeout(timeoutId)
+        let response: Response
+        try {
+          response = await fetch(url, {
+            method,
+            headers,
+            body,
+            signal: controller.signal
+          })
+        } finally {
+          clearTimeout(timeoutId)
+        }
 
         // Parse response
         const contentType = response.headers.get('content-type') || ''
@@ -65,6 +99,9 @@ export function registerFetchHandlers(): void {
         return result
       } catch (error: unknown) {
         if ((error as Error).name === 'AbortError') {
+          if (wasUserAborted(options?.requestId)) {
+            throw createIPCError('Request aborted by user', 'ABORTED', { url })
+          }
           throw createIPCError('Request timeout', 'TIMEOUT', { url, timeout: options?.timeout })
         }
         throw createIPCError(
@@ -72,6 +109,8 @@ export function registerFetchHandlers(): void {
           'NETWORK_ERROR',
           error
         )
+      } finally {
+        unregisterAbortable(options?.requestId)
       }
     }
   )
@@ -100,9 +139,10 @@ export function registerFetchHandlers(): void {
           }
         }
 
-        // Create abort controller for timeout
+        // Create abort controller for timeout and user cancellation
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout)
+        registerAbortable(options?.requestId, controller)
 
         // Make streaming request
         const response = await fetch(url, {
@@ -152,6 +192,9 @@ export function registerFetchHandlers(): void {
         }
       } catch (error: unknown) {
         if ((error as Error).name === 'AbortError') {
+          if (wasUserAborted(options?.requestId)) {
+            throw createIPCError('Stream aborted by user', 'ABORTED', { url })
+          }
           throw createIPCError('Stream timeout', 'TIMEOUT', { url, timeout: options?.timeout })
         }
         throw createIPCError(
@@ -159,6 +202,8 @@ export function registerFetchHandlers(): void {
           'NETWORK_ERROR',
           error
         )
+      } finally {
+        unregisterAbortable(options?.requestId)
       }
     }
   )

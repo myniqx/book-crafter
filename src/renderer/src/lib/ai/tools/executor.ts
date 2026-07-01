@@ -21,11 +21,126 @@ export interface StoreAccess {
   updateEntity: (slug: string, updates: unknown) => void
   deleteEntity: (slug: string) => void
 
+  // Entity notes
+  addEntityNote?: (slug: string, note: unknown) => void
+  updateEntityNote?: (slug: string, noteId: string, updates: unknown) => void
+  deleteEntityNote?: (slug: string, noteId: string) => void
+  toggleChecklistItem?: (slug: string, noteId: string, itemId: string) => void
+
+  // App-level actions
+  createBackup?: (label?: string) => Promise<string>
+  getEditorSettings?: () => Record<string, unknown>
+  updateEditorSettings?: (updates: Record<string, unknown>) => void
+
   // Context - current working state
   getCurrentBookSlug?: () => string | null
   getCurrentChapterSlug?: () => string | null
   getAvailableBookSlugs?: () => string[]
   getEntitySlugs?: () => string[]
+}
+
+function generateNoteId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `note-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+}
+
+/**
+ * Escape special regex characters in user/entity-provided strings
+ */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Build a short, human-friendly summary of a successful tool execution.
+ * This is what the user sees in the chat — the AI receives the full `content`.
+ */
+function buildDisplaySummary(
+  name: string,
+  args: Record<string, unknown>,
+  content: string
+): string {
+  const a = args as Record<string, string | undefined>
+
+  switch (name) {
+    case 'list_books':
+      return 'Listed books in the workspace'
+    case 'list_chapters':
+      return `Listed chapters of "${a.bookSlug}"`
+    case 'read_chapter':
+      return `Read chapter "${a.chapterSlug}" from "${a.bookSlug}"`
+    case 'write_chapter':
+      return `Updated chapter "${a.chapterSlug}" in "${a.bookSlug}"`
+    case 'edit_chapter':
+      return `Edited chapter "${a.chapterSlug}" in "${a.bookSlug}"`
+    case 'manage_entity_notes':
+      return `Note ${a.action === 'toggle_item' ? 'checklist updated' : `${a.action}ed`} on "${a.entitySlug}"`
+    case 'app_command':
+      return content.split('\n')[0].slice(0, 120)
+    case 'create_chapter':
+      return `Created chapter "${a.title}" in "${a.bookSlug}"`
+    case 'delete_chapter':
+      return `Deleted chapter "${a.chapterSlug}" from "${a.bookSlug}"`
+    case 'search_content':
+      return `Searched for "${a.query}"`
+    case 'get_entity':
+      return `Read entity "${a.entitySlug}"`
+    case 'list_entities':
+      return a.entityType ? `Listed ${a.entityType} entities` : 'Listed all entities'
+    case 'create_entity':
+      return `Created ${a.type || 'entity'} "${a.name}"`
+    case 'update_entity':
+      return `Updated entity "${a.entitySlug}"`
+    case 'delete_entity':
+      return `Deleted entity "${a.entitySlug}"`
+    case 'generate_character':
+      return `Created character "${a.name}"`
+    case 'generate_location':
+      return `Created location "${a.name}"`
+    case 'analyze_entity_usage':
+      return `Collected usage data for "${a.entitySlug}"`
+    case 'check_consistency':
+      return `Collected chapters of "${a.bookSlug}" for consistency check`
+    case 'summarize_chapter':
+      return `Collected chapter "${a.chapterSlug}" for summarization`
+    case 'summarize_book':
+      return `Collected book "${a.bookSlug}" for summarization`
+    case 'find_plot_holes':
+      return `Collected content of "${a.bookSlug}" for plot analysis`
+    case 'analyze_character_arc':
+      return `Collected arc data for "${a.entitySlug}"`
+    case 'get_word_count':
+      return `Calculated word count for "${a.bookSlug}"`
+    case 'compare_chapters':
+      return `Collected "${a.chapter1Slug}" and "${a.chapter2Slug}" for comparison`
+    default:
+      // Fallback: first line of the content, trimmed to a reasonable length
+      return content.split('\n')[0].slice(0, 120) || `${name} completed`
+  }
+}
+
+/**
+ * Short, human-friendly failure line. The raw error stays in `content` for the AI.
+ */
+function buildErrorDisplay(name: string): string {
+  const labels: Record<string, string> = {
+    read_chapter: 'Could not read the chapter',
+    write_chapter: 'Could not update the chapter',
+    edit_chapter: 'Could not edit the chapter',
+    create_chapter: 'Could not create the chapter',
+    delete_chapter: 'Could not delete the chapter',
+    manage_entity_notes: 'Could not update entity notes',
+    app_command: 'App command failed',
+    get_entity: 'Could not read the entity',
+    create_entity: 'Could not create the entity',
+    update_entity: 'Could not update the entity',
+    delete_entity: 'Could not delete the entity',
+    generate_character: 'Could not create the character',
+    generate_location: 'Could not create the location'
+  }
+  return labels[name] || `${name} failed`
 }
 
 /**
@@ -41,21 +156,25 @@ export async function executeToolCall(
     return {
       toolCallId: toolCall.id,
       content: `Error: Unknown tool "${toolCall.name}"`,
+      displayContent: `Unknown tool: ${toolCall.name}`,
       isError: true
     }
   }
 
   try {
     const result = await executeToolByName(toolCall.name, toolCall.arguments, storeAccess)
+    const content = typeof result === 'string' ? result : JSON.stringify(result, null, 2)
     return {
       toolCallId: toolCall.id,
-      content: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+      content,
+      displayContent: buildDisplaySummary(toolCall.name, toolCall.arguments, content),
       isError: false
     }
   } catch (error) {
     return {
       toolCallId: toolCall.id,
       content: `Error executing ${toolCall.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      displayContent: buildErrorDisplay(toolCall.name),
       isError: true
     }
   }
@@ -77,6 +196,8 @@ async function executeToolByName(
       return executeReadChapter(args, store)
     case 'write_chapter':
       return executeWriteChapter(args, store)
+    case 'edit_chapter':
+      return executeEditChapter(args, store)
     case 'list_chapters':
       return executeListChapters(args, store)
     case 'create_chapter':
@@ -95,6 +216,8 @@ async function executeToolByName(
       return executeUpdateEntity(args, store)
     case 'delete_entity':
       return executeDeleteEntity(args, store)
+    case 'manage_entity_notes':
+      return executeManageEntityNotes(args, store)
 
     // Analysis tools
     case 'analyze_entity_usage':
@@ -120,25 +243,12 @@ async function executeToolByName(
     case 'generate_location':
       return executeGenerateLocation(args, store)
 
-    // Content generation tools - these return prompts for AI to process
-    case 'write_scene':
-    case 'suggest_dialogue':
-    case 'generate_outline':
-    case 'expand_text':
-    case 'brainstorm_ideas':
-      return executeGenerationTool(name, args, store)
-
-    // Editing tools - these also return prompts for AI
-    case 'proofread':
-    case 'adapt_style':
-    case 'change_pov':
-    case 'change_tense':
-    case 'simplify_text':
-    case 'intensify_emotion':
-    case 'translate':
-    case 'add_descriptions':
-    case 'remove_filter_words':
-      return executeEditingTool(name, args, store)
+    // App tools
+    case 'app_command':
+      return executeAppCommand(args, store)
+    case 'ask_user':
+      // Handled by the agent loop (aiSlice), never dispatched here
+      throw new Error('ask_user must be handled by the agent loop, not the executor')
 
     default:
       throw new Error(`Tool "${name}" is not implemented`)
@@ -186,6 +296,37 @@ function executeWriteChapter(args: Record<string, unknown>, store: StoreAccess):
 
   store.updateChapter(bookSlug, chapterSlug, content)
   return `Successfully updated chapter "${chapterSlug}" in book "${bookSlug}"`
+}
+
+function executeEditChapter(args: Record<string, unknown>, store: StoreAccess): string {
+  const { bookSlug, chapterSlug, oldText, newText } = args as {
+    bookSlug: string
+    chapterSlug: string
+    oldText: string
+    newText: string
+  }
+
+  const chapter = store.getChapter(bookSlug, chapterSlug) as { content?: string } | undefined
+  if (!chapter) {
+    throw new Error(`Chapter "${chapterSlug}" not found in book "${bookSlug}"`)
+  }
+
+  const content = chapter.content || ''
+  const occurrences = content.split(oldText).length - 1
+
+  if (occurrences === 0) {
+    throw new Error(
+      'oldText was not found in the chapter. Read the chapter again and copy the text exactly, including whitespace and punctuation.'
+    )
+  }
+  if (occurrences > 1) {
+    throw new Error(
+      `oldText appears ${occurrences} times in the chapter. Include more surrounding context to make it unique.`
+    )
+  }
+
+  store.updateChapter(bookSlug, chapterSlug, content.replace(oldText, newText))
+  return `Successfully edited chapter "${chapterSlug}" in book "${bookSlug}" (replaced ${oldText.length} chars with ${newText.length} chars)`
 }
 
 function executeListChapters(args: Record<string, unknown>, store: StoreAccess): string {
@@ -264,7 +405,7 @@ function executeSearchContent(args: Record<string, unknown>, store: StoreAccess)
     for (const chapter of book.chapters || []) {
       const content = caseSensitive ? chapter.content || '' : (chapter.content || '').toLowerCase()
 
-      const matches = (content.match(new RegExp(searchQuery, 'g')) || []).length
+      const matches = (content.match(new RegExp(escapeRegExp(searchQuery), 'g')) || []).length
       if (matches > 0) {
         results.push({
           book: book.title,
@@ -282,21 +423,37 @@ function executeSearchContent(args: Record<string, unknown>, store: StoreAccess)
   return results.map((r) => `- ${r.book} / ${r.chapter}: ${r.matches} match(es)`).join('\n')
 }
 
+interface EntityShape {
+  name: string
+  type: string
+  fields?: Array<{ name: string; value: string }>
+  notes?: Array<{
+    id: string
+    content: string
+    type: 'general' | 'checklist'
+    checklistItems?: Array<{
+      id: string
+      text: string
+      completed: boolean
+      completedIn?: { book: string; chapter: string; line: number }
+    }>
+  }>
+  relations?: Array<{ targetEntitySlug: string; type: string; description?: string }>
+  metadata?: {
+    usageCount?: number
+    usageLocations?: Array<{ book: string; chapter: string; line: number }>
+  }
+}
+
 function executeGetEntity(args: Record<string, unknown>, store: StoreAccess): string {
   const { entitySlug } = args as { entitySlug: string }
-  const entity = store.getEntity(entitySlug) as
-    | {
-        name: string
-        type: string
-        fields?: Array<{ name: string; value: string }>
-      }
-    | undefined
+  const entity = store.getEntity(entitySlug) as EntityShape | undefined
 
   if (!entity) {
     throw new Error(`Entity "${entitySlug}" not found`)
   }
 
-  const lines = [`# ${entity.name}`, `Type: ${entity.type}`, '']
+  const lines = [`# ${entity.name} (@${entitySlug})`, `Type: ${entity.type}`, '']
 
   if (entity.fields) {
     for (const field of entity.fields) {
@@ -306,7 +463,110 @@ function executeGetEntity(args: Record<string, unknown>, store: StoreAccess): st
     }
   }
 
+  if (entity.notes && entity.notes.length > 0) {
+    lines.push('', '## Notes')
+    for (const note of entity.notes) {
+      lines.push(`- [id: ${note.id}] (${note.type}) ${note.content}`)
+      if (note.type === 'checklist' && note.checklistItems) {
+        for (const item of note.checklistItems) {
+          const status = item.completed ? 'x' : ' '
+          const where = item.completedIn
+            ? ` — done in ${item.completedIn.book}/${item.completedIn.chapter}:${item.completedIn.line}`
+            : ''
+          lines.push(`  - [${status}] [id: ${item.id}] ${item.text}${where}`)
+        }
+      }
+    }
+  }
+
+  if (entity.relations && entity.relations.length > 0) {
+    lines.push('', '## Relations')
+    for (const rel of entity.relations) {
+      lines.push(
+        `- ${rel.type} → @${rel.targetEntitySlug}${rel.description ? ` (${rel.description})` : ''}`
+      )
+    }
+  }
+
+  const usage = entity.metadata
+  if (usage && (usage.usageCount || usage.usageLocations?.length)) {
+    lines.push('', '## Usage')
+    lines.push(`Mentioned ${usage.usageCount ?? 0} time(s)`)
+    for (const loc of (usage.usageLocations || []).slice(0, 20)) {
+      lines.push(`- ${loc.book} / ${loc.chapter} (line ${loc.line})`)
+    }
+  }
+
   return lines.join('\n')
+}
+
+function executeManageEntityNotes(args: Record<string, unknown>, store: StoreAccess): string {
+  const { entitySlug, action, noteId, itemId, content, noteType, checklistItems } = args as {
+    entitySlug: string
+    action: 'add' | 'update' | 'delete' | 'toggle_item'
+    noteId?: string
+    itemId?: string
+    content?: string
+    noteType?: 'general' | 'checklist'
+    checklistItems?: string[]
+  }
+
+  const entity = store.getEntity(entitySlug)
+  if (!entity) {
+    throw new Error(`Entity "${entitySlug}" not found`)
+  }
+
+  switch (action) {
+    case 'add': {
+      if (!store.addEntityNote) throw new Error('Note actions are not available')
+      if (!content) throw new Error('content is required for the add action')
+      const now = new Date().toISOString()
+      const type = noteType || (checklistItems?.length ? 'checklist' : 'general')
+      const note = {
+        id: generateNoteId(),
+        content,
+        type,
+        checklistItems:
+          type === 'checklist'
+            ? (checklistItems || []).map((text) => ({
+                id: generateNoteId(),
+                text,
+                completed: false
+              }))
+            : undefined,
+        created: now,
+        modified: now
+      }
+      store.addEntityNote(entitySlug, note)
+      return `Added ${type} note to "${entitySlug}" (note id: ${note.id})`
+    }
+    case 'update': {
+      if (!store.updateEntityNote) throw new Error('Note actions are not available')
+      if (!noteId) throw new Error('noteId is required for the update action')
+      if (!content) throw new Error('content is required for the update action')
+      store.updateEntityNote(entitySlug, noteId, {
+        content,
+        modified: new Date().toISOString()
+      })
+      return `Updated note ${noteId} on "${entitySlug}"`
+    }
+    case 'delete': {
+      if (!store.deleteEntityNote) throw new Error('Note actions are not available')
+      if (!noteId) throw new Error('noteId is required for the delete action')
+      store.deleteEntityNote(entitySlug, noteId)
+      return `Deleted note ${noteId} from "${entitySlug}"`
+    }
+    case 'toggle_item': {
+      if (!store.toggleChecklistItem) throw new Error('Note actions are not available')
+      if (!noteId || !itemId) {
+        throw new Error('noteId and itemId are required for the toggle_item action')
+      }
+      store.toggleChecklistItem(entitySlug, noteId, itemId)
+      return `Toggled checklist item ${itemId} in note ${noteId} on "${entitySlug}"`
+    }
+    default:
+      throw new Error(`Unknown action "${action}"`)
+  }
 }
 
 function executeListEntities(args: Record<string, unknown>, store: StoreAccess): string {
@@ -420,21 +680,30 @@ function executeCreateEntity(args: Record<string, unknown>, store: StoreAccess):
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
-  const fieldArray = Object.entries(fields).map(([key, value]) => ({
-    name: key,
-    value: String(value)
-  }))
+  const fieldArray = [
+    { name: 'Name', value: name, type: 'text' },
+    ...Object.entries(fields)
+      .filter(([key]) => key.toLowerCase() !== 'name')
+      .map(([key, value]) => ({ name: key, value: String(value), type: 'text' }))
+  ]
 
   store.addEntity({
     slug,
     name,
     type,
     fields: fieldArray,
-    created: new Date().toISOString(),
-    modified: new Date().toISOString()
+    defaultField: 'Name',
+    notes: [],
+    relations: [],
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      usageCount: 0,
+      usageLocations: []
+    }
   })
 
-  return `Successfully created ${type} "${name}" (${slug})`
+  return `Successfully created ${type} "${name}" (@${slug})`
 }
 
 function executeUpdateEntity(args: Record<string, unknown>, store: StoreAccess): string {
@@ -443,8 +712,39 @@ function executeUpdateEntity(args: Record<string, unknown>, store: StoreAccess):
     fields: Record<string, string>
   }
 
-  store.updateEntity(entitySlug, fields)
-  return `Successfully updated entity "${entitySlug}"`
+  const entity = store.getEntity(entitySlug) as
+    | {
+        fields: Array<{ name: string; value: string; type: string }>
+        metadata: Record<string, unknown>
+      }
+    | undefined
+
+  if (!entity) {
+    throw new Error(`Entity "${entitySlug}" not found`)
+  }
+
+  // Entity fields are stored as an array — map the incoming key/value pairs
+  // onto existing fields by name (case-insensitive), appending unknown keys.
+  const updatedFields = entity.fields.map((f) => ({ ...f }))
+  const updatedNames: string[] = []
+
+  for (const [key, value] of Object.entries(fields)) {
+    const index = updatedFields.findIndex((f) => f.name.toLowerCase() === key.toLowerCase())
+    if (index !== -1) {
+      updatedFields[index].value = String(value)
+      updatedNames.push(updatedFields[index].name)
+    } else {
+      updatedFields.push({ name: key, value: String(value), type: 'text' })
+      updatedNames.push(key)
+    }
+  }
+
+  store.updateEntity(entitySlug, {
+    fields: updatedFields,
+    metadata: { ...entity.metadata, modified: new Date().toISOString() }
+  })
+
+  return `Successfully updated entity "${entitySlug}" (fields: ${updatedNames.join(', ')})`
 }
 
 function executeDeleteEntity(args: Record<string, unknown>, store: StoreAccess): string {
@@ -481,7 +781,7 @@ function executeAnalyzeEntityUsage(args: Record<string, unknown>, store: StoreAc
       const excerpts: string[] = []
 
       for (const term of searchTerms) {
-        const regex = new RegExp(term, 'gi')
+        const regex = new RegExp(escapeRegExp(term), 'gi')
         const matches = content.match(regex)
         if (matches) {
           totalCount += matches.length
@@ -667,115 +967,75 @@ function executeCompareChapters(args: Record<string, unknown>, store: StoreAcces
   return `## Chapter 1: ${chapter1.title || chapter1Slug}\n\n${chapter1.content || '(empty)'}\n\n---\n\n## Chapter 2: ${chapter2.title || chapter2Slug}\n\n${chapter2.content || '(empty)'}`
 }
 
-// ============ Generation & Editing Tool Implementations ============
-// These return context for AI to generate content
+// ============ App Tool Implementations ============
 
-/**
- * Execute Generation Tool
- * Provides context and parameters for AI to generate content
- * Special handling for write_scene to encourage @mention usage
- */
-function executeGenerationTool(
-  name: string,
-  args: Record<string, unknown>,
-  store: StoreAccess
-): string {
-  // Special handling for write_scene - provide rich entity context
-  if (name === 'write_scene') {
-    const { goal, characters, location, mood, wordCount } = args as {
-      goal: string
-      characters?: string[]
-      location?: string
-      mood?: string
-      wordCount?: number
-    }
-
-    const lines: string[] = []
-    lines.push('# Scene Writing Context')
-    lines.push(`\n**Goal:** ${goal}`)
-
-    if (mood) lines.push(`**Mood:** ${mood}`)
-    if (wordCount) lines.push(`**Target Length:** ~${wordCount} words`)
-
-    // Character details with @mention syntax
-    if (characters && characters.length > 0) {
-      lines.push('\n## Characters')
-      for (const slug of characters) {
-        try {
-          const entities = store.getEntities() as Record<string, { name: string; type: string }>
-          const entity = entities[slug]
-          if (entity) {
-            lines.push(`- **@${slug}** (${entity.name})`)
-          } else {
-            lines.push(`- @${slug} (not found - will create as needed)`)
-          }
-        } catch {
-          lines.push(`- @${slug} (not found)`)
-        }
-      }
-    }
-
-    // Location details
-    if (location) {
-      lines.push('\n## Location')
-      try {
-        const entities = store.getEntities() as Record<string, { name: string; type: string }>
-        const entity = entities[location]
-        if (entity) {
-          lines.push(`- **@${location}** (${entity.name})`)
-        } else {
-          lines.push(`- @${location} (not found - will create as needed)`)
-        }
-      } catch {
-        lines.push(`- @${location}`)
-      }
-    }
-
-    lines.push(
-      '\n---\n**IMPORTANT:** When writing this scene, use @mention syntax for all characters and locations (e.g., @john-doe, @cafe-noir) to enable usage tracking.'
-    )
-
-    return lines.join('\n')
-  }
-
-  // Generic generation tool handling
-  const entityContext: string[] = []
-
-  // Handle character lists
-  if (args.characters) {
-    const characters = args.characters as string[]
-    for (const slug of characters) {
-      try {
-        const entity = executeGetEntity({ entitySlug: slug }, store)
-        entityContext.push(entity)
-      } catch {
-        entityContext.push(`Character "@${slug}" not found`)
-      }
-    }
-  }
-
-  if (args.includeCharacters) {
-    const characters = args.includeCharacters as string[]
-    for (const slug of characters) {
-      try {
-        const entity = executeGetEntity({ entitySlug: slug }, store)
-        entityContext.push(entity)
-      } catch {
-        entityContext.push(`Character "@${slug}" not found`)
-      }
-    }
-  }
-
-  const context =
-    entityContext.length > 0 ? `\n\nEntity context:\n${entityContext.join('\n\n')}` : ''
-
-  return `Tool: ${name}\nParameters: ${JSON.stringify(args, null, 2)}${context}`
+// Editor settings the AI is allowed to change, with parsers/validators.
+const EDITABLE_EDITOR_SETTINGS: Record<string, (value: string) => unknown> = {
+  fontSize: (v) => clampNumber(v, 8, 32),
+  fontFamily: (v) => v,
+  lineHeight: (v) => clampNumber(v, 1, 3),
+  wordWrap: parseBoolean,
+  minimap: parseBoolean,
+  lineNumbers: parseBoolean,
+  tabSize: (v) => clampNumber(v, 1, 8),
+  autoSave: parseBoolean,
+  autoSaveDelay: (v) => clampNumber(v, 100, 60000)
 }
 
-function executeEditingTool(
-  name: string,
+function clampNumber(value: string, min: number, max: number): number {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed)) {
+    throw new Error(`"${value}" is not a valid number`)
+  }
+  return Math.min(max, Math.max(min, parsed))
+}
+
+function parseBoolean(value: string): boolean {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  throw new Error(`"${value}" is not a valid boolean (use "true" or "false")`)
+}
+
+async function executeAppCommand(
   args: Record<string, unknown>,
-  _store: StoreAccess
-): string {
-  return `Tool: ${name}\nParameters: ${JSON.stringify(args, null, 2)}`
+  store: StoreAccess
+): Promise<string> {
+  const { action, label, setting, value } = args as {
+    action: 'create_backup' | 'get_editor_settings' | 'set_editor_setting'
+    label?: string
+    setting?: string
+    value?: string
+  }
+
+  switch (action) {
+    case 'create_backup': {
+      if (!store.createBackup) throw new Error('Backup is not available (no workspace open?)')
+      const path = await store.createBackup(label)
+      return `Backup created: ${path}`
+    }
+    case 'get_editor_settings': {
+      if (!store.getEditorSettings) throw new Error('Editor settings are not available')
+      const settings = store.getEditorSettings()
+      const editable = Object.keys(EDITABLE_EDITOR_SETTINGS)
+      const lines = editable.map((key) => `- ${key}: ${JSON.stringify(settings[key])}`)
+      return `Current editor settings:\n${lines.join('\n')}`
+    }
+    case 'set_editor_setting': {
+      if (!store.updateEditorSettings) throw new Error('Editor settings are not available')
+      if (!setting || value === undefined) {
+        throw new Error('setting and value are required for set_editor_setting')
+      }
+      const parse = EDITABLE_EDITOR_SETTINGS[setting]
+      if (!parse) {
+        throw new Error(
+          `Setting "${setting}" cannot be changed. Editable settings: ${Object.keys(EDITABLE_EDITOR_SETTINGS).join(', ')}`
+        )
+      }
+      const parsed = parse(String(value))
+      store.updateEditorSettings({ [setting]: parsed })
+      return `Editor setting updated: ${setting} = ${JSON.stringify(parsed)}`
+    }
+    default:
+      throw new Error(`Unknown app_command action "${action}"`)
+  }
 }

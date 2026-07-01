@@ -11,7 +11,7 @@ export {
   fileTools,
   analysisTools,
   generationTools,
-  editingTools
+  appTools
 } from './definitions'
 
 // Tool executor

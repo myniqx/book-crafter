@@ -37,6 +37,7 @@ export {
 
 export {
   buildNormalizedHistory,
+  takeRecentMessages,
   toOpenAITools,
   type NormalizedMessage,
   type OpenAITool

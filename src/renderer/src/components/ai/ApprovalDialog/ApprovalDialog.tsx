@@ -11,12 +11,63 @@ import { Button } from '@renderer/components/ui/button'
 import { AlertTriangle, CheckCircle, XCircle, Wrench } from 'lucide-react'
 import type { ToolCall } from '@renderer/lib/ai/types'
 import { getToolByName } from '@renderer/lib/ai/tools'
+import { useStore } from '@renderer/store'
 
 interface ApprovalDialogProps {
   toolCall: ToolCall | null
   open: boolean
   onApprove: () => void
   onReject: () => void
+}
+
+/**
+ * Tool-aware preview of what the call will change. Text edits render as an
+ * old → new diff instead of raw JSON parameters.
+ */
+const ToolCallPreview: React.FC<{ toolCall: ToolCall }> = ({ toolCall }) => {
+  const books = useStore((state) => state.books)
+  const args = toolCall.arguments as Record<string, string | undefined>
+
+  if (toolCall.name === 'edit_chapter' && args.oldText !== undefined) {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          Change in {args.bookSlug} / {args.chapterSlug}:
+        </p>
+        <pre className="text-xs bg-red-900/20 text-red-300 p-2 rounded overflow-auto max-h-32 whitespace-pre-wrap">
+          {args.oldText}
+        </pre>
+        <pre className="text-xs bg-green-900/20 text-green-300 p-2 rounded overflow-auto max-h-32 whitespace-pre-wrap">
+          {args.newText}
+        </pre>
+      </div>
+    )
+  }
+
+  if (toolCall.name === 'write_chapter' && args.content !== undefined) {
+    const currentContent =
+      books[args.bookSlug || '']?.chapters.find((c) => c.slug === args.chapterSlug)?.content || ''
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          Replaces the ENTIRE content of {args.bookSlug} / {args.chapterSlug} (
+          {currentContent.length.toLocaleString()} → {args.content.length.toLocaleString()} chars):
+        </p>
+        <pre className="text-xs bg-green-900/20 text-green-300 p-2 rounded overflow-auto max-h-48 whitespace-pre-wrap">
+          {args.content}
+        </pre>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground mb-1">Parameters:</p>
+      <pre className="text-xs bg-background p-2 rounded overflow-x-auto max-h-32">
+        {JSON.stringify(toolCall.arguments, null, 2)}
+      </pre>
+    </div>
+  )
 }
 
 export const ApprovalDialog: React.FC<ApprovalDialogProps> = ({
@@ -28,10 +79,11 @@ export const ApprovalDialog: React.FC<ApprovalDialogProps> = ({
   if (!toolCall) return null
 
   const tool = getToolByName(toolCall.name)
+  const isTextEdit = toolCall.name === 'edit_chapter' || toolCall.name === 'write_chapter'
 
   return (
     <Dialog open={open} onOpenChange={() => { }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={isTextEdit ? 'sm:max-w-2xl' : 'sm:max-w-md'}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -50,12 +102,7 @@ export const ApprovalDialog: React.FC<ApprovalDialogProps> = ({
               <span className="font-medium">{toolCall.name}</span>
             </div>
             {tool && <p className="text-sm text-muted-foreground mb-3">{tool.description}</p>}
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Parameters:</p>
-              <pre className="text-xs bg-background p-2 rounded overflow-x-auto max-h-32">
-                {JSON.stringify(toolCall.arguments, null, 2)}
-              </pre>
-            </div>
+            <ToolCallPreview toolCall={toolCall} />
           </div>
 
           {/* Warning */}

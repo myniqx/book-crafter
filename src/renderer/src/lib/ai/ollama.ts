@@ -101,7 +101,8 @@ export class OllamaProvider extends BaseAIProvider {
       const fetchResponse = await window.api.fetch.request(url, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        requestId: options.requestId
       })
 
       if (!fetchResponse.ok) {
@@ -159,6 +160,7 @@ export class OllamaProvider extends BaseAIProvider {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(body),
+        requestId: options.requestId,
         ...streamHandler
       })
     } catch (error) {

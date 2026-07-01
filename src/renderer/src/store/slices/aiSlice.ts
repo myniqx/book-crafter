@@ -14,8 +14,24 @@ import {
 } from '@renderer/lib/ai/types'
 import { createAIProvider } from '@renderer/lib/ai'
 import { getToolByName, executeToolCall, filterEnabledTools } from '@renderer/lib/ai/tools'
+import { takeRecentMessages } from '@renderer/lib/ai/utils'
 import type { StoreAccess } from '@renderer/lib/ai/tools/executor'
 import type { AppStore } from '..'
+import { logger } from '@renderer/lib/logger'
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && /abort/i.test(error.message)
+}
+
+/**
+ * A question the agent asked via the ask_user tool. The agent loop pauses
+ * until answerQuestion() is called (or the agent is stopped).
+ */
+export interface PendingQuestion {
+  toolCall: ToolCall
+  question: string
+  options: string[]
+}
 
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -47,11 +63,13 @@ export interface AISlice {
   isAgentRunning: boolean
   currentIteration: number
   pendingApproval: ToolCall | null
+  pendingQuestion: PendingQuestion | null
   toolHistory: ToolExecution[]
 
   // Provider instance (not persisted)
   _provider: AIProviderInterface | null
   _pendingStoreAccess: StoreAccess | null
+  _currentRequestId: string | null
 
   // Actions
   sendMessage: (prompt: string, context?: AIContext, onStream?: (chunk: string) => void) => Promise<void>
@@ -75,6 +93,7 @@ export interface AISlice {
   ) => Promise<void>
   approveToolCall: (storeAccess: StoreAccess) => Promise<void>
   rejectToolCall: () => void
+  answerQuestion: (answer: string) => void
   stopAgent: () => void
   updateAgenticSettings: (settings: Partial<AgenticSettings>) => void
   setPendingStoreAccess: (storeAccess: StoreAccess | null) => void
@@ -119,9 +138,11 @@ export const createAISlice: StateCreator<
   isAgentRunning: false,
   currentIteration: 0,
   pendingApproval: null,
+  pendingQuestion: null,
   toolHistory: [],
   _provider: null,
   _pendingStoreAccess: null,
+  _currentRequestId: null,
 
   getProvider: () => {
     const state = get()
@@ -137,6 +158,18 @@ export const createAISlice: StateCreator<
   buildContext: (options) => {
     const state = get()
     const context: AIContext = {}
+
+    // Always include the lightweight workspace map — it lets the agent
+    // resolve "chapter 1" style references (or ask which book) without tools.
+    if (state.books && Object.keys(state.books).length > 0) {
+      context.workspace = {
+        books: Object.values(state.books).map((book) => ({
+          slug: book.slug,
+          title: book.title,
+          chapters: book.chapters.map((ch) => ({ slug: ch.slug, title: ch.title }))
+        }))
+      }
+    }
 
     if (options.currentChapter) {
       const { bookSlug, chapterSlug } = options.currentChapter
@@ -157,7 +190,7 @@ export const createAISlice: StateCreator<
     }
 
     if (get().messages.length > 0) {
-      context.conversationHistory = get().messages.slice(-10)
+      context.conversationHistory = takeRecentMessages(get().messages, 10)
     }
 
     return Object.keys(context).length > 0 ? context : undefined
@@ -177,7 +210,7 @@ export const createAISlice: StateCreator<
       const provider = get().getProvider()
 
       await provider.streamComplete(
-        { prompt, context, conversationHistory: get().messages.slice(-20) },
+        { prompt, context, conversationHistory: takeRecentMessages(get().messages, 20) },
         (chunk) => {
           set((state) => { state.currentStreamMessage += chunk })
           onStream?.(chunk)
@@ -286,34 +319,68 @@ export const createAISlice: StateCreator<
   },
 
   stopAgent: () => {
+    const requestId = get()._currentRequestId
+    if (requestId) {
+      window.api.fetch.abort(requestId).catch((error) => {
+        logger.warn('Failed to abort AI request', 'aiSlice', error)
+      })
+    }
     set((state) => {
       state.isAgentRunning = false
       state.pendingApproval = null
+      state.pendingQuestion = null
       state.currentIteration = 0
+    })
+  },
+
+  answerQuestion: (answer) => {
+    set((state) => {
+      if (!state.pendingQuestion) return
+      const { toolCall } = state.pendingQuestion
+      const execution = state.toolHistory.find((t) => t.toolCall.id === toolCall.id)
+      if (execution) {
+        execution.status = 'completed'
+        execution.completedAt = new Date().toISOString()
+        execution.result = { toolCallId: toolCall.id, content: answer }
+      }
+      state.messages.push({
+        role: 'tool_result',
+        content: answer,
+        timestamp: new Date().toISOString(),
+        toolResult: {
+          toolCallId: toolCall.id,
+          content: `The user answered: ${answer}`,
+          displayContent: answer
+        }
+      })
+      state.pendingQuestion = null
     })
   },
 
   rejectToolCall: () => {
     set((state) => {
       if (state.pendingApproval) {
-        state.toolHistory.push({
-          id: generateUUID(),
-          toolCall: state.pendingApproval,
-          status: 'rejected',
-          timestamp: new Date().toISOString()
-        })
+        const rejected = state.pendingApproval
+        const execution = state.toolHistory.find((t) => t.toolCall.id === rejected.id)
+        if (execution) {
+          execution.status = 'rejected'
+          execution.completedAt = new Date().toISOString()
+        }
         state.messages.push({
           role: 'tool_result',
-          content: `Tool call "${state.pendingApproval.name}" was rejected by user`,
+          content: `Rejected: ${rejected.name}`,
           timestamp: new Date().toISOString(),
           toolResult: {
-            toolCallId: state.pendingApproval.id,
-            content: 'Tool call was rejected by user',
+            toolCallId: rejected.id,
+            content:
+              'The user rejected this tool call. Do not retry the same call with the same arguments. Ask the user how they would like to proceed, or take a different approach.',
+            displayContent: `Rejected: ${rejected.name}`,
             isError: true
           }
         })
+        // Keep the agent running so the model can see the rejection and adapt.
+        // The user can still stop the whole run via stopAgent.
         state.pendingApproval = null
-        state.isAgentRunning = false
       }
     })
   },
@@ -349,7 +416,7 @@ export const createAISlice: StateCreator<
     set((s) => {
       s.messages.push({
         role: 'tool_result',
-        content: result.content,
+        content: result.displayContent ?? result.content,
         timestamp: new Date().toISOString(),
         toolResult: result
       })
@@ -386,22 +453,40 @@ export const createAISlice: StateCreator<
         set((s) => { s.currentIteration = iteration + 1 })
 
         const messages = get().messages
-        const currentPrompt = iteration === 0 ? prompt : ''
 
-        const response = await provider.complete({
-          prompt: currentPrompt,
-          context: { ...context, conversationHistory: messages.slice(-20) },
-          tools: tools.length > 0 ? tools : undefined,
-          toolChoice: 'auto'
-        })
+        // The user prompt is already in `messages` — passing it again as
+        // options.prompt would duplicate the user message in the history.
+        const requestId = generateUUID()
+        set((s) => { s._currentRequestId = requestId })
 
-        if (response.content) {
-          set((s) => { s.currentStreamMessage = response.content })
-          onStream?.(response.content)
+        let response: Awaited<ReturnType<typeof provider.complete>>
+        try {
+          response = await provider.complete({
+            prompt: '',
+            context: { ...context, conversationHistory: takeRecentMessages(messages, 20) },
+            tools: tools.length > 0 ? tools : undefined,
+            toolChoice: 'auto',
+            requestId
+          })
+        } finally {
+          set((s) => { s._currentRequestId = null })
+        }
+
+        // The user may have stopped the agent while the request was in flight
+        if (!get().isAgentRunning) break
+
+        // Push the assistant message even when the model returned only tool
+        // calls with no text — a tool_result without its matching assistant
+        // tool_use message makes the next request malformed.
+        if (response.content || (response.toolCalls && response.toolCalls.length > 0)) {
+          if (response.content) {
+            set((s) => { s.currentStreamMessage = response.content })
+            onStream?.(response.content)
+          }
           set((s) => {
             s.messages.push({
               role: 'assistant',
-              content: response.content,
+              content: response.content || '',
               timestamp: new Date().toISOString(),
               toolCalls: response.toolCalls
             })
@@ -413,6 +498,36 @@ export const createAISlice: StateCreator<
             if (!get().isAgentRunning) break
 
             onToolCall?.(toolCall)
+
+            // ask_user is not executed — it pauses the loop until the user answers
+            if (toolCall.name === 'ask_user') {
+              const question = String(toolCall.arguments.question || '')
+              const options = Array.isArray(toolCall.arguments.options)
+                ? (toolCall.arguments.options as unknown[]).map(String)
+                : []
+
+              set((s) => {
+                s.toolHistory.push({
+                  id: generateUUID(),
+                  toolCall,
+                  status: 'running',
+                  timestamp: new Date().toISOString()
+                })
+                s.pendingQuestion = { toolCall, question, options }
+              })
+
+              await new Promise<void>((resolve) => {
+                const check = setInterval(() => {
+                  if (!get().pendingQuestion || !get().isAgentRunning) {
+                    clearInterval(check)
+                    resolve()
+                  }
+                }, 100)
+              })
+
+              if (!get().isAgentRunning) break
+              continue
+            }
 
             const tool = getToolByName(toolCall.name)
             const isWriteOp = tool?.requiresApproval
@@ -457,18 +572,32 @@ export const createAISlice: StateCreator<
               set((s) => {
                 s.messages.push({
                   role: 'tool_result',
-                  content: result.content,
+                  content: result.displayContent ?? result.content,
                   timestamp: new Date().toISOString(),
                   toolResult: result
                 })
               })
             } else {
+              // Every tool_use needs a matching tool_result in the history,
+              // otherwise the next request is malformed (hard error on Anthropic).
+              const result: ToolResult = {
+                toolCallId: toolCall.id,
+                content: 'Tool execution failed: store access not available',
+                displayContent: 'Tool could not run',
+                isError: true
+              }
               set((s) => {
                 const execution = s.toolHistory.find((t) => t.toolCall.id === toolCall.id)
                 if (execution) {
                   execution.status = 'error'
-                  execution.result = { toolCallId: toolCall.id, content: 'Store access not available', isError: true }
+                  execution.result = result
                 }
+                s.messages.push({
+                  role: 'tool_result',
+                  content: result.displayContent ?? result.content,
+                  timestamp: new Date().toISOString(),
+                  toolResult: result
+                })
               })
             }
           }
@@ -479,17 +608,29 @@ export const createAISlice: StateCreator<
       }
 
       set((s) => {
+        if (iteration >= agenticSettings.maxIterations && s.isAgentRunning) {
+          s.messages.push({
+            role: 'assistant',
+            content: `Stopped after reaching the maximum of ${agenticSettings.maxIterations} iterations. Send a follow-up message to continue.`,
+            timestamp: new Date().toISOString()
+          })
+        }
         s.isStreaming = false
         s.isAgentRunning = false
         s.currentIteration = 0
         s.currentStreamMessage = ''
         s.pendingApproval = null
+        s.pendingQuestion = null
+        s._currentRequestId = null
       })
     } catch (error) {
+      const aborted = isAbortError(error)
       set((s) => {
         s.messages.push({
           role: 'assistant',
-          content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          content: aborted
+            ? 'Stopped by user.'
+            : `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           timestamp: new Date().toISOString()
         })
         s.isStreaming = false
@@ -497,8 +638,10 @@ export const createAISlice: StateCreator<
         s.currentIteration = 0
         s.currentStreamMessage = ''
         s.pendingApproval = null
+        s.pendingQuestion = null
+        s._currentRequestId = null
       })
-      throw error
+      if (!aborted) throw error
     }
   }
 })
