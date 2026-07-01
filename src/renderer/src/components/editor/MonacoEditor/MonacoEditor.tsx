@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import Editor, { OnMount, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
-import { useCoreStore, useToolsStore } from '@renderer/store'
+import { useToolsStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import type { MonacoEditorProps } from './types'
 import { cn } from '@renderer/lib/utils'
@@ -25,7 +25,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
 
   // Get theme and editor settings from store
   const storeTheme = useToolsStore((state) => state.generalSettings.theme)
-  const editorSettings = useCoreStore((state) => state.workspaceConfig?.editorSettings)
+  const editorSettings = useToolsStore((state) => state.extendedEditorSettings)
 
   // Get AI actions from store
   const sendMessage = useToolsStore((state) => state.sendMessage)
@@ -37,19 +37,25 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
 
   // Merge default options with custom options
   const defaultOptions: editor.IStandaloneEditorConstructionOptions = {
-    fontSize: editorSettings?.fontSize || 14,
-    lineHeight: editorSettings?.lineHeight ? editorSettings.lineHeight * 20 : 28,
-    wordWrap: editorSettings?.wordWrap ? 'on' : 'off',
-    minimap: {
-      enabled: editorSettings?.minimap ?? false
-    },
-    lineNumbers: editorSettings?.lineNumbers ? 'on' : 'off',
-    tabSize: editorSettings?.tabSize || 2,
+    fontSize: editorSettings.fontSize,
+    lineHeight: editorSettings.lineHeight * 20,
+    wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+    minimap: { enabled: editorSettings.minimap },
+    lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
+    tabSize: editorSettings.tabSize,
+    fontFamily: editorSettings.fontFamily,
+    cursorStyle: editorSettings.cursorStyle,
+    cursorBlinking: editorSettings.cursorBlinking,
+    renderWhitespace: editorSettings.renderWhitespace,
+    bracketPairColorization: { enabled: editorSettings.bracketPairColorization },
+    autoClosingBrackets: editorSettings.autoClosingBrackets,
+    formatOnSave: editorSettings.formatOnSave,
+    formatOnPaste: editorSettings.formatOnPaste,
+    trimAutoWhitespace: editorSettings.trimAutoWhitespace,
     readOnly,
     automaticLayout: true,
     scrollBeyondLastLine: false,
     padding: { top: 16, bottom: 16 },
-    fontFamily: 'Monaco, Consolas, "Courier New", monospace',
     scrollbar: {
       verticalScrollbarSize: 10,
       horizontalScrollbarSize: 10
@@ -153,8 +159,8 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   const handleEditorChange = (newValue: string | undefined): void => {
     if (!onChange || newValue === undefined) return
 
-    const autoSave = editorSettings?.autoSave ?? true
-    const autoSaveDelay = editorSettings?.autoSaveDelay || 1000
+    const autoSave = editorSettings.autoSave
+    const autoSaveDelay = editorSettings.autoSaveDelay
 
     if (autoSave) {
       // Clear previous timeout
@@ -171,6 +177,12 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
       onChange(newValue)
     }
   }
+
+  // Apply settings changes live without remounting
+  useEffect(() => {
+    if (!editorRef.current) return
+    editorRef.current.updateOptions({ ...defaultOptions, ...options })
+  }, [editorSettings, readOnly, options])
 
   // Cleanup timeout on unmount
   useEffect(() => {

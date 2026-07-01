@@ -134,9 +134,7 @@ export const createBooksSlice: StateCreator<
 
     // Check auto-save config
     const workspacePath = get().workspacePath
-    const workspaceConfig = get().workspaceConfig
-    const autoSave = workspaceConfig?.editorSettings?.autoSave ?? true
-    const autoSaveDelay = workspaceConfig?.editorSettings?.autoSaveDelay || 1000
+    const { autoSave, autoSaveDelay } = get().extendedEditorSettings
 
     if (!autoSave || !workspacePath) {
       return // Auto-save disabled or no workspace

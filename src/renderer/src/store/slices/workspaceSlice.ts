@@ -24,16 +24,6 @@ export interface WorkspaceConfig {
       chat: boolean
     }
   }
-  editorSettings: {
-    fontSize: number
-    lineHeight?: number
-    tabSize: number
-    wordWrap: boolean
-    minimap: boolean
-    lineNumbers?: boolean
-    autoSave: boolean
-    autoSaveDelay: number
-  }
 }
 
 export interface WorkspaceSlice {
@@ -64,14 +54,6 @@ const defaultWorkspaceConfig: WorkspaceConfig = {
       summarize: true,
       chat: true,
     },
-  },
-  editorSettings: {
-    fontSize: 14,
-    tabSize: 2,
-    wordWrap: true,
-    minimap: true,
-    autoSave: true,
-    autoSaveDelay: 1000,
   },
 }
 
