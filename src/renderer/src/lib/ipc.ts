@@ -1,5 +1,7 @@
 import type { IPCBridge, FetchOptions, FetchResponse, StreamOptions } from '../../../types/ipc'
 
+import { markInternalWrite } from './watchEvents'
+
 /**
  * IPC Client Utilities
  * Provides a type-safe wrapper around the IPC bridge with error handling,
@@ -143,6 +145,7 @@ export const fs = {
   async writeFile(path: string, content: string, backup = false): Promise<void> {
     try {
       const api = getAPI()
+      markInternalWrite(path)
       await queueOperation(`write:${path}`, () =>
         api.fs.writeFile(path, content, { encoding: 'utf-8', backup })
       )

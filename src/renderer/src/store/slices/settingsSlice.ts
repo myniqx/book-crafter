@@ -64,8 +64,6 @@ export interface WorkspacePreferences {
   backupPath?: string
   watchExternalChanges: boolean
   reloadOnExternalChange: 'auto' | 'ask' | 'never'
-  indexingEnabled: boolean
-  maxFileSize: number
 }
 
 /**
@@ -146,9 +144,7 @@ export const DEFAULT_WORKSPACE_PREFERENCES: WorkspacePreferences = {
   maxBackups: 5,
   backupPath: undefined,
   watchExternalChanges: true,
-  reloadOnExternalChange: 'ask',
-  indexingEnabled: true,
-  maxFileSize: 10
+  reloadOnExternalChange: 'ask'
 }
 
 export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [

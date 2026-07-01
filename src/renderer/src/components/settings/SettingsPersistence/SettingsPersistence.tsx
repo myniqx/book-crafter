@@ -84,9 +84,7 @@ const DEFAULT_PERSISTED_SETTINGS: PersistedSettings = {
     maxBackups: 5,
     backupPath: undefined,
     watchExternalChanges: true,
-    reloadOnExternalChange: 'ask',
-    indexingEnabled: true,
-    maxFileSize: 10
+    reloadOnExternalChange: 'ask'
   },
   keyboardShortcuts: [
     { id: 'save', action: 'Save', defaultBinding: 'Ctrl+S', currentBinding: 'Ctrl+S', category: 'editor' },

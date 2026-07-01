@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { MonacoEditor } from '@renderer/components/editor/MonacoEditor'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useContentStore, useCoreStore, useToolsStore } from '@renderer/store'
 import { fs } from '@renderer/lib/ipc'
 import { getChapterContentPath } from '@renderer/lib/books'
 import { logger } from '@renderer/lib/logger'
+import { handleExternalChange } from '@renderer/lib/fileReload'
 
 export interface ChapterEditorPanelProps {
   bookSlug: string
@@ -21,6 +22,16 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   const book = useContentStore((state) => state.books[bookSlug])
   const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
   const updateChapter = useContentStore((state) => state.updateChapter)
+  const reloadOnExternalChange = useToolsStore(
+    (state) => state.workspacePreferences.reloadOnExternalChange
+  )
+  const watchExternalChanges = useToolsStore(
+    (state) => state.workspacePreferences.watchExternalChanges
+  )
+  const reloadBehaviorRef = useRef(reloadOnExternalChange)
+  useEffect(() => {
+    reloadBehaviorRef.current = reloadOnExternalChange
+  }, [reloadOnExternalChange])
 
   // Load chapter content from disk (only on mount or when chapter changes)
   useEffect(() => {
@@ -61,6 +72,37 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
 
     loadContent()
   }, [workspacePath, bookSlug, chapterSlug]) // Removed 'chapter' dependency
+
+  // Watch content.md for external changes while this tab is open
+  useEffect(() => {
+    if (!workspacePath || !chapter || !watchExternalChanges) return
+
+    const contentPath = getChapterContentPath(workspacePath, bookSlug, chapterSlug)
+    // Track last write timestamp to distinguish internal vs external changes
+    const lastWriteRef = { ts: 0 }
+
+    let unwatch: (() => void) | null = null
+
+    fs.watch(contentPath, (event) => {
+      if (event !== 'change') return
+      if (Date.now() - lastWriteRef.ts < 2000) return // internal write
+
+      const reload = async (): Promise<void> => {
+        const newContent = await fs.readFile(contentPath, 'utf-8')
+        updateChapter(bookSlug, chapterSlug, { content: newContent })
+      }
+
+      handleExternalChange(reloadBehaviorRef.current, 'Chapter content', reload)
+    }).then((u) => {
+      unwatch = u
+    }).catch((e) => {
+      logger.warn('Could not watch chapter content', 'ChapterEditorPanel', e)
+    })
+
+    return () => {
+      unwatch?.()
+    }
+  }, [workspacePath, bookSlug, chapterSlug, watchExternalChanges])
 
   // Handle content change - Store handles auto-save automatically
   const handleContentChange = (newContent: string | undefined): void => {

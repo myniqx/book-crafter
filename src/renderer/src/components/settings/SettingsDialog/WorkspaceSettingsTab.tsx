@@ -12,7 +12,6 @@ import {
 } from '@renderer/components/ui/select'
 import { Checkbox } from '@renderer/components/ui/checkbox'
 import { Label } from '@renderer/components/ui/label'
-import { Slider } from '@renderer/components/ui/slider'
 import { Separator } from '@renderer/components/ui/separator'
 import { Button } from '@renderer/components/ui/button'
 import { FolderOpen } from 'lucide-react'
@@ -81,21 +80,6 @@ export const WorkspaceSettingsTab: React.FC = () => {
         )}
       </div>
 
-      <Separator />
-
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium">Performance</h3>
-        <div className="flex items-center gap-2">
-          <Checkbox id="indexing-enabled" checked={workspacePreferences.indexingEnabled} onCheckedChange={(checked) => update({ indexingEnabled: checked as boolean })} />
-          <Label htmlFor="indexing-enabled" className="cursor-pointer">Enable workspace indexing</Label>
-        </div>
-        <p className="text-xs text-muted-foreground">Improves search performance but uses more memory</p>
-        <FormField htmlFor="max-file-size" label={<>Maximum File Size: <span className="font-normal text-muted-foreground">{workspacePreferences.maxFileSize}MB</span></>} hint="Files larger than this will not be opened in the editor">
-          <div className="py-1">
-            <Slider id="max-file-size" min={1} max={100} step={1} value={[workspacePreferences.maxFileSize]} onValueChange={([v]) => update({ maxFileSize: v })} />
-          </div>
-        </FormField>
-      </div>
     </div>
   )
 }
