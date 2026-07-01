@@ -1,26 +1,27 @@
 import React, { useMemo } from 'react'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore, type TabEditorData } from '@renderer/store'
 import { formatRelativeTime } from '@renderer/lib/dateFormat'
 
 export const StatusBar: React.FC = () => {
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
-  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
-  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
-  const books = useContentStore((state) => state.books)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
+  const openTabs = useStore((state) => state.openTabs)
+  const activeTabId = useStore((state) => state.activeTabId)
+  const books = useStore((state) => state.books)
 
   // Find active tab and chapter (memoized to prevent unnecessary recalculations)
   const activeTabData = useMemo(() => {
-    if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
-      const tab = openEditorTabs[activeTabIndex]
-      const book = books[tab.bookSlug]
+    const tab = openTabs.find((t) => t.id === activeTabId)
+    if (tab?.type === 'editor' && tab.data) {
+      const { bookSlug, chapterSlug } = tab.data as TabEditorData
+      const book = books[bookSlug]
       if (book) {
-        const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
+        const chapter = book.chapters.find((c) => c.slug === chapterSlug)
         return { book, chapter, tab }
       }
     }
     return null
-  }, [openEditorTabs, activeTabIndex, books])
+  }, [openTabs, activeTabId, books])
 
   // Calculate word count from chapter content
   const wordCount = useMemo(() => {

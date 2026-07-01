@@ -15,9 +15,7 @@ import {
 import { createAIProvider } from '@renderer/lib/ai'
 import { getToolByName, executeToolCall, filterEnabledTools } from '@renderer/lib/ai/tools'
 import type { StoreAccess } from '@renderer/lib/ai/tools/executor'
-import type { Book } from './booksSlice'
-import type { Entity } from './entitySlice'
-import type { ProviderConfigSlice } from './providerConfigSlice'
+import type { AppStore } from '..'
 
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -106,11 +104,9 @@ export type {
 }
 export type { StoreAccess } from '@renderer/lib/ai/tools/executor'
 
-type AISliceWithProviderConfig = AISlice & ProviderConfigSlice
-
 export const createAISlice: StateCreator<
-  AISliceWithProviderConfig,
-  [['zustand/immer', never]],
+  AppStore,
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   AISlice
 > = (set, get) => ({
@@ -139,10 +135,7 @@ export const createAISlice: StateCreator<
   },
 
   buildContext: (options) => {
-    const state = get() as AISliceWithProviderConfig & {
-      books?: Record<string, Book>
-      entities?: Record<string, Entity>
-    }
+    const state = get()
     const context: AIContext = {}
 
     if (options.currentChapter) {

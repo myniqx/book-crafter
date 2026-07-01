@@ -2,7 +2,7 @@ import React from 'react'
 import type { LayoutData, TabData } from 'rc-dock'
 import type { PanelConfig, TabMetadata, TabEditorData, TabPanelData } from './types'
 import { AISuggestionsPanel } from '@renderer/components/ai/AISuggestionsPanel'
-import { useContentStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import { ChapterEditorPanel } from './Panels/ChapterEditorPanel'
 import { EntityDetailPanel } from './Panels/EntityDetailPanel'
@@ -235,7 +235,7 @@ function reconstructTabMetadata(tab: {
       let finalTitle = title
       if (!finalTitle || finalTitle === 'undefined') {
         logger.warn('Title is undefined, fetching from store', 'DockLayout')
-        const books = useContentStore.getState().books
+        const books = useStore.getState().books
         const book = books[bookSlug]
         const chapter = book?.chapters.find(
           (c: { slug: string; title: string }) => c.slug === chapterSlug

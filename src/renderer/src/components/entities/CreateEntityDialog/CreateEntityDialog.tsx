@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@renderer/components/ui/select'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { createEntityFromTemplate, ENTITY_TEMPLATES } from '@renderer/lib/entity'
 import type { CreateEntityDialogProps } from './types'
 
@@ -31,12 +31,12 @@ export const CreateEntityDialog: React.FC<CreateEntityDialogProps> = ({ triggerP
   const [customSlug, setCustomSlug] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
-  const entities = useContentStore((state) => state.entities)
-  const addEntity = useContentStore((state) => state.addEntity)
-  const saveEntityToDisk = useContentStore((state) => state.saveEntityToDisk)
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const open = useCoreStore((state) => state.createEntityDialogOpen)
-  const setOpen = useCoreStore((state) => state.setCreateEntityDialogOpen)
+  const entities = useStore((state) => state.entities)
+  const addEntity = useStore((state) => state.addEntity)
+  const saveEntityToDisk = useStore((state) => state.saveEntityToDisk)
+  const workspacePath = useStore((state) => state.workspacePath)
+  const open = useStore((state) => state.createEntityDialogOpen)
+  const setOpen = useStore((state) => state.setCreateEntityDialogOpen)
 
   // Get existing slugs for validation
   const existingSlugs = useMemo(() => Object.keys(entities), [entities])

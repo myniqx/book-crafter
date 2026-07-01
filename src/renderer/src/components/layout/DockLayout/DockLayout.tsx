@@ -6,7 +6,7 @@ import { cn } from '@renderer/lib/utils'
 import { logger } from '@renderer/lib/logger'
 import type { DockLayoutProps } from './types'
 import { createDefaultLayout, createTabDataFromMetadata, extractTabsFromLayout } from './utils'
-import { useCoreStore, type TabMetadata } from '@renderer/store'
+import { useStore, type TabMetadata } from '@renderer/store'
 
 /**
  * DockLayout Component
@@ -26,9 +26,9 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
   const dockRef = useRef<RcDockLayout>(null)
 
   // Store tab state (SINGLE SOURCE OF TRUTH)
-  const openTabs = useCoreStore((state) => state.openTabs)
-  const activeTabId = useCoreStore((state) => state.activeTabId)
-  const syncTabsFromDockLayout = useCoreStore((state) => state.syncTabsFromDockLayout)
+  const openTabs = useStore((state) => state.openTabs)
+  const activeTabId = useStore((state) => state.activeTabId)
+  const syncTabsFromDockLayout = useStore((state) => state.syncTabsFromDockLayout)
 
   // Initialize with default layout
   const defaultLayout = createDefaultLayout()
@@ -62,7 +62,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
       }
     } else {
       // No panel specified: add to active tab's panel (or dockbox if no active tab)
-      const currentActiveTabId = useCoreStore.getState().activeTabId
+      const currentActiveTabId = useStore.getState().activeTabId
 
       if (currentActiveTabId) {
         // Find the active tab's panel
@@ -169,7 +169,7 @@ export const DockLayout: React.FC<DockLayoutProps> = ({ children }) => {
 
     // Determine active tab (rc-dock doesn't provide this directly, so we keep store's activeTabId)
     // If the active tab was closed, it will be handled by store's closeTab logic
-    const currentActiveTabId = useCoreStore.getState().activeTabId
+    const currentActiveTabId = useStore.getState().activeTabId
     const activeTabStillExists = currentTabs.some((t: TabMetadata) => t.id === currentActiveTabId)
 
     const newActiveTabId = activeTabStillExists

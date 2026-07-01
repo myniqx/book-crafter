@@ -8,8 +8,9 @@ import {
   IntegrityCheckDialog,
   type IntegrityIssue
 } from '@renderer/components/workspace/IntegrityCheckDialog'
-import { useContentStore, useCoreStore, useSidebarStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { useKeyboard } from '@renderer/hooks/useKeyboard'
+import { useSaveActiveChapter, useSaveAllChapters } from '@renderer/hooks/useSaveChapter'
 import { toast } from '@renderer/lib/toast'
 import { checkWorkspaceIntegrity, repairWorkspaceStructure } from '@renderer/lib/directory'
 
@@ -17,15 +18,14 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   const [integrityDialogOpen, setIntegrityDialogOpen] = useState(false)
   const [integrityIssues, setIntegrityIssues] = useState<IntegrityIssue[]>([])
 
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const loadAllEntities = useContentStore((state) => state.loadAllEntities)
-  const loadAllBooks = useContentStore((state) => state.loadAllBooks)
-  const loadAllImages = useContentStore((state) => state.loadAllImages)
-  const loadAllNotes = useContentStore((state) => state.loadAllNotes)
-  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
-  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
-  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
-  const books = useContentStore((state) => state.books)
+  const workspacePath = useStore((state) => state.workspacePath)
+  const loadAllEntities = useStore((state) => state.loadAllEntities)
+  const loadAllBooks = useStore((state) => state.loadAllBooks)
+  const loadAllImages = useStore((state) => state.loadAllImages)
+  const loadAllNotes = useStore((state) => state.loadAllNotes)
+  const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const saveActiveChapter = useSaveActiveChapter()
+  const saveAllChapters = useSaveAllChapters()
 
   // Load entities, books, images, and notes when workspace is available
   useEffect(() => {
@@ -77,31 +77,12 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
 
   // Save current file
   const handleSave = (): void => {
-    if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
-      const tab = openEditorTabs[activeTabIndex]
-      const book = books[tab.bookSlug]
-      if (book) {
-        const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
-        if (chapter) {
-          // TODO: Implement actual save via IPC
-          toast.success('File saved', `${chapter.title} has been saved`)
-          logger.debug(`Save file: ${tab.bookSlug} / ${tab.chapterSlug}`, 'MainLayout')
-        }
-      }
-    } else {
-      toast.info('No file to save', 'Open a file first')
-    }
+    saveActiveChapter()
   }
 
   // Save all files
   const handleSaveAll = (): void => {
-    if (openEditorTabs.length > 0) {
-      // TODO: Implement actual save all via IPC
-      toast.success('All files saved', `${openEditorTabs.length} file(s) saved`)
-      logger.debug('Save all files', 'MainLayout')
-    } else {
-      toast.info('No files to save', 'No files are currently open')
-    }
+    saveAllChapters()
   }
 
   // Toggle sidebar

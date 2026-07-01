@@ -23,6 +23,10 @@ export interface FileStats {
   isDirectory: boolean
 }
 
+export interface ZipDirectoryOptions {
+  excludeDirs?: string[]
+}
+
 export interface FileSystemAPI {
   readFile: (path: string, options?: FileReadOptions) => Promise<string>
   writeFile: (path: string, content: string, options?: FileWriteOptions) => Promise<void>
@@ -34,6 +38,7 @@ export interface FileSystemAPI {
   exists: (path: string) => Promise<boolean>
   stats: (path: string) => Promise<FileStats>
   watch: (path: string, callback: (event: string, filename: string) => void) => Promise<() => void>
+  zipDirectory: (sourcePath: string, destZipPath: string, options?: ZipDirectoryOptions) => Promise<void>
 }
 
 // Fetch Types

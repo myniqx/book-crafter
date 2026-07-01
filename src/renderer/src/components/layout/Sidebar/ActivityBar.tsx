@@ -10,7 +10,7 @@ import {
   Eye
 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import { useSidebarStore, useCoreStore, type PanelId } from '@renderer/store'
+import { useStore, type PanelId } from '@renderer/store'
 
 interface ActivityItem {
   id: PanelId
@@ -31,10 +31,10 @@ const activityItems: ActivityItem[] = [
 ]
 
 export const ActivityBar: React.FC = () => {
-  const activePanel = useSidebarStore((state) => state.activePanel)
-  const panelVisible = useSidebarStore((state) => state.panelVisible)
-  const togglePanel = useSidebarStore((state) => state.togglePanel)
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const activePanel = useStore((state) => state.activePanel)
+  const panelVisible = useStore((state) => state.panelVisible)
+  const togglePanel = useStore((state) => state.togglePanel)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
 
   const hasWorkspace = workspaceConfig !== null
 

@@ -1,9 +1,8 @@
 import { StateCreator } from 'zustand'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
-import type { Note, NoteType, ChecklistItem, LinkedItem } from '@renderer/lib/note'
+import type { Note, ChecklistItem, LinkedItem } from '@renderer/lib/note'
 import {
-  createNote,
   createChecklistItem,
   completeChecklistItem,
   uncompleteChecklistItem
@@ -56,7 +55,7 @@ export interface NoteSlice {
 
 export const createNoteSlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   NoteSlice
 > = (set, get) => ({

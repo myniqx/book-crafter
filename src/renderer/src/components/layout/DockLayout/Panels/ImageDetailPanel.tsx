@@ -1,9 +1,9 @@
 import React from 'react'
 import { ImageCard } from '@renderer/components/images/ImageCard'
-import { useContentStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
 export const ImageDetailPanel: React.FC = () => {
-  const selectedImageSlug = useContentStore((state) => state.selectedImageSlug)
+  const selectedImageSlug = useStore((state) => state.selectedImageSlug)
 
   if (!selectedImageSlug) {
     return (

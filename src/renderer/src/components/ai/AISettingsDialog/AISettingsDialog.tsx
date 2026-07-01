@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import type { AIProvider, AIConfig } from '@renderer/lib/ai/types'
 import {
@@ -23,12 +23,12 @@ interface AISettingsDialogProps {
 }
 
 export const AISettingsDialog: React.FC<AISettingsDialogProps> = ({ trigger }) => {
-  const activeProvider = useToolsStore((state) => state.activeProvider)
-  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
-  const providerConfigs = useToolsStore((state) => state.providerConfigs)
-  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
-  const testConnection = useToolsStore((state) => state.testConnection)
-  const listModels = useToolsStore((state) => state.listModels)
+  const activeProvider = useStore((state) => state.activeProvider)
+  const setActiveProvider = useStore((state) => state.setActiveProvider)
+  const providerConfigs = useStore((state) => state.providerConfigs)
+  const setProviderConfig = useStore((state) => state.setProviderConfig)
+  const testConnection = useStore((state) => state.testConnection)
+  const listModels = useStore((state) => state.listModels)
 
   const config = providerConfigs[activeProvider]
 

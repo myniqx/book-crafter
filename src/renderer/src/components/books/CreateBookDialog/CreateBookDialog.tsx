@@ -13,7 +13,7 @@ import {
 } from '@renderer/components/ui/dialog'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
-import { useCoreStore, useContentStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { createBook } from '@renderer/lib/books'
 import type { CreateBookDialogProps } from './types'
 
@@ -23,15 +23,15 @@ export const CreateBookDialog: React.FC<CreateBookDialogProps> = ({ triggerProps
   const [isCreating, setIsCreating] = useState(false)
 
   // Get workspace data from CoreStore
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
-  const open = useCoreStore((state) => state.createBookDialogOpen)
-  const setOpen = useCoreStore((state) => state.setCreateBookDialogOpen)
+  const workspacePath = useStore((state) => state.workspacePath)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
+  const open = useStore((state) => state.createBookDialogOpen)
+  const setOpen = useStore((state) => state.setCreateBookDialogOpen)
 
   // Get books data from ContentStore
-  const books = useContentStore((state) => state.books)
-  const addBook = useContentStore((state) => state.addBook)
-  const saveBookToDisk = useContentStore((state) => state.saveBookToDisk)
+  const books = useStore((state) => state.books)
+  const addBook = useStore((state) => state.addBook)
+  const saveBookToDisk = useStore((state) => state.saveBookToDisk)
 
   const handleCreate = async (): Promise<void> => {
     if (!title.trim() || !workspacePath) return

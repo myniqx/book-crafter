@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { BookOpen, FileText, ChevronDown, ChevronRight, Trash2 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { CreateBookDialog } from '../CreateBookDialog'
 import { CreateChapterDialog } from '../CreateChapterDialog'
 import { logger } from '@renderer/lib/logger'
@@ -11,15 +11,15 @@ import type { TabMetadata, TabEditorData } from '@renderer/components/layout/Doc
 export const BookExplorer: React.FC<BookExplorerProps> = ({ className }) => {
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
 
-  const books = useContentStore((state) => state.books)
-  const deleteBookFromDisk = useContentStore((state) => state.deleteBookFromDisk)
-  const deleteChapterFromDisk = useContentStore((state) => state.deleteChapterFromDisk)
-  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const books = useStore((state) => state.books)
+  const deleteBookFromDisk = useStore((state) => state.deleteBookFromDisk)
+  const deleteChapterFromDisk = useStore((state) => state.deleteChapterFromDisk)
+  const workspacePath = useStore((state) => state.workspacePath)
 
   // Use new tab system from UISlice
-  const openTab = useCoreStore((state) => state.openTab)
-  const activeTabId = useCoreStore((state) => state.activeTabId)
-  const openTabs = useCoreStore((state) => state.openTabs)
+  const openTab = useStore((state) => state.openTab)
+  const activeTabId = useStore((state) => state.activeTabId)
+  const openTabs = useStore((state) => state.openTabs)
 
   const booksList = Object.values(books).sort((a, b) =>
     new Date(b.modified).getTime() - new Date(a.modified).getTime()

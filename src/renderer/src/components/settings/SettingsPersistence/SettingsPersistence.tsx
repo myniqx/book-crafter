@@ -1,14 +1,20 @@
 import { useEffect, useRef } from 'react'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import type {
   GeneralSettings,
   ExtendedEditorSettings,
   AIPreferences,
   WorkspacePreferences,
+  HistorySettings,
+  BackupSettings,
   KeyboardShortcut,
   AdvancedSettings
+} from '@renderer/store/slices/settingsSlice'
+import {
+  DEFAULT_HISTORY_SETTINGS,
+  DEFAULT_BACKUP_SETTINGS
 } from '@renderer/store/slices/settingsSlice'
 import type { CustomPrompt } from '@renderer/store/slices/aiSlice'
 import type { AIConfig, AIProvider } from '@renderer/lib/ai/types'
@@ -23,6 +29,8 @@ interface PersistedSettings {
   extendedEditorSettings: ExtendedEditorSettings
   aiPreferences: AIPreferences
   workspacePreferences: WorkspacePreferences
+  historySettings: HistorySettings
+  backupSettings: BackupSettings
   keyboardShortcuts: KeyboardShortcut[]
   advancedSettings: AdvancedSettings
 
@@ -79,13 +87,11 @@ const DEFAULT_PERSISTED_SETTINGS: PersistedSettings = {
     ]
   },
   workspacePreferences: {
-    autoBackup: false,
-    backupInterval: 30,
-    maxBackups: 5,
-    backupPath: undefined,
     watchExternalChanges: true,
     reloadOnExternalChange: 'ask'
   },
+  historySettings: { ...DEFAULT_HISTORY_SETTINGS },
+  backupSettings: { ...DEFAULT_BACKUP_SETTINGS },
   keyboardShortcuts: [
     { id: 'save', action: 'Save', defaultBinding: 'Ctrl+S', currentBinding: 'Ctrl+S', category: 'editor' },
     { id: 'saveAll', action: 'Save All', defaultBinding: 'Ctrl+Shift+S', currentBinding: 'Ctrl+Shift+S', category: 'editor' },
@@ -134,25 +140,29 @@ export const SettingsPersistence: React.FC = () => {
   const isInitializedRef = useRef(false)
 
   // Get store state
-  const generalSettings = useToolsStore((state) => state.generalSettings)
-  const extendedEditorSettings = useToolsStore((state) => state.extendedEditorSettings)
-  const aiPreferences = useToolsStore((state) => state.aiPreferences)
-  const workspacePreferences = useToolsStore((state) => state.workspacePreferences)
-  const keyboardShortcuts = useToolsStore((state) => state.keyboardShortcuts)
-  const advancedSettings = useToolsStore((state) => state.advancedSettings)
-  const providerConfigs = useToolsStore((state) => state.providerConfigs)
-  const activeProvider = useToolsStore((state) => state.activeProvider)
-  const customPrompts = useToolsStore((state) => state.customPrompts)
+  const generalSettings = useStore((state) => state.generalSettings)
+  const extendedEditorSettings = useStore((state) => state.extendedEditorSettings)
+  const aiPreferences = useStore((state) => state.aiPreferences)
+  const workspacePreferences = useStore((state) => state.workspacePreferences)
+  const historySettings = useStore((state) => state.historySettings)
+  const backupSettings = useStore((state) => state.backupSettings)
+  const keyboardShortcuts = useStore((state) => state.keyboardShortcuts)
+  const advancedSettings = useStore((state) => state.advancedSettings)
+  const providerConfigs = useStore((state) => state.providerConfigs)
+  const activeProvider = useStore((state) => state.activeProvider)
+  const customPrompts = useStore((state) => state.customPrompts)
 
   // Get store actions
-  const updateGeneralSettings = useToolsStore((state) => state.updateGeneralSettings)
-  const updateExtendedEditorSettings = useToolsStore((state) => state.updateExtendedEditorSettings)
-  const updateAIPreferences = useToolsStore((state) => state.updateAIPreferences)
-  const updateWorkspacePreferences = useToolsStore((state) => state.updateWorkspacePreferences)
-  const updateAdvancedSettings = useToolsStore((state) => state.updateAdvancedSettings)
-  const setAllProviderConfigs = useToolsStore((state) => state.setAllProviderConfigs)
-  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
-  const setCustomPrompts = useToolsStore((state) => state.setCustomPrompts)
+  const updateGeneralSettings = useStore((state) => state.updateGeneralSettings)
+  const updateExtendedEditorSettings = useStore((state) => state.updateExtendedEditorSettings)
+  const updateAIPreferences = useStore((state) => state.updateAIPreferences)
+  const updateWorkspacePreferences = useStore((state) => state.updateWorkspacePreferences)
+  const updateHistorySettings = useStore((state) => state.updateHistorySettings)
+  const updateBackupSettings = useStore((state) => state.updateBackupSettings)
+  const updateAdvancedSettings = useStore((state) => state.updateAdvancedSettings)
+  const setAllProviderConfigs = useStore((state) => state.setAllProviderConfigs)
+  const setActiveProvider = useStore((state) => state.setActiveProvider)
+  const setCustomPrompts = useStore((state) => state.setCustomPrompts)
 
   // Load settings from disk to store on initial mount
   useEffect(() => {
@@ -164,13 +174,15 @@ export const SettingsPersistence: React.FC = () => {
       updateExtendedEditorSettings(persistedSettings.extendedEditorSettings)
       updateAIPreferences(persistedSettings.aiPreferences)
       updateWorkspacePreferences(persistedSettings.workspacePreferences)
+      updateHistorySettings(persistedSettings.historySettings)
+      updateBackupSettings(persistedSettings.backupSettings)
       updateAdvancedSettings(persistedSettings.advancedSettings)
       setAllProviderConfigs(persistedSettings.providerConfigs)
       setActiveProvider(persistedSettings.activeProvider)
       setCustomPrompts(persistedSettings.customPrompts)
 
       // Handle keyboard shortcuts separately (need to update each one)
-      const store = useToolsStore.getState()
+      const store = useStore.getState()
       persistedSettings.keyboardShortcuts.forEach((shortcut) => {
         store.updateKeyboardShortcut(shortcut.id, shortcut.currentBinding)
       })
@@ -198,6 +210,8 @@ export const SettingsPersistence: React.FC = () => {
       extendedEditorSettings,
       aiPreferences,
       workspacePreferences,
+      historySettings,
+      backupSettings,
       keyboardShortcuts,
       advancedSettings,
       providerConfigs,
@@ -218,6 +232,8 @@ export const SettingsPersistence: React.FC = () => {
     extendedEditorSettings,
     aiPreferences,
     workspacePreferences,
+    historySettings,
+    backupSettings,
     keyboardShortcuts,
     advancedSettings,
     providerConfigs,

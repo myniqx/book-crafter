@@ -1,4 +1,4 @@
-import { useCoreStore } from './store'
+import { useStore } from './store'
 import { WelcomeScreen } from './components/workspace/WelcomeScreen'
 import { MainLayout } from './components/layout/MainLayout'
 import { Toaster } from './components/ui/sonner'
@@ -8,7 +8,7 @@ import { SettingsPersistence } from './components/settings/SettingsPersistence'
 import { FileWatcherService } from './components/workspace/FileWatcherService'
 
 function App(): React.JSX.Element {
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
 
   return (
     <TooltipProvider>

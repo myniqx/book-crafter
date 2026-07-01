@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import { createNote, type NoteType, getNoteTypeLabel, getNoteTypeIcon } from '@renderer/lib/note'
 import type { CreateNoteDialogProps } from './types'
@@ -32,12 +32,12 @@ export const CreateNoteDialog: React.FC<CreateNoteDialogProps> = ({ triggerProps
   const [noteType, setNoteType] = useState<NoteType>('general')
   const [errors, setErrors] = useState<string[]>([])
 
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const notes = useContentStore((state) => state.notes)
-  const addNote = useContentStore((state) => state.addNote)
-  const saveNoteToDisk = useContentStore((state) => state.saveNoteToDisk)
-  const open = useCoreStore((state) => state.createNoteDialogOpen)
-  const setOpen = useCoreStore((state) => state.setCreateNoteDialogOpen)
+  const workspacePath = useStore((state) => state.workspacePath)
+  const notes = useStore((state) => state.notes)
+  const addNote = useStore((state) => state.addNote)
+  const saveNoteToDisk = useStore((state) => state.saveNoteToDisk)
+  const open = useStore((state) => state.createNoteDialogOpen)
+  const setOpen = useStore((state) => state.setCreateNoteDialogOpen)
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault()

@@ -11,7 +11,7 @@ import {
   DialogClose
 } from '@renderer/components/ui/dialog'
 import { Button } from '@renderer/components/ui/button'
-import { useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
 import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
@@ -26,8 +26,8 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
   const [isOpening, setIsOpening] = useState(false)
   const [selectedPath, setSelectedPath] = useState<string>('')
 
-  const hasUnsavedChanges = useCoreStore((state) => state.hasUnsavedChanges)
-  const loadWorkspace = useCoreStore((state) => state.loadWorkspace)
+  const hasUnsavedChanges = useStore((state) => state.hasUnsavedChanges)
+  const loadWorkspace = useStore((state) => state.loadWorkspace)
 
   // Handle dialog open/close with unsaved changes check
   const handleOpenChange = (newOpen: boolean) => {
@@ -73,7 +73,7 @@ export const OpenProjectDialog: React.FC<OpenProjectDialogProps> = ({
       await loadWorkspace(selectedPath)
 
       // Get the loaded config for project name
-      const config = useCoreStore.getState().workspaceConfig
+      const config = useStore.getState().workspaceConfig
 
       // Add to recent projects
       const newProject: RecentProject = {

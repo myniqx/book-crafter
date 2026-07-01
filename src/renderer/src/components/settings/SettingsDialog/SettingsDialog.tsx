@@ -18,14 +18,16 @@ import { KeyboardShortcutsTab } from './KeyboardShortcutsTab'
 import { AdvancedSettingsTab } from './AdvancedSettingsTab'
 import { SettingsContext, type SettingsDraft } from './SettingsContext'
 import { useShortcut } from '@renderer/hooks/useKeyboard'
-import { useToolsStore, useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
-function buildSnapshot(store: ReturnType<typeof useToolsStore.getState>): SettingsDraft {
+function buildSnapshot(store: ReturnType<typeof useStore.getState>): SettingsDraft {
   return {
     generalSettings: { ...store.generalSettings },
     extendedEditorSettings: { ...store.extendedEditorSettings },
     aiPreferences: { ...store.aiPreferences },
     workspacePreferences: { ...store.workspacePreferences },
+    historySettings: { ...store.historySettings },
+    backupSettings: { ...store.backupSettings },
     advancedSettings: { ...store.advancedSettings },
     activeProvider: store.activeProvider,
     providerConfigs: Object.fromEntries(
@@ -36,10 +38,10 @@ function buildSnapshot(store: ReturnType<typeof useToolsStore.getState>): Settin
 
 export const SettingsDialog: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general')
-  const open = useCoreStore((state) => state.settingsDialogOpen)
-  const setOpen = useCoreStore((state) => state.setSettingsDialogOpen)
+  const open = useStore((state) => state.settingsDialogOpen)
+  const setOpen = useStore((state) => state.setSettingsDialogOpen)
 
-  const storeState = useToolsStore()
+  const storeState = useStore()
 
   const [draft, setDraft] = useState<SettingsDraft>(() => buildSnapshot(storeState))
   const [isDirty, setIsDirty] = useState(false)
@@ -47,7 +49,7 @@ export const SettingsDialog: React.FC = () => {
   // Re-snapshot when dialog opens
   const handleOpenChange = (next: boolean): void => {
     if (next) {
-      setDraft(buildSnapshot(useToolsStore.getState()))
+      setDraft(buildSnapshot(useStore.getState()))
       setIsDirty(false)
     }
     setOpen(next)
@@ -59,11 +61,13 @@ export const SettingsDialog: React.FC = () => {
   }, [])
 
   const handleSave = (): void => {
-    const s = useToolsStore.getState()
+    const s = useStore.getState()
     s.updateGeneralSettings(draft.generalSettings)
     s.updateExtendedEditorSettings(draft.extendedEditorSettings)
     s.updateAIPreferences(draft.aiPreferences)
     s.updateWorkspacePreferences(draft.workspacePreferences)
+    s.updateHistorySettings(draft.historySettings)
+    s.updateBackupSettings(draft.backupSettings)
     s.updateAdvancedSettings(draft.advancedSettings)
     s.setActiveProvider(draft.activeProvider)
     Object.entries(draft.providerConfigs).forEach(([provider, config]) => {
@@ -73,7 +77,7 @@ export const SettingsDialog: React.FC = () => {
   }
 
   const handleCancel = (): void => {
-    setDraft(buildSnapshot(useToolsStore.getState()))
+    setDraft(buildSnapshot(useStore.getState()))
     setIsDirty(false)
   }
 

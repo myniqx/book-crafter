@@ -13,7 +13,7 @@ import {
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
-import { useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
 import { dialog, fs } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
@@ -33,9 +33,9 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
   })
   const [isCreating, setIsCreating] = useState(false)
 
-  const setWorkspaceConfig = useCoreStore((state) => state.setWorkspaceConfig)
-  const setWorkspacePath = useCoreStore((state) => state.setWorkspacePath)
-  const createNewWorkspace = useCoreStore((state) => state.createNewWorkspace)
+  const setWorkspaceConfig = useStore((state) => state.setWorkspaceConfig)
+  const setWorkspacePath = useStore((state) => state.setWorkspacePath)
+  const createNewWorkspace = useStore((state) => state.createNewWorkspace)
 
   const [recentProjects, setRecentProjects] = usePersistedStore<RecentProject[]>(
     'recentProjects',

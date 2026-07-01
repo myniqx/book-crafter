@@ -1,5 +1,5 @@
 import React from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { PRESET_PROMPTS } from '@renderer/lib/ai/types'
 import type { PresetPromptsSelectorProps } from './types'
 import { Sparkles, ChevronDown } from 'lucide-react'
@@ -11,7 +11,7 @@ export const PresetPromptsSelector: React.FC<PresetPromptsSelectorProps> = ({
   onSelectPrompt,
   className
 }) => {
-  const customPrompts = useToolsStore((state) => state.customPrompts)
+  const customPrompts = useStore((state) => state.customPrompts)
 
   return (
     <Popover>

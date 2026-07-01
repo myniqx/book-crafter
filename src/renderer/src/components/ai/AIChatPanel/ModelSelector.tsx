@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import type { ModelSelectorProps } from './types'
 import type { AIProvider } from '@renderer/lib/ai/types'
 import { ChevronDown, Loader2 } from 'lucide-react'
@@ -13,11 +13,11 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ className }) => {
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false)
 
   // Tools store state
-  const activeProvider = useToolsStore((state) => state.activeProvider)
-  const setActiveProvider = useToolsStore((state) => state.setActiveProvider)
-  const providerConfigs = useToolsStore((state) => state.providerConfigs)
-  const setProviderConfig = useToolsStore((state) => state.setProviderConfig)
-  const listModels = useToolsStore((state) => state.listModels)
+  const activeProvider = useStore((state) => state.activeProvider)
+  const setActiveProvider = useStore((state) => state.setActiveProvider)
+  const providerConfigs = useStore((state) => state.providerConfigs)
+  const setProviderConfig = useStore((state) => state.setProviderConfig)
+  const listModels = useStore((state) => state.listModels)
 
   const config = providerConfigs[activeProvider]
 

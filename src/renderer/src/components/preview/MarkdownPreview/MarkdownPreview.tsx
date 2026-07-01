@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore, type TabEditorData } from '@renderer/store'
 import { processMarkdownForPreview, countMarkdownWords, getReadingTime } from '@renderer/lib/markdown'
 import { useDebounce } from '@renderer/hooks/useDebounce'
 import type { MarkdownPreviewProps } from './types'
@@ -11,25 +11,26 @@ import { cn } from '@renderer/lib/utils'
 import { BookOpen, FileText, Clock } from 'lucide-react'
 
 export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ className }) => {
-  const entities = useContentStore((state) => state.entities)
-  const images = useContentStore((state) => state.images)
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const books = useContentStore((state) => state.books)
-  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
-  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
+  const entities = useStore((state) => state.entities)
+  const images = useStore((state) => state.images)
+  const workspacePath = useStore((state) => state.workspacePath)
+  const books = useStore((state) => state.books)
+  const openTabs = useStore((state) => state.openTabs)
+  const activeTabId = useStore((state) => state.activeTabId)
 
   // Get active tab data
   const activeTabData = useMemo(() => {
-    if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
-      const tab = openEditorTabs[activeTabIndex]
-      const book = books[tab.bookSlug]
+    const tab = openTabs.find((t) => t.id === activeTabId)
+    if (tab?.type === 'editor' && tab.data) {
+      const { bookSlug, chapterSlug } = tab.data as TabEditorData
+      const book = books[bookSlug]
       if (book) {
-        const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
+        const chapter = book.chapters.find((c) => c.slug === chapterSlug)
         return { book, chapter, tab }
       }
     }
     return null
-  }, [openEditorTabs, activeTabIndex, books])
+  }, [openTabs, activeTabId, books])
 
   // Get raw content from active chapter
   const rawContent = useMemo(() => {

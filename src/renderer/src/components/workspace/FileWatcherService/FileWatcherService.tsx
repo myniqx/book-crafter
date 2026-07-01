@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useCoreStore, useContentStore } from '@renderer/store'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { fs } from '@renderer/lib/ipc'
 import { logger } from '@renderer/lib/logger'
 import { watchEvents, isInternalWrite } from '@renderer/lib/watchEvents'
@@ -10,13 +9,13 @@ import { getNotesDir } from '@renderer/lib/notes'
 import { getImagesDir } from '@renderer/lib/images'
 
 export const FileWatcherService: React.FC = () => {
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const isWorkspaceLoaded = useCoreStore((state) => state.isWorkspaceLoaded)
-  const books = useContentStore((state) => state.books)
-  const reloadOnExternalChange = useToolsStore(
+  const workspacePath = useStore((state) => state.workspacePath)
+  const isWorkspaceLoaded = useStore((state) => state.isWorkspaceLoaded)
+  const books = useStore((state) => state.books)
+  const reloadOnExternalChange = useStore(
     (state) => state.workspacePreferences.reloadOnExternalChange
   )
-  const watchExternalChanges = useToolsStore(
+  const watchExternalChanges = useStore(
     (state) => state.workspacePreferences.watchExternalChanges
   )
 
@@ -48,6 +47,9 @@ export const FileWatcherService: React.FC = () => {
 
       for (const { path, type, extra } of watched) {
         try {
+          const exists = await fs.exists(path)
+          if (!exists) continue
+
           const unwatch = await fs.watch(path, (event, filename) => {
             // Directory watchers: only care about .json files
             const isDir = !path.endsWith('.json')
@@ -81,14 +83,14 @@ export const FileWatcherService: React.FC = () => {
 
     const unsubs = [
       watchEvents.on('workspace-config-changed', () =>
-        handle('Project config', () => useCoreStore.getState().loadWorkspace(workspacePath))
+        handle('Project config', () => useStore.getState().loadWorkspace(workspacePath))
       ),
 
       watchEvents.on('book-changed', ({ bookSlug }) =>
         handle(`Book "${bookSlug}" config`, async () => {
-          await useContentStore.getState().loadAllBooks(workspacePath)
-          const coreStore = useCoreStore.getState()
-          const updatedBooks = useContentStore.getState().books
+          await useStore.getState().loadAllBooks(workspacePath)
+          const coreStore = useStore.getState()
+          const updatedBooks = useStore.getState().books
           coreStore.openTabs.forEach((tab) => {
             if (tab.type !== 'editor') return
             const data = tab.data as { bookSlug: string; chapterSlug: string }
@@ -103,19 +105,19 @@ export const FileWatcherService: React.FC = () => {
 
       watchEvents.on('entity-changed', ({ slug }) =>
         handle(`Entity "${slug}"`, () =>
-          useContentStore.getState().loadAllEntities(workspacePath)
+          useStore.getState().loadAllEntities(workspacePath)
         )
       ),
 
       watchEvents.on('note-changed', ({ slug }) =>
         handle(`Note "${slug}"`, () =>
-          useContentStore.getState().loadAllNotes(workspacePath)
+          useStore.getState().loadAllNotes(workspacePath)
         )
       ),
 
       watchEvents.on('image-changed', ({ slug }) =>
         handle(`Image "${slug}"`, () =>
-          useContentStore.getState().loadAllImages(workspacePath)
+          useStore.getState().loadAllImages(workspacePath)
         )
       ),
     ]

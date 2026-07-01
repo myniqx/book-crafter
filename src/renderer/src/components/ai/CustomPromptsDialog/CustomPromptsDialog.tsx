@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { formatDate } from '@renderer/lib/dateFormat'
 import type { CustomPrompt } from '@renderer/lib/ai/types'
 import {
@@ -24,10 +24,10 @@ interface CustomPromptsDialogProps {
 }
 
 export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigger }) => {
-  const customPrompts = useToolsStore((state) => state.customPrompts)
-  const addCustomPrompt = useToolsStore((state) => state.addCustomPrompt)
-  const updateCustomPrompt = useToolsStore((state) => state.updateCustomPrompt)
-  const deleteCustomPrompt = useToolsStore((state) => state.deleteCustomPrompt)
+  const customPrompts = useStore((state) => state.customPrompts)
+  const addCustomPrompt = useStore((state) => state.addCustomPrompt)
+  const updateCustomPrompt = useStore((state) => state.updateCustomPrompt)
+  const deleteCustomPrompt = useStore((state) => state.deleteCustomPrompt)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)

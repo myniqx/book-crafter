@@ -1,5 +1,5 @@
 import React from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { useSettingsContext } from './SettingsContext'
 import { FormField } from '@renderer/components/ui/field'
 import { Label } from '@renderer/components/ui/label'
@@ -17,7 +17,7 @@ export const AdvancedSettingsTab: React.FC = () => {
   const update = (updates: Partial<typeof advancedSettings>): void =>
     updateDraft({ advancedSettings: { ...advancedSettings, ...updates } })
 
-  const resetAllSettings = useToolsStore((state) => state.resetAllSettings)
+  const resetAllSettings = useStore((state) => state.resetAllSettings)
 
   const handleClearCache = (): void => {
     if (confirm('Are you sure you want to clear all cached data? This will reload the app.')) {

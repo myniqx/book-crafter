@@ -5,6 +5,7 @@ import type {
   FileReadOptions,
   FileWriteOptions,
   ReadDirOptions,
+  ZipDirectoryOptions,
   FetchOptions,
   StreamOptions,
   DialogOpenFileOptions,
@@ -32,6 +33,9 @@ const fsAPI = {
   exists: (path: string) => ipcRenderer.invoke('fs:exists', path),
 
   stats: (path: string) => ipcRenderer.invoke('fs:stats', path),
+
+  zipDirectory: (sourcePath: string, destZipPath: string, options?: ZipDirectoryOptions) =>
+    ipcRenderer.invoke('fs:zipDirectory', sourcePath, destZipPath, options),
 
   watch: async (
     path: string,

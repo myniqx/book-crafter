@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { useToolsStore, useContentStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
 import type { AIChatPanelProps } from './types'
 import type { StoreAccess } from '@renderer/store/slices/aiSlice'
@@ -25,34 +25,34 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Tools store state
-  const messages = useToolsStore((state) => state.messages)
-  const isStreaming = useToolsStore((state) => state.isStreaming)
-  const currentStreamMessage = useToolsStore((state) => state.currentStreamMessage)
-  const isAgentRunning = useToolsStore((state) => state.isAgentRunning)
-  const currentIteration = useToolsStore((state) => state.currentIteration)
-  const pendingApproval = useToolsStore((state) => state.pendingApproval)
-  const agenticSettings = useToolsStore((state) => state.agenticSettings)
+  const messages = useStore((state) => state.messages)
+  const isStreaming = useStore((state) => state.isStreaming)
+  const currentStreamMessage = useStore((state) => state.currentStreamMessage)
+  const isAgentRunning = useStore((state) => state.isAgentRunning)
+  const currentIteration = useStore((state) => state.currentIteration)
+  const pendingApproval = useStore((state) => state.pendingApproval)
+  const agenticSettings = useStore((state) => state.agenticSettings)
 
   // Tools store actions
-  const sendMessage = useToolsStore((state) => state.sendMessage)
-  const sendAgenticMessage = useToolsStore((state) => state.sendAgenticMessage)
-  const clearMessages = useToolsStore((state) => state.clearMessages)
-  const buildContext = useToolsStore((state) => state.buildContext)
-  const approveToolCall = useToolsStore((state) => state.approveToolCall)
-  const rejectToolCall = useToolsStore((state) => state.rejectToolCall)
-  const stopAgent = useToolsStore((state) => state.stopAgent)
+  const sendMessage = useStore((state) => state.sendMessage)
+  const sendAgenticMessage = useStore((state) => state.sendAgenticMessage)
+  const clearMessages = useStore((state) => state.clearMessages)
+  const buildContext = useStore((state) => state.buildContext)
+  const approveToolCall = useStore((state) => state.approveToolCall)
+  const rejectToolCall = useStore((state) => state.rejectToolCall)
+  const stopAgent = useStore((state) => state.stopAgent)
 
   // Content store state
-  const books = useContentStore((state) => state.books)
-  const entities = useContentStore((state) => state.entities)
+  const books = useStore((state) => state.books)
+  const entities = useStore((state) => state.entities)
 
   // Content store actions
-  const addChapter = useContentStore((state) => state.addChapter)
-  const updateChapterContent = useContentStore((state) => state.updateChapterContent)
-  const deleteChapter = useContentStore((state) => state.deleteChapter)
-  const addEntity = useContentStore((state) => state.addEntity)
-  const updateEntity = useContentStore((state) => state.updateEntity)
-  const deleteEntity = useContentStore((state) => state.deleteEntity)
+  const addChapter = useStore((state) => state.addChapter)
+  const updateChapterContent = useStore((state) => state.updateChapterContent)
+  const deleteChapter = useStore((state) => state.deleteChapter)
+  const addEntity = useStore((state) => state.addEntity)
+  const updateEntity = useStore((state) => state.updateEntity)
+  const deleteEntity = useStore((state) => state.deleteEntity)
 
   // Create store access for tool execution
   const storeAccess: StoreAccess = useMemo(

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@renderer/lib/utils'
-import { useSidebarStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 400
 
 export const ResizeHandle: React.FC = () => {
-  const setSidebarWidth = useSidebarStore((state) => state.setSidebarWidth)
+  const setSidebarWidth = useStore((state) => state.setSidebarWidth)
   const [isDragging, setIsDragging] = useState(false)
   const startXRef = useRef(0)
   const startWidthRef = useRef(0)

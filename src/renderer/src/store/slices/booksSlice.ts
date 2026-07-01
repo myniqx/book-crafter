@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand'
 import { toast } from 'sonner'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
 
 export interface Chapter {
@@ -33,9 +33,6 @@ export interface BooksSlice {
   books: Record<string, Book>
   isLoadingBooks: boolean
 
-  // Internal: Auto-save timer management (per-chapter)
-  _saveTimers: Map<string, NodeJS.Timeout>
-
   // CRUD operations
   addBook: (book: Book) => void
   updateBook: (slug: string, updates: Partial<Book>) => void
@@ -63,9 +60,12 @@ export interface BooksSlice {
   // Internal: Cleanup timers
   _cleanupTimers: () => void
 
-  // NOTE: Tab management has been moved to UISlice (openTabs, activeTabId)
-  // Use useCoreStore().openTab() instead of this slice
+  // NOTE: Tab management lives in UISlice (openTabs, activeTabId)
 }
+
+// Auto-save debounce timers (per-chapter). Kept outside the store because
+// timer handles are not serializable state.
+const saveTimers = new Map<string, NodeJS.Timeout>()
 
 /**
  * Helper: Generate unique key for save timer
@@ -76,13 +76,12 @@ const getSaveTimerKey = (bookSlug: string, chapterSlug: string): string => {
 
 export const createBooksSlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   BooksSlice
 > = (set, get) => ({
   books: {},
   isLoadingBooks: false,
-  _saveTimers: new Map(),
 
   addBook: (book) =>
     set((state) => {
@@ -127,10 +126,7 @@ export const createBooksSlice: StateCreator<
     })
 
     // Set unsaved changes flag
-    const setHasUnsavedChanges = get().setHasUnsavedChanges
-    if (setHasUnsavedChanges) {
-      setHasUnsavedChanges(true)
-    }
+    get().setHasUnsavedChanges(true)
 
     // Check auto-save config
     const workspacePath = get().workspacePath
@@ -142,49 +138,33 @@ export const createBooksSlice: StateCreator<
 
     // Clear previous timer for this chapter
     const timerKey = getSaveTimerKey(bookSlug, chapterSlug)
-    const existingTimer = get()._saveTimers.get(timerKey)
+    const existingTimer = saveTimers.get(timerKey)
     if (existingTimer) {
       clearTimeout(existingTimer)
     }
 
     // Set new debounced save timer
     const newTimer = setTimeout(async () => {
+      saveTimers.delete(timerKey)
       try {
         await get().saveChapterToDisk(workspacePath, bookSlug, chapterSlug)
 
         // Save successful → clear unsaved changes flag
-        const finalSetHasUnsavedChanges = get().setHasUnsavedChanges
-        if (finalSetHasUnsavedChanges) {
-          finalSetHasUnsavedChanges(false)
-        }
-
-        // Remove timer from map
-        set((state) => {
-          state._saveTimers.delete(timerKey)
-        })
+        get().setHasUnsavedChanges(false)
 
         logger.info(`Successfully saved ${bookSlug}/${chapterSlug}`, 'Auto-save')
       } catch (error) {
         logger.error('Failed to save chapter:', 'Auto-save', error)
 
-        // Show error toast
+        // Show error toast; changes remain marked as unsaved
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         toast.error(`Failed to save ${chapterSlug}`, {
           description: errorMessage
         })
-
-        // Keep unsaved changes flag as true
-        // Timer will be removed but changes remain unsaved
-        set((state) => {
-          state._saveTimers.delete(timerKey)
-        })
       }
     }, autoSaveDelay)
 
-    // Store timer in map
-    set((state) => {
-      state._saveTimers.set(timerKey, newTimer)
-    })
+    saveTimers.set(timerKey, newTimer)
   },
 
   updateChapterContent: (bookSlug, chapterSlug, content) =>
@@ -314,11 +294,8 @@ export const createBooksSlice: StateCreator<
    * Should be called on app unmount or workspace change
    */
   _cleanupTimers: () => {
-    const timers = get()._saveTimers
-    timers.forEach((timer) => clearTimeout(timer))
-    set((state) => {
-      state._saveTimers.clear()
-    })
+    saveTimers.forEach((timer) => clearTimeout(timer))
+    saveTimers.clear()
     logger.debug('Cleaned up all pending timers', 'Auto-save')
   }
 })

@@ -1,9 +1,9 @@
 import React from 'react'
 import { EntityCard } from '@renderer/components/entities/EntityCard'
-import { useContentStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
 export const EntityDetailPanel: React.FC = () => {
-  const selectedEntitySlug = useContentStore((state) => state.selectedEntitySlug)
+  const selectedEntitySlug = useStore((state) => state.selectedEntitySlug)
 
   if (!selectedEntitySlug) {
     return (

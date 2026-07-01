@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { MonacoEditor } from '@renderer/components/editor/MonacoEditor'
-import { useContentStore, useCoreStore, useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { fs } from '@renderer/lib/ipc'
 import { getChapterContentPath } from '@renderer/lib/books'
 import { logger } from '@renderer/lib/logger'
@@ -18,14 +18,14 @@ export const ChapterEditorPanel: React.FC<ChapterEditorPanelProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const workspacePath = useCoreStore((state) => state.workspacePath)
-  const book = useContentStore((state) => state.books[bookSlug])
+  const workspacePath = useStore((state) => state.workspacePath)
+  const book = useStore((state) => state.books[bookSlug])
   const chapter = book?.chapters.find((c) => c.slug === chapterSlug)
-  const updateChapter = useContentStore((state) => state.updateChapter)
-  const reloadOnExternalChange = useToolsStore(
+  const updateChapter = useStore((state) => state.updateChapter)
+  const reloadOnExternalChange = useStore(
     (state) => state.workspacePreferences.reloadOnExternalChange
   )
-  const watchExternalChanges = useToolsStore(
+  const watchExternalChanges = useStore(
     (state) => state.workspacePreferences.watchExternalChanges
   )
   const reloadBehaviorRef = useRef(reloadOnExternalChange)

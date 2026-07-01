@@ -2,11 +2,13 @@ import { ipcMain, IpcMainInvokeEvent } from 'electron'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { watch, FSWatcher } from 'fs'
+import { zipSync } from 'fflate'
 import type {
   FileReadOptions,
   FileWriteOptions,
   ReadDirOptions,
   FileStats,
+  ZipDirectoryOptions,
   IPCError
 } from '../../types/ipc'
 
@@ -266,6 +268,58 @@ export function registerFileSystemHandlers(workspaceRoot?: string): void {
       watchers.delete(watcherId)
     }
   })
+
+  // Zip directory
+  ipcMain.handle(
+    'fs:zipDirectory',
+    async (
+      _event: IpcMainInvokeEvent,
+      sourcePath: string,
+      destZipPath: string,
+      options?: ZipDirectoryOptions
+    ) => {
+      try {
+        const validSource = validatePath(sourcePath, workspaceRoot)
+        const validDest = validatePath(destZipPath, workspaceRoot)
+
+        await fs.mkdir(path.dirname(validDest), { recursive: true })
+
+        const excludeAbs = new Set(
+          (options?.excludeDirs ?? []).map((d) => path.resolve(validSource, d))
+        )
+
+        const files: Record<string, Uint8Array> = {}
+
+        async function collectFiles(dir: string): Promise<void> {
+          const entries = await fs.readdir(dir, { withFileTypes: true })
+          for (const entry of entries) {
+            const abs = path.join(dir, entry.name)
+            if (excludeAbs.has(abs)) continue
+            if (entry.isDirectory()) {
+              await collectFiles(abs)
+            } else {
+              const rel = path.relative(validSource, abs).replace(/\\/g, '/')
+              const content = await fs.readFile(abs)
+              files[rel] = content
+            }
+          }
+        }
+
+        await collectFiles(validSource)
+
+        const zipped = zipSync(
+          Object.fromEntries(Object.entries(files).map(([k, v]) => [k, [v, {}]])) as Parameters<typeof zipSync>[0]
+        )
+        await fs.writeFile(validDest, zipped)
+      } catch (error: unknown) {
+        throw createIPCError(
+          `Failed to create zip: ${(error as Error).message}`,
+          'UNKNOWN',
+          error
+        )
+      }
+    }
+  )
 }
 
 // Clean up watchers on app quit

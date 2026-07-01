@@ -13,7 +13,7 @@ import {
 } from '@renderer/components/ui/dialog'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
-import { useContentStore, useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { createChapter } from '@renderer/lib/books'
 import type { CreateChapterDialogProps } from './types'
 
@@ -25,11 +25,11 @@ export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({
   const [isCreating, setIsCreating] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const book = useContentStore((state) => state.books[bookSlug])
-  const addChapter = useContentStore((state) => state.addChapter)
-  const saveChapterToDisk = useContentStore((state) => state.saveChapterToDisk)
-  const saveBookToDisk = useContentStore((state) => state.saveBookToDisk)
-  const workspacePath = useCoreStore((state) => state.workspacePath)
+  const book = useStore((state) => state.books[bookSlug])
+  const addChapter = useStore((state) => state.addChapter)
+  const saveChapterToDisk = useStore((state) => state.saveChapterToDisk)
+  const saveBookToDisk = useStore((state) => state.saveBookToDisk)
+  const workspacePath = useStore((state) => state.workspacePath)
 
   if (!book) {
     return null

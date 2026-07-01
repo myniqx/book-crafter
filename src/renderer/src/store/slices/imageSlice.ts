@@ -1,15 +1,9 @@
 import { StateCreator } from 'zustand'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
 import type { Image } from '@renderer/lib/image'
 import { generateImageSlug, createImageMetadata } from '@renderer/lib/image'
-import {
-  loadAllImages,
-  saveImageMetadata,
-  copyImageToWorkspace,
-  deleteImage as deleteImageFile,
-  updateImageMetadata
-} from '@renderer/lib/images'
+import { loadAllImages, saveImageMetadata, deleteImage as deleteImageFile } from '@renderer/lib/images'
 
 export interface ImageSlice {
   images: Record<string, Image>
@@ -48,7 +42,7 @@ export interface ImageSlice {
 
 export const createImageSlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   ImageSlice
 > = (set, get) => ({

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { useSettingsContext } from './SettingsContext'
 import { FormField } from '@renderer/components/ui/field'
 import { PasswordInput } from '@renderer/components/ui/password-input'
@@ -20,7 +20,7 @@ import type { AIProvider } from '@renderer/lib/ai/types'
 
 export const AISettingsTab: React.FC = () => {
   const { draft, updateDraft } = useSettingsContext()
-  const listModels = useToolsStore((state) => state.listModels)
+  const listModels = useStore((state) => state.listModels)
 
   const { activeProvider, providerConfigs, aiPreferences } = draft
   const config = providerConfigs[activeProvider]

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { GeneralSettings, ExtendedEditorSettings, AIPreferences, WorkspacePreferences, AdvancedSettings } from '@renderer/store/slices/settingsSlice'
+import type { GeneralSettings, ExtendedEditorSettings, AIPreferences, WorkspacePreferences, HistorySettings, BackupSettings, AdvancedSettings } from '@renderer/store/slices/settingsSlice'
 import type { AIConfig, AIProvider } from '@renderer/lib/ai/types'
 
 export interface SettingsDraft {
@@ -7,6 +7,8 @@ export interface SettingsDraft {
   extendedEditorSettings: ExtendedEditorSettings
   aiPreferences: AIPreferences
   workspacePreferences: WorkspacePreferences
+  historySettings: HistorySettings
+  backupSettings: BackupSettings
   advancedSettings: AdvancedSettings
   activeProvider: AIProvider
   providerConfigs: Record<AIProvider, AIConfig>

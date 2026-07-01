@@ -1,5 +1,5 @@
 import { cn } from '@renderer/lib/utils'
-import { useSidebarStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import React from 'react'
 import { ResizeHandle } from './ResizeHandle'
 
@@ -9,8 +9,8 @@ interface SidebarPanelProps {
 }
 
 export const SidebarPanel: React.FC<SidebarPanelProps> = ({ children }) => {
-  const panelVisible = useSidebarStore((state) => state.panelVisible)
-  const sidebarWidth = useSidebarStore((state) => state.sidebarWidth)
+  const panelVisible = useStore((state) => state.panelVisible)
+  const sidebarWidth = useStore((state) => state.sidebarWidth)
 
   if (!panelVisible) {
     return null

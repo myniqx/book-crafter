@@ -2,7 +2,7 @@ import React from 'react'
 import { FolderOpen, Trash2, Clock } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { usePersistedStore } from '@renderer/hooks/usePersistedStore'
-import { useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import type { RecentProject } from './types'
 import { toast } from '@renderer/lib/toast'
 import { fs } from '@renderer/lib/ipc'  // Still needed for validateProjects
@@ -14,7 +14,7 @@ export const RecentProjectsList: React.FC = () => {
     []
   )
 
-  const loadWorkspace = useCoreStore((state) => state.loadWorkspace)
+  const loadWorkspace = useStore((state) => state.loadWorkspace)
 
   // Validate projects on mount
   React.useEffect(() => {
@@ -104,13 +104,16 @@ export const RecentProjectsList: React.FC = () => {
                 <p className="text-xs text-outline mt-0.5">{formatRelativeTime(project.lastOpened)}</p>
               </div>
             </div>
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={(e) => handleRemoveProject(project.path, e)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error-container/20 rounded"
+              onKeyDown={(e) => e.key === 'Enter' && handleRemoveProject(project.path, e as never)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error-container/20 rounded cursor-pointer"
               title="Remove from recent"
             >
               <Trash2 className="h-3.5 w-3.5 text-error" />
-            </button>
+            </div>
           </button>
         ))}
       </div>

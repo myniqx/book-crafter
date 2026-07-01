@@ -1,4 +1,4 @@
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -15,7 +15,7 @@ const VERBOSE_MIN_LEVEL: LogLevel = 'debug'
 
 function isVerbose(): boolean {
   try {
-    return useToolsStore.getState().advancedSettings.verboseLogging
+    return useStore.getState().advancedSettings.verboseLogging
   } catch {
     return false
   }

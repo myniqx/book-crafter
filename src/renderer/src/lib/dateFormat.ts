@@ -1,7 +1,7 @@
-import { useToolsStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 
 function getSettings() {
-  return useToolsStore.getState().generalSettings
+  return useStore.getState().generalSettings
 }
 
 function getLocale(): string {

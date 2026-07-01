@@ -1,11 +1,11 @@
 import React from 'react'
 import { Minimize2, Maximize2, X, BookOpen, Terminal } from 'lucide-react'
-import { useCoreStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { SettingsDialog } from '@renderer/components/settings/SettingsDialog'
 import { MenuBar } from './MenuBar'
 
 export const Titlebar: React.FC = () => {
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
   const projectName = workspaceConfig?.projectName || 'Book Crafter'
 
   const handleMinimize = (): void => {

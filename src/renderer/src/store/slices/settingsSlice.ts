@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
 
 export type Theme = 'light' | 'dark' | 'system'
@@ -58,12 +59,26 @@ export interface AIPreferences {
  * Workspace preferences
  */
 export interface WorkspacePreferences {
-  autoBackup: boolean
-  backupInterval: number
-  maxBackups: number
-  backupPath?: string
   watchExternalChanges: boolean
   reloadOnExternalChange: 'auto' | 'ask' | 'never'
+}
+
+/**
+ * History settings (chapter & entity content snapshots)
+ */
+export interface HistorySettings {
+  enabled: boolean
+  maxHistoryPerFile: number
+  diffThreshold: number
+}
+
+/**
+ * Backup settings (workspace-level ZIP backups)
+ */
+export interface BackupSettings {
+  backupOnDelete: boolean
+  maxBackups: number
+  backupPath?: string
 }
 
 /**
@@ -139,12 +154,20 @@ export const DEFAULT_AI_PREFERENCES: AIPreferences = {
 }
 
 export const DEFAULT_WORKSPACE_PREFERENCES: WorkspacePreferences = {
-  autoBackup: false,
-  backupInterval: 30,
-  maxBackups: 5,
-  backupPath: undefined,
   watchExternalChanges: true,
   reloadOnExternalChange: 'ask'
+}
+
+export const DEFAULT_HISTORY_SETTINGS: HistorySettings = {
+  enabled: true,
+  maxHistoryPerFile: 10,
+  diffThreshold: 50
+}
+
+export const DEFAULT_BACKUP_SETTINGS: BackupSettings = {
+  backupOnDelete: true,
+  maxBackups: 5,
+  backupPath: undefined
 }
 
 export const DEFAULT_KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [
@@ -188,6 +211,8 @@ export interface SettingsSlice {
   extendedEditorSettings: ExtendedEditorSettings
   aiPreferences: AIPreferences
   workspacePreferences: WorkspacePreferences
+  historySettings: HistorySettings
+  backupSettings: BackupSettings
   keyboardShortcuts: KeyboardShortcut[]
   advancedSettings: AdvancedSettings
 
@@ -196,6 +221,8 @@ export interface SettingsSlice {
   updateExtendedEditorSettings: (settings: Partial<ExtendedEditorSettings>) => void
   updateAIPreferences: (preferences: Partial<AIPreferences>) => void
   updateWorkspacePreferences: (preferences: Partial<WorkspacePreferences>) => void
+  updateHistorySettings: (settings: Partial<HistorySettings>) => void
+  updateBackupSettings: (settings: Partial<BackupSettings>) => void
   updateKeyboardShortcut: (id: string, binding: string) => void
   resetKeyboardShortcut: (id: string) => void
   resetAllKeyboardShortcuts: () => void
@@ -211,8 +238,8 @@ export interface SettingsSlice {
  * Create settings slice
  */
 export const createSettingsSlice: StateCreator<
-  SettingsSlice,
-  [['zustand/immer', never]],
+  AppStore,
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   SettingsSlice
 > = (set, get) => ({
@@ -221,6 +248,8 @@ export const createSettingsSlice: StateCreator<
   extendedEditorSettings: DEFAULT_EXTENDED_EDITOR_SETTINGS,
   aiPreferences: DEFAULT_AI_PREFERENCES,
   workspacePreferences: DEFAULT_WORKSPACE_PREFERENCES,
+  historySettings: DEFAULT_HISTORY_SETTINGS,
+  backupSettings: DEFAULT_BACKUP_SETTINGS,
   keyboardShortcuts: DEFAULT_KEYBOARD_SHORTCUTS,
   advancedSettings: DEFAULT_ADVANCED_SETTINGS,
 
@@ -249,6 +278,20 @@ export const createSettingsSlice: StateCreator<
   updateWorkspacePreferences: (preferences) => {
     set((state) => {
       state.workspacePreferences = { ...state.workspacePreferences, ...preferences }
+    })
+  },
+
+  // Update history settings
+  updateHistorySettings: (settings) => {
+    set((state) => {
+      state.historySettings = { ...state.historySettings, ...settings }
+    })
+  },
+
+  // Update backup settings
+  updateBackupSettings: (settings) => {
+    set((state) => {
+      state.backupSettings = { ...state.backupSettings, ...settings }
     })
   },
 
@@ -296,6 +339,8 @@ export const createSettingsSlice: StateCreator<
       extendedEditorSettings: state.extendedEditorSettings,
       aiPreferences: state.aiPreferences,
       workspacePreferences: state.workspacePreferences,
+      historySettings: state.historySettings,
+      backupSettings: state.backupSettings,
       keyboardShortcuts: state.keyboardShortcuts,
       advancedSettings: state.advancedSettings,
       exportedAt: new Date().toISOString()
@@ -321,6 +366,12 @@ export const createSettingsSlice: StateCreator<
         if (settings.workspacePreferences) {
           state.workspacePreferences = { ...DEFAULT_WORKSPACE_PREFERENCES, ...settings.workspacePreferences }
         }
+        if (settings.historySettings) {
+          state.historySettings = { ...DEFAULT_HISTORY_SETTINGS, ...settings.historySettings }
+        }
+        if (settings.backupSettings) {
+          state.backupSettings = { ...DEFAULT_BACKUP_SETTINGS, ...settings.backupSettings }
+        }
         if (settings.keyboardShortcuts) {
           state.keyboardShortcuts = settings.keyboardShortcuts
         }
@@ -343,6 +394,8 @@ export const createSettingsSlice: StateCreator<
       state.extendedEditorSettings = DEFAULT_EXTENDED_EDITOR_SETTINGS
       state.aiPreferences = DEFAULT_AI_PREFERENCES
       state.workspacePreferences = DEFAULT_WORKSPACE_PREFERENCES
+      state.historySettings = DEFAULT_HISTORY_SETTINGS
+      state.backupSettings = DEFAULT_BACKUP_SETTINGS
       state.keyboardShortcuts = DEFAULT_KEYBOARD_SHORTCUTS
       state.advancedSettings = DEFAULT_ADVANCED_SETTINGS
     })

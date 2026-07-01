@@ -37,7 +37,7 @@ import {
   Keyboard,
   Info
 } from 'lucide-react'
-import { useCoreStore, useSidebarStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
 import { CreateProjectDialog } from '@renderer/components/workspace/CreateProjectDialog'
@@ -63,15 +63,15 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   const [openProjectDialogOpen, setOpenProjectDialogOpen] = useState(false)
 
   // Store hooks (self-contained, no props!)
-  const setCreateBookDialogOpen = useCoreStore((state) => state.setCreateBookDialogOpen)
-  const setCreateEntityDialogOpen = useCoreStore((state) => state.setCreateEntityDialogOpen)
-  const setCreateNoteDialogOpen = useCoreStore((state) => state.setCreateNoteDialogOpen)
-  const setSettingsDialogOpen = useCoreStore((state) => state.setSettingsDialogOpen)
-  const setWorkspaceConfig = useCoreStore((state) => state.setWorkspaceConfig)
-  const setWorkspacePath = useCoreStore((state) => state.setWorkspacePath)
-  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
-  const togglePanel = useSidebarStore((state) => state.togglePanel)
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const setCreateBookDialogOpen = useStore((state) => state.setCreateBookDialogOpen)
+  const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
+  const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
+  const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
+  const setWorkspaceConfig = useStore((state) => state.setWorkspaceConfig)
+  const setWorkspacePath = useStore((state) => state.setWorkspacePath)
+  const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const togglePanel = useStore((state) => state.togglePanel)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
 
   // Menu action handler
   const handleAction = async (action: string) => {

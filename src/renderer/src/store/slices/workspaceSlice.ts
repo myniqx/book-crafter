@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { fs } from '@renderer/lib/ipc'
 import { logger } from '@renderer/lib/logger'
 
@@ -59,7 +59,7 @@ const defaultWorkspaceConfig: WorkspaceConfig = {
 
 export const createWorkspaceSlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   WorkspaceSlice
 > = (set, get) => ({

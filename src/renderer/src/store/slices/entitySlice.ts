@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
 
 export interface EntityField {
@@ -103,7 +103,7 @@ export interface EntitySlice {
 
 export const createEntitySlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never], ['zustand/persist', unknown]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   EntitySlice
 > = (set, get) => ({

@@ -10,8 +10,9 @@ import { Input } from '@renderer/components/ui/input'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Badge } from '@renderer/components/ui/badge'
 import { useShortcut } from '@renderer/hooks/useKeyboard'
+import { useSaveActiveChapter } from '@renderer/hooks/useSaveChapter'
 import { fuzzySearch, highlightMatches } from '@renderer/lib/fuzzySearch'
-import { useContentStore, useCoreStore, useSidebarStore } from '@renderer/store'
+import { useStore } from '@renderer/store'
 import {
   BookOpen,
   FileText,
@@ -36,16 +37,14 @@ export const CommandPalette: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedRef = useRef<HTMLDivElement>(null)
 
-  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar)
-  const togglePanel = useSidebarStore((state) => state.togglePanel)
-  const sidebarCollapsed = useSidebarStore((state) => state.sidebarCollapsed)
-  const openEditorTabs = useContentStore((state) => state.openEditorTabs)
-  const books = useContentStore((state) => state.books)
-  const activeTabIndex = useContentStore((state) => state.activeTabIndex)
-  const setCreateBookDialogOpen = useCoreStore((state) => state.setCreateBookDialogOpen)
-  const setCreateEntityDialogOpen = useCoreStore((state) => state.setCreateEntityDialogOpen)
-  const setCreateNoteDialogOpen = useCoreStore((state) => state.setCreateNoteDialogOpen)
-  const setSettingsDialogOpen = useCoreStore((state) => state.setSettingsDialogOpen)
+  const toggleSidebar = useStore((state) => state.toggleSidebar)
+  const togglePanel = useStore((state) => state.togglePanel)
+  const panelVisible = useStore((state) => state.panelVisible)
+  const saveActiveChapter = useSaveActiveChapter()
+  const setCreateBookDialogOpen = useStore((state) => state.setCreateBookDialogOpen)
+  const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
+  const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
+  const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
 
   // Keyboard shortcut: Ctrl+Shift+P
   useShortcut('commandPalette', () => setOpen(true), { allowInInput: true })
@@ -117,28 +116,19 @@ export const CommandPalette: React.FC = () => {
         icon: <Save className="h-4 w-4" />,
         action: () => {
           setOpen(false)
-          if (activeTabIndex >= 0 && openEditorTabs[activeTabIndex]) {
-            const tab = openEditorTabs[activeTabIndex]
-            const book = books[tab.bookSlug]
-            if (book) {
-              const chapter = book.chapters.find((c) => c.slug === tab.chapterSlug)
-              if (chapter) {
-                logger.debug(`Save file: ${tab.bookSlug} / ${tab.chapterSlug}`, 'CommandPalette')
-              }
-            }
-          }
+          saveActiveChapter()
         }
       },
 
       // Navigation commands
       {
         id: 'toggle-sidebar',
-        label: sidebarCollapsed ? 'Show Sidebar' : 'Hide Sidebar',
+        label: panelVisible ? 'Hide Sidebar' : 'Show Sidebar',
         description: 'Toggle the sidebar visibility',
         category: 'Navigation',
         shortcut: 'Ctrl+B',
         keywords: ['toggle', 'sidebar', 'show', 'hide'],
-        icon: sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />,
+        icon: panelVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />,
         action: () => {
           setOpen(false)
           toggleSidebar()
@@ -193,10 +183,8 @@ export const CommandPalette: React.FC = () => {
     [
       toggleSidebar,
       togglePanel,
-      sidebarCollapsed,
-      openEditorTabs,
-      books,
-      activeTabIndex,
+      panelVisible,
+      saveActiveChapter,
       setCreateBookDialogOpen,
       setCreateEntityDialogOpen,
       setCreateNoteDialogOpen,

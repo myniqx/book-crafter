@@ -1,5 +1,5 @@
 import React from 'react'
-import { useSidebarStore, useCoreStore, type PanelId } from '@renderer/store'
+import { useStore, type PanelId } from '@renderer/store'
 import { ActivityBar } from './ActivityBar'
 import { SidebarPanel } from './SidebarPanel'
 import {
@@ -42,10 +42,10 @@ const panelConfigs: PanelConfig[] = [
 ]
 
 export const Sidebar: React.FC = () => {
-  const activePanel = useSidebarStore((state) => state.activePanel)
-  const panelVisible = useSidebarStore((state) => state.panelVisible)
-  const closePanel = useSidebarStore((state) => state.closePanel)
-  const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
+  const activePanel = useStore((state) => state.activePanel)
+  const panelVisible = useStore((state) => state.panelVisible)
+  const closePanel = useStore((state) => state.closePanel)
+  const workspaceConfig = useStore((state) => state.workspaceConfig)
 
   const hasWorkspace = workspaceConfig !== null
 

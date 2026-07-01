@@ -251,6 +251,22 @@ export const fs = {
     } catch (error) {
       handleIPCError(error)
     }
+  },
+
+  /**
+   * Zip a directory into a single archive file, excluding specified subdirectories
+   */
+  async zipDirectory(
+    sourcePath: string,
+    destZipPath: string,
+    excludeDirs: string[] = []
+  ): Promise<void> {
+    try {
+      const api = getAPI()
+      await api.fs.zipDirectory(sourcePath, destZipPath, { excludeDirs })
+    } catch (error) {
+      handleIPCError(error)
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { AppStore } from '..'
+import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
 
 export type PanelId =
@@ -61,9 +61,10 @@ export interface TabPanelData {
 }
 
 export interface UISlice {
-  sidebarCollapsed: boolean
-  activePanels: PanelId[]
-  panelSizes: Record<string, number>
+  // Sidebar state
+  activePanel: PanelId | null
+  panelVisible: boolean
+  sidebarWidth: number
 
   /**
    * DockLayout Tab Management
@@ -83,12 +84,11 @@ export interface UISlice {
   createNoteDialogOpen: boolean
   settingsDialogOpen: boolean
 
+  // Sidebar actions
   toggleSidebar: () => void
-  setSidebarCollapsed: (collapsed: boolean) => void
   togglePanel: (panelId: PanelId) => void
-  setPanelSize: (panelId: string, size: number) => void
-  showPanel: (panelId: PanelId) => void
-  hidePanel: (panelId: PanelId) => void
+  closePanel: () => void
+  setSidebarWidth: (width: number) => void
 
   /**
    * Tab Management Actions
@@ -137,19 +137,20 @@ export interface UISlice {
   setSettingsDialogOpen: (open: boolean) => void
 }
 
+const DEFAULT_SIDEBAR_WIDTH = 250
+const MIN_SIDEBAR_WIDTH = 200
+const MAX_SIDEBAR_WIDTH = 400
+
 export const createUISlice: StateCreator<
   AppStore,
-  [['zustand/immer', never], ['zustand/devtools', never]],
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   UISlice
 > = (set, get) => ({
-  sidebarCollapsed: false,
-  activePanels: ['file-explorer', 'entity-browser'],
-  panelSizes: {
-    'file-explorer': 250,
-    'entity-browser': 300,
-    'markdown-preview': 50 // percentage
-  },
+  // Sidebar state
+  activePanel: 'file-explorer',
+  panelVisible: true,
+  sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
 
   // Tab management state
   openTabs: [],
@@ -163,42 +164,28 @@ export const createUISlice: StateCreator<
 
   toggleSidebar: () =>
     set((state) => {
-      state.sidebarCollapsed = !state.sidebarCollapsed
+      state.panelVisible = !state.panelVisible
     }),
 
-  setSidebarCollapsed: (collapsed) =>
-    set((state) => {
-      state.sidebarCollapsed = collapsed
-    }),
-
+  // If the active panel is clicked again, toggle visibility; otherwise switch to it
   togglePanel: (panelId) =>
     set((state) => {
-      const index = state.activePanels.indexOf(panelId)
-      if (index !== -1) {
-        state.activePanels.splice(index, 1)
+      if (state.activePanel === panelId) {
+        state.panelVisible = !state.panelVisible
       } else {
-        state.activePanels.push(panelId)
+        state.activePanel = panelId
+        state.panelVisible = true
       }
     }),
 
-  setPanelSize: (panelId, size) =>
+  closePanel: () =>
     set((state) => {
-      state.panelSizes[panelId] = size
+      state.panelVisible = false
     }),
 
-  showPanel: (panelId) =>
+  setSidebarWidth: (width) =>
     set((state) => {
-      if (!state.activePanels.includes(panelId)) {
-        state.activePanels.push(panelId)
-      }
-    }),
-
-  hidePanel: (panelId) =>
-    set((state) => {
-      const index = state.activePanels.indexOf(panelId)
-      if (index !== -1) {
-        state.activePanels.splice(index, 1)
-      }
+      state.sidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, width))
     }),
 
   // Dialog controls

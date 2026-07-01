@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand'
+import type { AppStore } from '..'
 import { type AIConfig, type AIProvider, DEFAULT_AI_CONFIGS } from '@renderer/lib/ai/types'
 
 export interface ProviderConfigSlice {
@@ -12,8 +13,8 @@ export interface ProviderConfigSlice {
 }
 
 export const createProviderConfigSlice: StateCreator<
-  ProviderConfigSlice,
-  [['zustand/immer', never]],
+  AppStore,
+  [['zustand/devtools', never], ['zustand/immer', never]],
   [],
   ProviderConfigSlice
 > = (set, get) => ({
