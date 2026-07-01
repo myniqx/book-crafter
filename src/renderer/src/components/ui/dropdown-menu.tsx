@@ -15,6 +15,7 @@ interface DropdownMenuTriggerProps {
 interface DropdownMenuContentProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   align?: 'start' | 'center' | 'end'
+  onCloseAutoFocus?: (e: Event) => void
 }
 
 interface DropdownMenuItemProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -88,7 +89,7 @@ const DropdownMenuTrigger = React.forwardRef<HTMLDivElement, DropdownMenuTrigger
 DropdownMenuTrigger.displayName = 'DropdownMenuTrigger'
 
 const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContentProps>(
-  ({ children, align = 'start', className, ...props }, ref) => {
+  ({ children, align = 'start', className, ...props }, _ref) => {
     const { isOpen, setIsOpen } = React.useContext(DropdownMenuContext)
     const contentRef = React.useRef<HTMLDivElement>(null)
 

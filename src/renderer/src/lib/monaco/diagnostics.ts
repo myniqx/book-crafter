@@ -1,4 +1,4 @@
-import type { editor, IRange, languages } from 'monaco-editor'
+import type { editor } from 'monaco-editor'
 import type { Entity } from '@renderer/store/slices/entitySlice'
 
 // Diagnostics provider for entity validation

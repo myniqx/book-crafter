@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useStore } from '@renderer/store'
-import { Label } from '@renderer/components/ui/label'
 import { Input } from '@renderer/components/ui/input'
 import {
   Select,

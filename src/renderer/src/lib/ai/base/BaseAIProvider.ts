@@ -52,9 +52,9 @@ export abstract class BaseAIProvider implements AIProviderInterface {
 
   /**
    * Default: OpenAI-compatible tool format. Ollama and OpenAI use this as-is.
-   * Anthropic and Gemini override.
+   * Anthropic and Gemini override with their own wire formats.
    */
-  protected convertTools(tools: ToolDefinition[]): OpenAITool[] {
+  protected convertTools(tools: ToolDefinition[]): unknown[] {
     return toOpenAITools(tools)
   }
 

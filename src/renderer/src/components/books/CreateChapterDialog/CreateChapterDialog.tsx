@@ -19,11 +19,19 @@ import type { CreateChapterDialogProps } from './types'
 
 export const CreateChapterDialog: React.FC<CreateChapterDialogProps> = ({
   bookSlug,
-  triggerProps
+  triggerProps,
+  open: controlledOpen,
+  onOpenChange
 }) => {
   const [title, setTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = (value: boolean) => {
+    setInternalOpen(value)
+    onOpenChange?.(value)
+  }
 
   const book = useStore((state) => state.books[bookSlug])
   const addChapter = useStore((state) => state.addChapter)

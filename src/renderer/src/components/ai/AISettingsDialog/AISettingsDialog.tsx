@@ -15,7 +15,6 @@ import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/components/ui/select'
-import { Badge } from '@renderer/components/ui/badge'
 import { Settings, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 interface AISettingsDialogProps {

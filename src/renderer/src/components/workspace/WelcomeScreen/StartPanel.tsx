@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { FilePlus, FolderOpen, BookOpen, HelpCircle, Keyboard } from 'lucide-react'
-import { cn } from '@renderer/lib/utils'
 import { toast } from '@renderer/lib/toast'
 import { CreateProjectDialog } from '../CreateProjectDialog'
 import { OpenProjectDialog } from '../OpenProjectDialog'
@@ -18,7 +17,7 @@ const StartAction: React.FC<StartActionProps> = ({ icon: Icon, label, descriptio
       onClick={onClick}
       className="w-full text-left p-3 rounded-lg transition-colors duration-150 hover:bg-surface-container-high flex items-center gap-3"
     >
-      <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+      <Icon className="h-5 w-5 text-primary shrink-0" />
       <div>
         <p className="text-sm font-medium text-on-surface">{label}</p>
         <p className="text-xs text-on-surface-variant">{description}</p>

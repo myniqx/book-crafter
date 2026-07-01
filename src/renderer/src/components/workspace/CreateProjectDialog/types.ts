@@ -1,3 +1,5 @@
+import type React from 'react'
+
 export interface CreateProjectFormData {
   projectName: string
   author: string
@@ -7,4 +9,5 @@ export interface CreateProjectFormData {
 export interface CreateProjectDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  children?: React.ReactNode
 }

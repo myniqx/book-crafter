@@ -4,7 +4,6 @@ import { validateImageFile, SUPPORTED_IMAGE_EXTENSIONS } from '@renderer/lib/ima
 import { cn } from '@renderer/lib/utils'
 import { Upload, FileImage, AlertCircle, CheckCircle } from 'lucide-react'
 import type { ImageUploaderProps } from './types'
-import { Button } from '@renderer/components/ui/button'
 import { Alert, AlertDescription } from '@renderer/components/ui/alert'
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({

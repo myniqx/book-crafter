@@ -1,5 +1,5 @@
 import { slugify } from './slugify'
-import type { Entity, EntityField, EntityNote, EntityRelation } from '@renderer/store/slices/entitySlice'
+import type { Entity, EntityField } from '@renderer/store/slices/entitySlice'
 
 /**
  * Entity Templates

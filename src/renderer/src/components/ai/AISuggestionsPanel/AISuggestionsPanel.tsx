@@ -7,7 +7,7 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Button } from '@renderer/components/ui/button'
 import { Card } from '@renderer/components/ui/card'
 import { Badge } from '@renderer/components/ui/badge'
-import { History, Check, X, Eye, Trash2 } from 'lucide-react'
+import { History, Check, Eye, Trash2 } from 'lucide-react'
 import { DiffViewer } from '@renderer/components/ai/DiffViewer'
 
 export const AISuggestionsPanel: React.FC = () => {

@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { LayoutData, TabData, PanelData, BoxData } from 'rc-dock'
 import type {
   PanelId,
@@ -10,7 +11,7 @@ import type {
 export interface PanelConfig {
   id: PanelId
   title: string
-  content: React.ReactNode
+  content: React.ReactElement
   group?: string
   minWidth?: number
   minHeight?: number

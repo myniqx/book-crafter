@@ -1,6 +1,6 @@
 import type { languages, editor, IRange, IPosition } from 'monaco-editor'
 import type { Entity } from '@renderer/store/slices/entitySlice'
-import { getDefaultFieldValue, getFieldValue } from '@renderer/lib/entity'
+import { getDefaultFieldValue } from '@renderer/lib/entity'
 
 // Hover provider for @mentions
 export class EntityHoverProvider implements languages.HoverProvider {

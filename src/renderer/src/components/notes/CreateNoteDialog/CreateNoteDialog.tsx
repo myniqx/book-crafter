@@ -6,7 +6,6 @@ import type { CreateNoteDialogProps } from './types'
 import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,

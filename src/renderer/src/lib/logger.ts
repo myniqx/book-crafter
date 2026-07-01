@@ -28,7 +28,7 @@ function shouldLog(level: LogLevel): boolean {
 
 function formatPrefix(level: LogLevel, context?: string): string {
   const tag = context ? `[${context}]` : ''
-  return `[book-crafter]${tag}`
+  return `[book-crafter][${level}]${tag}`
 }
 
 export const logger = {

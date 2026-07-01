@@ -30,7 +30,9 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   // Get AI actions from store
   const sendMessage = useStore((state) => state.sendMessage)
   const buildContext = useStore((state) => state.buildContext)
-  const addSuggestion = useStore((state) => state.addSuggestion)
+
+  // TODO: find good way to add suggestions
+  const _addSuggestion = useStore((state) => state.addSuggestion)
 
   // Determine Monaco theme based on app theme
   const monacoTheme = theme || (storeTheme === 'light' ? 'light' : 'vs-dark')
@@ -49,8 +51,6 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
     renderWhitespace: editorSettings.renderWhitespace,
     bracketPairColorization: { enabled: editorSettings.bracketPairColorization },
     autoClosingBrackets: editorSettings.autoClosingBrackets,
-    formatOnSave: editorSettings.formatOnSave,
-    formatOnPaste: editorSettings.formatOnPaste,
     trimAutoWhitespace: editorSettings.trimAutoWhitespace,
     readOnly,
     automaticLayout: true,
@@ -145,7 +145,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
 
           // Send to AI
           try {
-            await sendMessage(prompt, context)
+            await sendMessage(prompt.prompt, context)
             logger.debug(`AI action executed: ${label}`, 'MonacoEditor')
           } catch (error) {
             logger.error('AI action failed:', 'MonacoEditor', error)

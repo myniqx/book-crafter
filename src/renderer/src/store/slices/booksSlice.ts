@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand'
 import { toast } from 'sonner'
 import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
+import { loadAllBooks, saveBook, saveChapter, deleteBook as deleteBookFile, deleteChapter as deleteChapterFile } from '@renderer/lib/books'
 
 export interface Chapter {
   slug: string
@@ -216,7 +217,6 @@ export const createBooksSlice: StateCreator<
     })
 
     try {
-      const { loadAllBooks } = await import('@renderer/lib/books')
       const books = await loadAllBooks(workspacePath)
 
       set((state) => {
@@ -238,7 +238,6 @@ export const createBooksSlice: StateCreator<
       throw new Error(`Book ${bookSlug} not found`)
     }
 
-    const { saveBook } = await import('@renderer/lib/books')
     await saveBook(workspacePath, book)
   },
 
@@ -253,12 +252,10 @@ export const createBooksSlice: StateCreator<
       throw new Error(`Chapter ${chapterSlug} not found in book ${bookSlug}`)
     }
 
-    const { saveChapter } = await import('@renderer/lib/books')
     await saveChapter(workspacePath, bookSlug, chapter)
   },
 
   deleteBookFromDisk: async (workspacePath, bookSlug) => {
-    const { deleteBook: deleteBookFile } = await import('@renderer/lib/books')
     await deleteBookFile(workspacePath, bookSlug)
 
     // Remove from store
@@ -271,7 +268,6 @@ export const createBooksSlice: StateCreator<
   },
 
   deleteChapterFromDisk: async (workspacePath, bookSlug, chapterSlug) => {
-    const { deleteChapter: deleteChapterFile } = await import('@renderer/lib/books')
     await deleteChapterFile(workspacePath, bookSlug, chapterSlug)
 
     // Remove from store

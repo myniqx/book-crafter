@@ -775,7 +775,7 @@ function executeGenerationTool(
 function executeEditingTool(
   name: string,
   args: Record<string, unknown>,
-  store: StoreAccess
+  _store: StoreAccess
 ): string {
   return `Tool: ${name}\nParameters: ${JSON.stringify(args, null, 2)}`
 }

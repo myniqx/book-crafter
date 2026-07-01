@@ -31,18 +31,17 @@ export const StatusBar: React.FC = () => {
     return 0
   }, [activeTabData?.chapter?.content])
 
-  const isSaving = false
+  const hasUnsavedChanges = useStore((state) => state.hasUnsavedChanges)
   const lastSaved = workspaceConfig?.modified ? new Date(workspaceConfig.modified) : null
-
 
   return (
     <div className="h-6 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between px-3 text-xs text-on-surface-variant">
       {/* Left: Save status */}
       <div className="flex items-center gap-2">
-        {isSaving ? (
+        {hasUnsavedChanges ? (
           <div className="flex items-center gap-1.5">
-            <Save className="h-3 w-3 animate-pulse" />
-            <span>Saving...</span>
+            <AlertCircle className="h-3 w-3 text-error" />
+            <span>Unsaved changes</span>
           </div>
         ) : lastSaved ? (
           <div className="flex items-center gap-1.5">
@@ -51,8 +50,8 @@ export const StatusBar: React.FC = () => {
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
-            <AlertCircle className="h-3 w-3 text-error" />
-            <span>Unsaved changes</span>
+            <Save className="h-3 w-3" />
+            <span>Ready</span>
           </div>
         )}
       </div>

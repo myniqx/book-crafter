@@ -8,7 +8,8 @@ import {
   IntegrityCheckDialog,
   type IntegrityIssue
 } from '@renderer/components/workspace/IntegrityCheckDialog'
-import { useStore } from '@renderer/store'
+import { CreateChapterDialog } from '@renderer/components/books/CreateChapterDialog'
+import { useStore, type TabEditorData } from '@renderer/store'
 import { useKeyboard } from '@renderer/hooks/useKeyboard'
 import { useSaveActiveChapter, useSaveAllChapters } from '@renderer/hooks/useSaveChapter'
 import { toast } from '@renderer/lib/toast'
@@ -19,6 +20,16 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
   const [integrityIssues, setIntegrityIssues] = useState<IntegrityIssue[]>([])
 
   const workspacePath = useStore((state) => state.workspacePath)
+  const activeTabId = useStore((state) => state.activeTabId)
+  const openTabs = useStore((state) => state.openTabs)
+  const createChapterDialogOpen = useStore((state) => state.createChapterDialogOpen)
+  const setCreateChapterDialogOpen = useStore((state) => state.setCreateChapterDialogOpen)
+
+  const activeEditorBookSlug = (() => {
+    const tab = openTabs.find((t) => t.id === activeTabId)
+    if (tab?.type === 'editor' && tab.data) return (tab.data as TabEditorData).bookSlug
+    return null
+  })()
   const loadAllEntities = useStore((state) => state.loadAllEntities)
   const loadAllBooks = useStore((state) => state.loadAllBooks)
   const loadAllImages = useStore((state) => state.loadAllImages)
@@ -152,6 +163,15 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
         {/* Status bar */}
         <StatusBar />
       </div>
+
+      {/* Create Chapter Dialog (globally mounted, driven by store) */}
+      {activeEditorBookSlug && (
+        <CreateChapterDialog
+          bookSlug={activeEditorBookSlug}
+          open={createChapterDialogOpen}
+          onOpenChange={setCreateChapterDialogOpen}
+        />
+      )}
 
       {/* Integrity Check Dialog */}
       <IntegrityCheckDialog

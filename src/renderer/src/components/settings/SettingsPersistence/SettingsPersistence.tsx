@@ -166,6 +166,9 @@ export const SettingsPersistence: React.FC = () => {
 
   // Load settings from disk to store on initial mount
   useEffect(() => {
+    // Clean up stale localStorage key left by removed persist middleware
+    localStorage.removeItem('book-crafter-tools')
+
     if (!loading && !isInitializedRef.current) {
       logger.debug('Loading settings from disk', 'SettingsPersistence')
 

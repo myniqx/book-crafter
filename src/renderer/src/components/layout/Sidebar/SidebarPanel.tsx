@@ -1,4 +1,3 @@
-import { cn } from '@renderer/lib/utils'
 import { useStore } from '@renderer/store'
 import React from 'react'
 import { ResizeHandle } from './ResizeHandle'

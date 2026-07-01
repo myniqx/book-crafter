@@ -38,20 +38,20 @@ import {
   Info
 } from 'lucide-react'
 import { useStore } from '@renderer/store'
-import { dialog } from '@renderer/lib/ipc'
 import { toast } from '@renderer/lib/toast'
 import { CreateProjectDialog } from '@renderer/components/workspace/CreateProjectDialog'
 import { OpenProjectDialog } from '@renderer/components/workspace/OpenProjectDialog'
 
-interface MenuItem {
-  label: string
-  action?: string
-  shortcut?: string
-  separator?: boolean
-  disabled?: boolean
-  icon?: React.ComponentType<{ className?: string }>
-  submenu?: MenuItem[]
-}
+type MenuItem =
+  | { separator: true }
+  | {
+      label: string
+      action?: string
+      shortcut?: string
+      disabled?: boolean
+      icon?: React.ComponentType<{ className?: string }>
+      submenu?: MenuItem[]
+    }
 
 interface MenuBarProps {
   className?: string
@@ -67,8 +67,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
   const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
   const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
-  const setWorkspaceConfig = useStore((state) => state.setWorkspaceConfig)
-  const setWorkspacePath = useStore((state) => state.setWorkspacePath)
+  const closeWorkspace = useStore((state) => state.closeWorkspace)
   const toggleSidebar = useStore((state) => state.toggleSidebar)
   const togglePanel = useStore((state) => state.togglePanel)
   const workspaceConfig = useStore((state) => state.workspaceConfig)
@@ -89,14 +88,21 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
 
       case 'close-workspace':
         if (workspaceConfig) {
-          setWorkspaceConfig(null)
-          setWorkspacePath(null)
+          closeWorkspace()
           toast.success('Workspace closed', 'Workspace has been closed')
         }
         break
 
       case 'new-book':
         setCreateBookDialogOpen(true)
+        break
+
+      case 'new-entity':
+        setCreateEntityDialogOpen(true)
+        break
+
+      case 'new-note':
+        setCreateNoteDialogOpen(true)
         break
 
       case 'open-workspace':
@@ -210,6 +216,8 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
     { label: 'Close Workspace', action: 'close-workspace', disabled: !workspaceConfig, icon: FolderX },
     { separator: true },
     { label: 'New Book', action: 'new-book', shortcut: 'Ctrl+N', disabled: !workspaceConfig, icon: BookPlus },
+    { label: 'New Entity', action: 'new-entity', shortcut: 'Ctrl+Shift+E', disabled: !workspaceConfig, icon: Users },
+    { label: 'New Note', action: 'new-note', shortcut: 'Ctrl+Shift+N', disabled: !workspaceConfig, icon: StickyNote },
     { separator: true },
     { label: 'Save', action: 'save', shortcut: 'Ctrl+S', disabled: !workspaceConfig, icon: Save },
     { label: 'Save All', action: 'save-all', shortcut: 'Ctrl+Shift+S', disabled: !workspaceConfig, icon: SaveAll },
@@ -255,7 +263,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
   // Render menu items
   const renderMenuItems = (items: MenuItem[]) => {
     return items.map((item, index) => {
-      if (item.separator) {
+      if ('separator' in item) {
         return <DropdownMenuSeparator key={`separator-${index}`} />
       }
 

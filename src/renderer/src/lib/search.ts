@@ -1,5 +1,5 @@
 import type { Entity } from '@renderer/store/slices/entitySlice'
-import type { Book, Chapter } from '@renderer/store/slices/booksSlice'
+import type { Book } from '@renderer/store/slices/booksSlice'
 import type { Note } from './note'
 
 /**

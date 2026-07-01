@@ -28,7 +28,6 @@ export interface WorkspaceConfig {
   author: string
   created: string
   modified: string
-  aiConfig?: AIProvider
   editorSettings: EditorSettings
 }
 

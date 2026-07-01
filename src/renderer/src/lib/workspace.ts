@@ -123,35 +123,6 @@ export function validateWorkspaceConfig(config: unknown): ValidationResult {
     })
   }
 
-  // AI Config validation (optional)
-  if (cfg.aiConfig) {
-    const ai = cfg.aiConfig
-
-    if (!['ollama', 'openai', 'anthropic'].includes(ai.type)) {
-      errors.push({
-        field: 'aiConfig.type',
-        message: 'AI type must be ollama, openai, or anthropic',
-        severity: 'error'
-      })
-    }
-
-    if (!ai.endpoint || typeof ai.endpoint !== 'string') {
-      errors.push({
-        field: 'aiConfig.endpoint',
-        message: 'AI endpoint is required',
-        severity: 'error'
-      })
-    }
-
-    if (!ai.model || typeof ai.model !== 'string') {
-      errors.push({
-        field: 'aiConfig.model',
-        message: 'AI model is required',
-        severity: 'error'
-      })
-    }
-  }
-
   return {
     valid: errors.length === 0,
     errors
@@ -197,19 +168,3 @@ export function updateEditorSettings(
   })
 }
 
-export function updateAIConfig(
-  config: WorkspaceConfig,
-  updates: Partial<WorkspaceConfig['aiConfig']>
-): WorkspaceConfig {
-  return updateModifiedTimestamp({
-    ...config,
-    aiConfig: {
-      ...(config.aiConfig || {
-        type: 'ollama',
-        endpoint: 'http://localhost:11434',
-        model: 'llama2'
-      }),
-      ...updates
-    }
-  })
-}

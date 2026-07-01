@@ -10,7 +10,7 @@ import {
 } from '@renderer/components/ui/select'
 import { cn } from '@renderer/lib/utils'
 import { useStore } from '@renderer/store'
-import { searchEntities, groupEntitiesByType, sortEntities, type EntitySortKey } from '@renderer/lib/entity'
+import { searchEntities, sortEntities, type EntitySortKey } from '@renderer/lib/entity'
 import { CreateEntityDialog } from '../CreateEntityDialog'
 import type { EntityBrowserProps } from './types'
 

@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'
 import { useStore } from './store'
 import { WelcomeScreen } from './components/workspace/WelcomeScreen'
 import { MainLayout } from './components/layout/MainLayout'
@@ -9,6 +10,12 @@ import { FileWatcherService } from './components/workspace/FileWatcherService'
 
 function App(): React.JSX.Element {
   const workspaceConfig = useStore((state) => state.workspaceConfig)
+
+  useEffect(() => {
+    const handleBeforeUnload = () => useStore.getState()._cleanupTimers()
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   return (
     <TooltipProvider>

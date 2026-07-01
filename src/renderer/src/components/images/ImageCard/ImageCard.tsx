@@ -10,7 +10,6 @@ import {
   Copy,
   Tag,
   Link as LinkIcon,
-  Info,
   X
 } from 'lucide-react'
 import type { ImageCardProps } from './types'
@@ -214,7 +213,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
           ) : (
             <div
               onClick={handleDescriptionEdit}
-              className="text-sm text-on-surface-variant cursor-pointer hover:text-on-surface min-h-[2rem] p-2 border border-outline-variant rounded hover:border-outline"
+              className="text-sm text-on-surface-variant cursor-pointer hover:text-on-surface min-h-8 p-2 border border-outline-variant rounded hover:border-outline"
             >
               {image.description || 'Click to add description...'}
             </div>
@@ -270,24 +269,24 @@ export const ImageCard: React.FC<ImageCardProps> = ({
         {(image.linkedEntities.length > 0 ||
           image.linkedBooks.length > 0 ||
           image.linkedNotes.length > 0) && (
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              <LinkIcon className="h-3 w-3" />
-              Linked To
-            </Label>
-            <div className="space-y-1 text-xs text-on-surface-variant">
-              {image.linkedEntities.length > 0 && (
-                <div>Entities: {image.linkedEntities.join(', ')}</div>
-              )}
-              {image.linkedBooks.length > 0 && (
-                <div>Books: {image.linkedBooks.join(', ')}</div>
-              )}
-              {image.linkedNotes.length > 0 && (
-                <div>Notes: {image.linkedNotes.length}</div>
-              )}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <LinkIcon className="h-3 w-3" />
+                Linked To
+              </Label>
+              <div className="space-y-1 text-xs text-on-surface-variant">
+                {image.linkedEntities.length > 0 && (
+                  <div>Entities: {image.linkedEntities.join(', ')}</div>
+                )}
+                {image.linkedBooks.length > 0 && (
+                  <div>Books: {image.linkedBooks.join(', ')}</div>
+                )}
+                {image.linkedNotes.length > 0 && (
+                  <div>Notes: {image.linkedNotes.length}</div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </CardContent>
     </Card>
   )

@@ -1,4 +1,4 @@
-import type { AIMessage, AIRequestOptions, ToolDefinition } from '../types'
+import type { AIRequestOptions, ToolDefinition } from '../types'
 
 /**
  * Normalized message format — provider-agnostic internal representation

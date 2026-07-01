@@ -76,7 +76,7 @@ export function validateEndpoint(endpoint: string | undefined): ValidationResult
 /**
  * Validate model name
  */
-export function validateModel(model: string | undefined, provider: AIProviderType): ValidationResult {
+export function validateModel(model: string | undefined, _provider: AIProviderType): ValidationResult {
   if (!model) {
     return {
       isValid: false,

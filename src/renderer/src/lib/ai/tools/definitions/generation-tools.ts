@@ -142,7 +142,8 @@ export const generationTools: ToolDefinition[] = [
           type: 'array',
           description: 'Entity slugs of characters in the scene (e.g., ["john-doe", "mary-jane"])',
           items: {
-            type: 'string'
+            type: 'string',
+            description: 'Entity slug of a character'
           }
         },
         location: {
@@ -194,7 +195,8 @@ export const generationTools: ToolDefinition[] = [
           type: 'array',
           description: 'Entity slugs of characters in the dialogue',
           items: {
-            type: 'string'
+            type: 'string',
+            description: 'Entity slug of a character'
           }
         },
         topic: {
@@ -247,7 +249,8 @@ export const generationTools: ToolDefinition[] = [
           type: 'array',
           description: 'Entity slugs of characters to include',
           items: {
-            type: 'string'
+            type: 'string',
+            description: 'Entity slug of a character'
           }
         }
       },

@@ -145,7 +145,7 @@ export async function exportEntities(
  * Import entities from a JSON file
  */
 export async function importEntities(
-  workspacePath: string,
+  _workspacePath: string,
   filePath: string
 ): Promise<Record<string, Entity>> {
   const data = await ipcClient.fs.readFile(filePath)

@@ -1,5 +1,4 @@
 import type { Image } from './image'
-import { getFileExtension } from './image'
 import ipcClient from './ipc'
 import { logger } from './logger'
 

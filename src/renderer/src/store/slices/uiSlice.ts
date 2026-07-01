@@ -82,6 +82,7 @@ export interface UISlice {
   createBookDialogOpen: boolean
   createEntityDialogOpen: boolean
   createNoteDialogOpen: boolean
+  createChapterDialogOpen: boolean
   settingsDialogOpen: boolean
 
   // Sidebar actions
@@ -134,6 +135,7 @@ export interface UISlice {
   setCreateBookDialogOpen: (open: boolean) => void
   setCreateEntityDialogOpen: (open: boolean) => void
   setCreateNoteDialogOpen: (open: boolean) => void
+  setCreateChapterDialogOpen: (open: boolean) => void
   setSettingsDialogOpen: (open: boolean) => void
 }
 
@@ -160,6 +162,7 @@ export const createUISlice: StateCreator<
   createBookDialogOpen: false,
   createEntityDialogOpen: false,
   createNoteDialogOpen: false,
+  createChapterDialogOpen: false,
   settingsDialogOpen: false,
 
   toggleSidebar: () =>
@@ -202,6 +205,11 @@ export const createUISlice: StateCreator<
   setCreateNoteDialogOpen: (open) =>
     set((state) => {
       state.createNoteDialogOpen = open
+    }),
+
+  setCreateChapterDialogOpen: (open) =>
+    set((state) => {
+      state.createChapterDialogOpen = open
     }),
 
   setSettingsDialogOpen: (open) =>

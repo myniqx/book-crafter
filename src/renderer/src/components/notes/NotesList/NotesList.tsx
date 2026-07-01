@@ -9,7 +9,6 @@ import {
   getChecklistProgress,
   type NoteType,
   type NoteSortBy,
-  getNoteTypeLabel,
   getNoteTypeIcon
 } from '@renderer/lib/note'
 import { cn } from '@renderer/lib/utils'

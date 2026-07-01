@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import type { AppStore } from '..'
 import { logger } from '@renderer/lib/logger'
+import { loadAllEntities, saveEntity, deleteEntity as deleteEntityFile } from '@renderer/lib/entities'
 
 export interface EntityField {
   name: string
@@ -147,8 +148,6 @@ export const createEntitySlice: StateCreator<
     })
 
     try {
-      // Import dynamically to avoid circular dependencies
-      const { loadAllEntities } = await import('@renderer/lib/entities')
       const entities = await loadAllEntities(workspacePath)
 
       set((state) => {
@@ -170,12 +169,10 @@ export const createEntitySlice: StateCreator<
       throw new Error(`Entity ${slug} not found`)
     }
 
-    const { saveEntity } = await import('@renderer/lib/entities')
     await saveEntity(workspacePath, entity)
   },
 
   deleteEntityFromDisk: async (workspacePath, slug) => {
-    const { deleteEntity: deleteEntityFile } = await import('@renderer/lib/entities')
     await deleteEntityFile(workspacePath, slug)
 
     // Remove from store

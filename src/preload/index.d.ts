@@ -37,11 +37,21 @@ interface WindowAPI {
   quit(): Promise<void>
 }
 
+interface ElectronAppAPI {
+  getPath(name: 'userData' | 'appData' | 'temp' | 'home'): Promise<string>
+}
+
 interface AppAPI {
   http: HTTPAPI
   fetch: HTTPAPI  // Alias for http for compatibility
   fs: FSAPI
   window: WindowAPI
+  app: ElectronAppAPI
+  dialog: {
+    openFile(options?: Record<string, unknown>): Promise<{ canceled: boolean; filePath?: string; filePaths?: string[] }>
+    openDirectory(options?: Record<string, unknown>): Promise<{ canceled: boolean; filePath?: string }>
+    saveFile(options?: Record<string, unknown>): Promise<{ canceled: boolean; filePath?: string }>
+  }
 }
 
 declare global {

@@ -44,7 +44,10 @@ export const CommandPalette: React.FC = () => {
   const setCreateBookDialogOpen = useStore((state) => state.setCreateBookDialogOpen)
   const setCreateEntityDialogOpen = useStore((state) => state.setCreateEntityDialogOpen)
   const setCreateNoteDialogOpen = useStore((state) => state.setCreateNoteDialogOpen)
+  const setCreateChapterDialogOpen = useStore((state) => state.setCreateChapterDialogOpen)
   const setSettingsDialogOpen = useStore((state) => state.setSettingsDialogOpen)
+  const activeTabId = useStore((state) => state.activeTabId)
+  const openTabs = useStore((state) => state.openTabs)
 
   // Keyboard shortcut: Ctrl+Shift+P
   useShortcut('commandPalette', () => setOpen(true), { allowInInput: true })
@@ -73,9 +76,13 @@ export const CommandPalette: React.FC = () => {
         keywords: ['create', 'add', 'chapter'],
         icon: <FileText className="h-4 w-4" />,
         action: () => {
-          setOpen(false)
-          // TODO: Open create chapter dialog
-          logger.debug('Create new chapter', 'CommandPalette')
+          const activeTab = openTabs.find((t) => t.id === activeTabId)
+          if (activeTab?.type === 'editor' && activeTab.data) {
+            setOpen(false)
+            setCreateChapterDialogOpen(true)
+          } else {
+            logger.warn('No active editor tab to add chapter to', 'CommandPalette')
+          }
         }
       },
       {
@@ -188,7 +195,10 @@ export const CommandPalette: React.FC = () => {
       setCreateBookDialogOpen,
       setCreateEntityDialogOpen,
       setCreateNoteDialogOpen,
-      setSettingsDialogOpen
+      setCreateChapterDialogOpen,
+      setSettingsDialogOpen,
+      activeTabId,
+      openTabs
     ]
   )
 
@@ -302,12 +312,12 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Commands list */}
-        <ScrollArea className="max-h-[400px] border-t border-border">
+        <ScrollArea className="max-h-100 border-t border-border">
           <div className="p-2">
             {Object.entries(groupedCommands).map(([category, cmds]) => (
               <div key={category} className="mb-3 last:mb-0">
                 <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{category}</div>
-                {cmds.map((cmd, index) => {
+                {cmds.map((cmd) => {
                   const globalIndex = filteredCommands.indexOf(cmd)
                   const isSelected = globalIndex === selectedIndex
                   const highlights = highlightMatches(cmd.label, search)

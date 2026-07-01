@@ -9,21 +9,6 @@ export interface WorkspaceConfig {
   author: string
   created: string
   modified?: string
-  aiConfig: {
-    provider: 'ollama' | 'openai' | 'anthropic'
-    ollamaEndpoint?: string
-    ollamaModel?: string
-    openaiApiKey?: string
-    openaiModel?: string
-    anthropicApiKey?: string
-    anthropicModel?: string
-    features: {
-      grammar: boolean
-      expand: boolean
-      summarize: boolean
-      chat: boolean
-    }
-  }
 }
 
 export interface WorkspaceSlice {
@@ -34,6 +19,7 @@ export interface WorkspaceSlice {
   setWorkspaceConfig: (config: WorkspaceConfig) => void
   setWorkspacePath: (path: string) => void
   setHasUnsavedChanges: (value: boolean) => void
+  closeWorkspace: () => void
   loadWorkspace: (path: string) => Promise<void>
   saveWorkspace: () => Promise<void>
   createNewWorkspace: (name: string, author: string) => WorkspaceConfig
@@ -44,17 +30,6 @@ const defaultWorkspaceConfig: WorkspaceConfig = {
   version: '1.0.0',
   author: '',
   created: new Date().toISOString(),
-  aiConfig: {
-    provider: 'ollama',
-    ollamaEndpoint: 'http://localhost:11434',
-    ollamaModel: 'llama2',
-    features: {
-      grammar: true,
-      expand: true,
-      summarize: true,
-      chat: true,
-    },
-  },
 }
 
 export const createWorkspaceSlice: StateCreator<
@@ -83,9 +58,19 @@ export const createWorkspaceSlice: StateCreator<
       state.hasUnsavedChanges = value
     }),
 
+  closeWorkspace: () => {
+    get()._cleanupTimers()
+    set((state) => {
+      state.workspaceConfig = null
+      state.workspacePath = null
+      state.isWorkspaceLoaded = false
+      state.hasUnsavedChanges = false
+    })
+  },
+
   loadWorkspace: async (path: string) => {
+    get()._cleanupTimers()
     try {
-      // Check if config file exists
       const configPath = `${path}/book-crafter.json`
       const exists = await fs.exists(configPath)
 
@@ -93,11 +78,16 @@ export const createWorkspaceSlice: StateCreator<
         throw new Error('Not a valid Book Crafter workspace')
       }
 
-      // Read and parse config
       const configContent = await fs.readFile(configPath, 'utf-8')
-      const config = JSON.parse(configContent) as WorkspaceConfig
+      const raw = JSON.parse(configContent) as Record<string, unknown>
+      const config: WorkspaceConfig = {
+        projectName: typeof raw.projectName === 'string' ? raw.projectName : 'Untitled Project',
+        version: typeof raw.version === 'string' ? raw.version : '1.0.0',
+        author: typeof raw.author === 'string' ? raw.author : '',
+        created: typeof raw.created === 'string' ? raw.created : new Date().toISOString(),
+        modified: typeof raw.modified === 'string' ? raw.modified : undefined,
+      }
 
-      // Update store
       set((state) => {
         state.workspaceConfig = config
         state.workspacePath = path
@@ -113,8 +103,17 @@ export const createWorkspaceSlice: StateCreator<
   },
 
   saveWorkspace: async () => {
-    // This will be implemented with IPC later
-    logger.debug('Saving workspace...', 'workspaceSlice', get().workspaceConfig)
+    const { workspacePath, workspaceConfig } = get()
+    if (!workspacePath || !workspaceConfig) return
+    const updated: WorkspaceConfig = { ...workspaceConfig, modified: new Date().toISOString() }
+    await fs.writeFile(
+      `${workspacePath}/book-crafter.json`,
+      JSON.stringify(updated, null, 2)
+    )
+    set((state) => {
+      state.workspaceConfig = updated
+    })
+    logger.info('Workspace saved', 'workspaceSlice')
   },
 
   createNewWorkspace: (name: string, author: string) => {
