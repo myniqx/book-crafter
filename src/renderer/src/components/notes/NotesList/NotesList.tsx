@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useContentStore, useCoreStore } from '@renderer/store'
 import { logger } from '@renderer/lib/logger'
+import { formatDate } from '@renderer/lib/dateFormat'
 import {
   searchNotes,
   sortNotes,
@@ -175,7 +176,7 @@ export const NotesList: React.FC<NotesListProps> = ({ className }) => {
                       <h3 className="font-medium text-sm text-on-surface truncate">{note.title}</h3>
                     </div>
                     <p className="text-xs text-on-surface-variant mt-0.5">
-                      {new Date(note.modified).toLocaleDateString()}
+                      {formatDate(note.modified)}
                     </p>
 
                     {note.checklist.length > 0 && (

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
 import { useContentStore, useCoreStore } from '@renderer/store'
+import { formatRelativeTime } from '@renderer/lib/dateFormat'
 
 export const StatusBar: React.FC = () => {
   const workspaceConfig = useCoreStore((state) => state.workspaceConfig)
@@ -32,18 +33,6 @@ export const StatusBar: React.FC = () => {
   const isSaving = false
   const lastSaved = workspaceConfig?.modified ? new Date(workspaceConfig.modified) : null
 
-  const formatTime = (date: Date): string => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const seconds = Math.floor(diff / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-
-    if (seconds < 60) return 'just now'
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    return date.toLocaleDateString()
-  }
 
   return (
     <div className="h-6 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between px-3 text-xs text-on-surface-variant">
@@ -57,7 +46,7 @@ export const StatusBar: React.FC = () => {
         ) : lastSaved ? (
           <div className="flex items-center gap-1.5">
             <CheckCircle className="h-3 w-3 text-tertiary" />
-            <span>Saved {formatTime(lastSaved)}</span>
+            <span>Saved {formatRelativeTime(lastSaved)}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">

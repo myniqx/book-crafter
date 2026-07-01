@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Trash2, Save, Plus, Minus, Users, MapPin, Box } from 'lucide-react'
 import { logger } from '@renderer/lib/logger'
+import { formatDate } from '@renderer/lib/dateFormat'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
@@ -249,11 +250,11 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entitySlug, className })
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Created</p>
-                <p>{new Date(entity.metadata.created).toLocaleDateString()}</p>
+                <p>{formatDate(entity.metadata.created)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Modified</p>
-                <p>{new Date(entity.metadata.modified).toLocaleDateString()}</p>
+                <p>{formatDate(entity.metadata.modified)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Usage Count</p>

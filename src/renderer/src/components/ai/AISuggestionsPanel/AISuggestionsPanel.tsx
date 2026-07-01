@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToolsStore } from '@renderer/store'
+import { formatDateTime } from '@renderer/lib/dateFormat'
 import type { AISuggestion } from '@renderer/lib/ai/types'
 import { cn } from '@renderer/lib/utils'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
@@ -136,7 +137,7 @@ export const AISuggestionsPanel: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2 text-xs text-outline">
-                    <span>{new Date(suggestion.timestamp).toLocaleString()}</span>
+                    <span>{formatDateTime(suggestion.timestamp)}</span>
                     {suggestion.bookSlug && (
                       <>
                         <span>•</span>

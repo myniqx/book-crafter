@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import type { MessageBubbleProps } from './types'
 import { cn } from '@renderer/lib/utils'
 import { logger } from '@renderer/lib/logger'
+import { formatTime } from '@renderer/lib/dateFormat'
 import { Bot, Copy, Check, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { Card } from '@renderer/components/ui/card'
@@ -65,10 +66,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </Card>
 
           <span className="text-xs text-on-surface-variant select-text">
-            {new Date(timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+            {formatTime(timestamp)}
           </span>
         </div>
       </div>
@@ -145,10 +143,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-on-surface-variant">
-            {new Date(timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+            {formatTime(timestamp)}
           </span>
           {copied && <span className="text-xs text-tertiary">Copied!</span>}
         </div>

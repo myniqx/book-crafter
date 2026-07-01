@@ -179,8 +179,16 @@ export const SettingsPersistence: React.FC = () => {
 
       isInitializedRef.current = true
       logger.info('Settings loaded successfully', 'SettingsPersistence')
+
+      window.api.window.devTools(persistedSettings.advancedSettings.enableDevTools)
     }
   }, [loading, persistedSettings])
+
+  // Apply enableDevTools whenever it changes
+  useEffect(() => {
+    if (!isInitializedRef.current) return
+    window.api.window.devTools(advancedSettings.enableDevTools)
+  }, [advancedSettings.enableDevTools])
 
   // Save settings to disk when store changes
   useEffect(() => {

@@ -46,7 +46,7 @@ export const AdvancedSettingsTab: React.FC = () => {
         <h3 className="text-sm font-medium">Developer Tools</h3>
         <div className="flex items-center gap-2">
           <Checkbox id="dev-tools" checked={advancedSettings.enableDevTools} onCheckedChange={(checked) => update({ enableDevTools: checked as boolean })} />
-          <Label htmlFor="dev-tools" className="cursor-pointer">Enable developer tools (F12)</Label>
+          <Label htmlFor="dev-tools" className="cursor-pointer">Enable developer tools</Label>
         </div>
         <div className="flex items-center gap-2">
           <Checkbox id="verbose-logging" checked={advancedSettings.verboseLogging} onCheckedChange={(checked) => update({ verboseLogging: checked as boolean })} />

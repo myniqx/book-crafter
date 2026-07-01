@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToolsStore } from '@renderer/store'
+import { formatDate } from '@renderer/lib/dateFormat'
 import type { CustomPrompt } from '@renderer/lib/ai/types'
 import {
   Dialog,
@@ -185,7 +186,7 @@ export const CustomPromptsDialog: React.FC<CustomPromptsDialogProps> = ({ trigge
                       </div>
                       <p className="text-xs text-on-surface-variant line-clamp-2">{prompt.prompt}</p>
                       <p className="text-xs text-outline mt-1">
-                        Modified: {new Date(prompt.modified).toLocaleDateString()}
+                        Modified: {formatDate(prompt.modified)}
                       </p>
                     </div>
 

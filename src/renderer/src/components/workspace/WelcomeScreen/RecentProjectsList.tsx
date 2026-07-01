@@ -6,6 +6,7 @@ import { useCoreStore } from '@renderer/store'
 import type { RecentProject } from './types'
 import { toast } from '@renderer/lib/toast'
 import { fs } from '@renderer/lib/ipc'  // Still needed for validateProjects
+import { formatRelativeTime } from '@renderer/lib/dateFormat'
 
 export const RecentProjectsList: React.FC = () => {
   const [recentProjects, setRecentProjects] = usePersistedStore<RecentProject[]>(
@@ -71,20 +72,6 @@ export const RecentProjectsList: React.FC = () => {
     toast.success('Cleared', 'Recent projects list cleared')
   }
 
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString()
-  }
 
   if (recentProjects.length === 0) {
     return (
@@ -114,7 +101,7 @@ export const RecentProjectsList: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-on-surface truncate">{project.name}</p>
                 <p className="text-xs text-on-surface-variant truncate">{project.path}</p>
-                <p className="text-xs text-outline mt-0.5">{formatDate(project.lastOpened)}</p>
+                <p className="text-xs text-outline mt-0.5">{formatRelativeTime(project.lastOpened)}</p>
               </div>
             </div>
             <button

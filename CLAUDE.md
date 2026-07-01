@@ -605,6 +605,25 @@ try {
 
 ---
 
+## Date & Time Formatting
+
+**RULE: Never use `toLocaleDateString()`, `toLocaleString()`, or `toLocaleTimeString()` directly. Always use the centralized date helpers.**
+
+These helpers read `dateFormat`, `timeFormat`, and `defaultLanguage` from the user's general settings automatically.
+
+```tsx
+import { formatDate, formatTime, formatDateTime, formatRelativeTime } from '@renderer/lib/dateFormat'
+
+formatDate(iso)          // "31/12/2025" — date only, per dateFormat setting
+formatTime(iso)          // "15:30" or "3:30 PM" — per timeFormat setting
+formatDateTime(iso)      // "31/12/2025 15:30" — date + time
+formatRelativeTime(iso)  // "5m ago", "2h ago", falls back to formatDate for older dates
+```
+
+`new Date().toISOString()` is fine for storing timestamps — only use the helpers when **displaying** a date or time to the user.
+
+---
+
 ## Logging
 
 **RULE: Never use `console.*` directly in renderer code. Always use the centralized logger.**
